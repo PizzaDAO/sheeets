@@ -4,14 +4,11 @@ import { memo, useState } from 'react';
 import Image from 'next/image';
 import { User, MapPin, Loader2 } from 'lucide-react';
 import { trackAuthPrompt } from '@/lib/analytics';
-import { ViewMode, ETHDenverEvent } from '@/lib/types';
-import { ViewToggle } from './ViewToggle';
+import { ETHDenverEvent } from '@/lib/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { AuthModal, UserMenu } from './AuthModal';
 
 interface HeaderProps {
-  viewMode: ViewMode;
-  onViewChange: (mode: ViewMode) => void;
   events: ETHDenverEvent[];
   itinerary: Set<string>;
   onOpenFriends: () => void;
@@ -24,8 +21,6 @@ interface HeaderProps {
 }
 
 export const Header = memo(function Header({
-  viewMode,
-  onViewChange,
   events,
   itinerary,
   onOpenFriends,
@@ -50,8 +45,6 @@ export const Header = memo(function Header({
 
           {/* Right: Controls */}
           <div className="flex items-center gap-3 shrink-0">
-            <ViewToggle viewMode={viewMode} onViewChange={onViewChange} />
-
             {/* Proximity check-in indicator */}
             {hasNearbyLiveEvents && user && (
               <button
