@@ -27,6 +27,7 @@ import type { ABTest, ETHDenverEvent } from '@/lib/types';
 import { resolveItemVariants, getVisitorId } from '@/lib/ab-testing';
 import { Header } from './Header';
 import { FilterBar } from './FilterBar';
+import { ViewToolbar } from './ViewToolbar';
 import { ListView } from './ListView';
 import { GalleryView } from './GalleryView';
 import { TableView } from './TableView';
@@ -515,8 +516,6 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
     return (
       <div className="min-h-screen bg-[var(--theme-bg-primary)]">
         <Header
-          viewMode={viewMode}
-          onViewChange={setViewMode}
           events={events}
           itinerary={itinerary}
           onOpenFriends={handleOpenFriends}
@@ -531,8 +530,6 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
     return (
       <div className="min-h-screen bg-[var(--theme-bg-primary)]">
         <Header
-          viewMode={viewMode}
-          onViewChange={setViewMode}
           events={events}
           itinerary={itinerary}
           onOpenFriends={handleOpenFriends}
@@ -555,8 +552,6 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
   return (
     <div className="h-dvh flex flex-col bg-[var(--theme-bg-primary)] overflow-hidden">
       <Header
-        viewMode={viewMode}
-        onViewChange={setViewMode}
         events={events}
         itinerary={itinerary}
         onOpenFriends={handleOpenFriends}
@@ -598,7 +593,6 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
           onToggleFriend={toggleFriend}
           searchQuery={filters.searchQuery}
           onSearchChange={handleSearchChange}
-          eventCount={filteredEvents.length}
           onSubmitEvent={handleOpenSubmitEvent}
           onSignIn={handleOpenSignIn}
           orgNames={orgNames}
@@ -613,6 +607,7 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
           friendEventCount={friendEventCount}
           orgEventCount={orgEventCount}
         />
+        <ViewToolbar viewMode={viewMode} onViewChange={setViewMode} eventCount={filteredEvents.length} />
       </div>
 
       {/* Main content area */}
