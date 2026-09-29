@@ -3,8 +3,7 @@ import { readRange, writeCell, getSheetTitle } from '@/lib/google-sheets';
 import { FALLBACK_TABS } from '@/lib/conferences';
 import { getConferenceTabs } from '@/lib/get-conferences';
 import { parseBody, ToggleFeaturedSchema } from '@/lib/api-validation';
-
-const ADMIN_PASSWORD = 'trusttheplan';
+import { isAdminPassword } from '@/lib/admin-auth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,7 +12,7 @@ export async function POST(request: NextRequest) {
 
     const { password, conference, eventName, featured } = data;
 
-    if (password !== ADMIN_PASSWORD) {
+    if (!isAdminPassword(password)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

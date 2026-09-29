@@ -101,6 +101,7 @@ const btnDanger = 'bg-red-600 hover:bg-red-700 text-white rounded-lg px-3 py-2 t
 
 export default function AdminPage() {
   const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
   const [authed, setAuthed] = useState(false);
   const [events, setEvents] = useState<ETHDenverEvent[]>([]);
   const [loading, setLoading] = useState(false);
@@ -258,9 +259,10 @@ export default function AdminPage() {
 
   // Check session on mount
   useEffect(() => {
-    if (sessionStorage.getItem(SESSION_KEY) === 'true') {
+    const saved = sessionStorage.getItem(SESSION_KEY);
+    if (saved && saved !== 'true') {
       setAuthed(true);
-      setPassword('trusttheplan');
+      setPassword(saved);
     }
   }, []);
 
@@ -382,11 +384,19 @@ export default function AdminPage() {
     setShowCopyFrom(false);
   }
 
-  function handleLogin(e: React.FormEvent) {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    if (password === 'trusttheplan') {
+    setLoginError('');
+    const res = await fetch('/api/admin/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    }).catch(() => null);
+    if (res?.ok) {
       setAuthed(true);
-      sessionStorage.setItem(SESSION_KEY, 'true');
+      sessionStorage.setItem(SESSION_KEY, password);
+    } else {
+      setLoginError('Wrong password');
     }
   }
 
@@ -397,7 +407,7 @@ export default function AdminPage() {
       const res = await fetch('/api/admin/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: 'trusttheplan', key, value }),
+        body: JSON.stringify({ password, key, value }),
       });
       if (res.ok) {
         setSaveMessage('Saved!');
@@ -464,7 +474,7 @@ export default function AdminPage() {
   const fetchAdReport = useCallback(async () => {
     setAdReportLoading(true);
     try {
-      const params = new URLSearchParams({ password: 'trusttheplan' });
+      const params = new URLSearchParams({ password });
       if (adReportConference) params.set('conference', adReportConference);
       if (adReportRange !== 'all') {
         const now = new Date();
@@ -484,12 +494,12 @@ export default function AdminPage() {
       }
     } catch { /* ignore */ }
     setAdReportLoading(false);
-  }, [adReportConference, adReportRange]);
+  }, [password, adReportConference, adReportRange]);
 
   const fetchEventReport = useCallback(async () => {
     setEventReportLoading(true);
     try {
-      const params = new URLSearchParams({ password: 'trusttheplan' });
+      const params = new URLSearchParams({ password });
       if (eventReportConference) params.set('conference', eventReportConference);
       if (eventReportRange !== 'all') {
         const now = new Date();
@@ -508,7 +518,7 @@ export default function AdminPage() {
       }
     } catch { /* ignore */ }
     setEventReportLoading(false);
-  }, [eventReportConference, eventReportRange]);
+  }, [password, eventReportConference, eventReportRange]);
 
   const filtered = useMemo(() => {
     let list = events.filter((e) => e.conference === conference);
@@ -536,7 +546,7 @@ export default function AdminPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          password: 'trusttheplan',
+          password,
           conference: event.conference,
           eventName: event.name,
           featured: !event.isFeatured,
@@ -576,6 +586,7 @@ export default function AdminPage() {
             className="w-full bg-stone-950 border border-stone-600 rounded-lg text-white text-sm px-3 py-2 focus:border-amber-500 focus:outline-none placeholder:text-stone-500 mb-3"
             autoFocus
           />
+          {loginError && <p className="text-red-400 text-xs mb-3">{loginError}</p>}
           <button
             type="submit"
             className="w-full px-4 py-2 bg-amber-500 hover:bg-amber-600 text-stone-900 rounded-lg text-sm font-medium transition-colors cursor-pointer"
