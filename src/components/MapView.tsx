@@ -3,6 +3,8 @@
 import { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import MapGL, { NavigationControl, Marker } from 'react-map-gl/mapbox';
 import type { MapRef } from 'react-map-gl/mapbox';
+import 'mapbox-gl/dist/mapbox-gl.css';
+import './MapView.css';
 import { LocateFixed } from 'lucide-react';
 import type { ETHDenverEvent, POI, POICategory, ReactionEmoji, FriendLocation, FriendInfo } from '@/lib/types';
 import { getTabConfig } from '@/lib/constants';

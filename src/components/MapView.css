@@ -1,0 +1,56 @@
+/* Mapbox overrides — imported by MapView after mapbox-gl.css so they win the cascade
+   and so non-map routes don't load any map CSS. */
+
+/* Ensure popup stays within map bounds */
+.mapboxgl-popup {
+  max-width: calc(100vw - 1rem) !important;
+}
+
+/* Mapbox popup overrides — theme-aware */
+.map-popup .mapboxgl-popup-content {
+  background-color: var(--theme-popup-bg);
+  border: 1px solid var(--theme-popup-border);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 4px 24px var(--theme-popup-shadow);
+  max-width: calc(100vw - 2rem);
+  color: var(--theme-text-primary);
+}
+
+.map-popup .mapboxgl-popup-tip {
+  border-top-color: var(--theme-popup-bg);
+}
+
+.map-popup-featured .mapboxgl-popup-content {
+  border: 2px solid var(--theme-popup-featured-border);
+}
+
+.map-popup .mapboxgl-popup-close-btn {
+  display: none;
+}
+
+/* Scrollbar styling for multi-event popup */
+.map-popup .mapboxgl-popup-content ::-webkit-scrollbar {
+  width: 4px;
+}
+
+.map-popup .mapboxgl-popup-content ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.map-popup .mapboxgl-popup-content ::-webkit-scrollbar-thumb {
+  background-color: var(--theme-border-primary);
+  border-radius: 2px;
+}
+
+/* Shrink Mapbox logo */
+.mapboxgl-ctrl-logo {
+  transform: scale(0.65);
+  transform-origin: bottom left;
+}
+
+/* Shrink Mapbox attribution button to match logo */
+.mapboxgl-ctrl-attrib.mapboxgl-compact {
+  transform: scale(0.65);
+  transform-origin: bottom right;
+}

@@ -126,6 +126,7 @@ function GalleryCard({
           alt=""
           className="absolute inset-0 w-full h-full object-cover"
           loading="lazy"
+          decoding="async"
           onError={() => setImgError(true)}
         />
       )}
@@ -168,6 +169,8 @@ function GalleryCard({
                       src={friend.avatarUrl}
                       alt=""
                       className="w-full h-full object-cover"
+                      loading="lazy"
+                      decoding="async"
                     />
                   ) : (
                     <div

@@ -54,8 +54,8 @@ describe('conferences', () => {
 
   describe('getTabConfig', () => {
     it('returns correct tab for exact conference name', () => {
-      const tab = getTabConfig('PBW 2026');
-      expect(tab.name).toBe('PBW 2026');
+      const tab = getTabConfig('Paris Blockchain Week 2026');
+      expect(tab.name).toBe('Paris Blockchain Week 2026');
       expect(tab.slug).toBe('pbw');
     });
 
@@ -86,7 +86,7 @@ describe('conferences', () => {
     it('finds tab by lowercase slug', () => {
       const tab = getTabBySlug('pbw');
       expect(tab).toBeDefined();
-      expect(tab!.name).toBe('PBW 2026');
+      expect(tab!.name).toBe('Paris Blockchain Week 2026');
     });
 
     it('finds tab by uppercase slug (case-insensitive)', () => {

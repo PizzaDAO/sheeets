@@ -63,6 +63,8 @@ export default function UserAvatar({
         src={avatarUrl}
         alt={displayName || 'User avatar'}
         className={`${sizeClass} rounded-full object-cover shrink-0 ${className}`}
+        loading="lazy"
+        decoding="async"
         onError={() => setImgError(true)}
       />
     );
@@ -75,6 +77,8 @@ export default function UserAvatar({
         src={`https://unavatar.io/x/${xHandle}`}
         alt={displayName || xHandle}
         className={`${sizeClass} rounded-full object-cover shrink-0 ${className}`}
+        loading="lazy"
+        decoding="async"
         onError={() => setUnavatarError(true)}
       />
     );
