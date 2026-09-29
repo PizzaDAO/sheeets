@@ -89,3 +89,29 @@ export function formatDateLabel(isoDate: string): string {
   const d = new Date(isoDate + 'T12:00:00');
   return `${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}`;
 }
+
+/**
+ * True if `url` is an absolute http(s) URL. Use before rendering untrusted
+ * links (sheet/event links, ad links, CTA URLs, profile URLs) as href so
+ * `javascript:` / `data:` etc. can never become clickable.
+ */
+export function isSafeHttpUrl(url: string | null | undefined): url is string {
+  if (!url || typeof url !== 'string') return false;
+  try {
+    const u = new URL(url.trim());
+    return u.protocol === 'http:' || u.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+/** Like isSafeHttpUrl, but also allows mailto: links (e.g. "Get in touch" CTAs). */
+export function isSafeLinkUrl(url: string | null | undefined): url is string {
+  if (!url || typeof url !== 'string') return false;
+  try {
+    const protocol = new URL(url.trim()).protocol;
+    return protocol === 'http:' || protocol === 'https:' || protocol === 'mailto:';
+  } catch {
+    return false;
+  }
+}

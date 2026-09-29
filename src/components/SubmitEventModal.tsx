@@ -9,6 +9,7 @@ import { trackSubmitEventOpen, trackSubmitEventSuccess, trackSubmitEventFetch, t
 import type { UpsellCopy } from '@/lib/types';
 import { Dropdown, TIME_OPTIONS, format12Hour } from './DateTimePicker';
 import { AddressAutocomplete } from './AddressAutocomplete';
+import { isSafeHttpUrl } from '@/lib/utils';
 
 interface SubmitEventModalProps {
   isOpen: boolean;
@@ -554,7 +555,7 @@ export function SubmitEventModal({ isOpen, onClose, upsellCopy, initialConferenc
                   <div className="mt-4 p-4 rounded-xl bg-gradient-to-br from-[var(--theme-accent-muted)] to-[var(--theme-accent-muted)] border border-[var(--theme-accent)]/30 text-left">
                     <h4 className="text-sm font-semibold text-[var(--theme-accent-link)] mb-1">{upsellCopy.heading}</h4>
                     <p className="text-xs text-[var(--theme-text-secondary)] mb-3">{upsellCopy.body}</p>
-                    <a href={upsellCopy.cta_url} target="_blank" rel="noopener noreferrer"
+                    <a href={isSafeHttpUrl(upsellCopy.cta_url) ? upsellCopy.cta_url : undefined} target="_blank" rel="noopener noreferrer"
                        className="inline-block px-4 py-2 text-xs font-semibold bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-[var(--theme-accent-text)] rounded-lg transition-colors">
                       {upsellCopy.cta_text}
                     </a>

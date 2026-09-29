@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { parseBody, FetchEventSchema } from '@/lib/api-validation';
+import { safeFetch, SafeFetchError } from '@/lib/safe-fetch';
+
+// safeFetch relies on node:http/node:dns for SSRF protection
+export const runtime = 'nodejs';
 
 // ---------------------------------------------------------------------------
 // Shared helpers
 // ---------------------------------------------------------------------------
+
+/** Error whose message is safe to return to the client */
+class UserFacingError extends Error {}
 
 /** Format an ISO date string as "YYYY-MM-DD" in the given timezone */
 function formatDateISO(isoDate: string, timezone: string): string {
@@ -109,21 +116,21 @@ function detectPlatform(url: string): Platform | null {
 // ---------------------------------------------------------------------------
 
 async function fetchHtml(url: string): Promise<string> {
-  const res = await fetch(url, {
+  // SSRF-safe: http(s) only, public IPs only, redirects re-validated, 8s / 2MB caps
+  const res = await safeFetch(url, {
     headers: {
       'User-Agent':
         'Mozilla/5.0 (compatible; SheetsEventBot/1.0; +https://sheeets.com)',
       Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
     },
-    redirect: 'follow',
-    signal: AbortSignal.timeout(8000),
   });
 
   if (!res.ok) {
-    throw new Error(`HTTP ${res.status} fetching ${url}`);
+    // Don't leak upstream status codes to clients
+    throw new SafeFetchError('Could not fetch that page. Try entering details manually.');
   }
 
-  return res.text();
+  return res.text;
 }
 
 // ---------------------------------------------------------------------------
@@ -334,20 +341,20 @@ interface EventResult {
 
 async function parseLuma(url: string): Promise<EventResult> {
   const slug = getLumaSlug(url);
-  if (!slug) throw new Error('Invalid Luma URL.');
+  if (!slug) throw new UserFacingError('Invalid Luma URL.');
 
   const res = await fetch(`https://api.lu.ma/url?url=${encodeURIComponent(slug)}`, {
     signal: AbortSignal.timeout(8000),
   });
 
   if (!res.ok) {
-    throw new Error('Could not fetch event from Luma. Please check the URL.');
+    throw new UserFacingError('Could not fetch event from Luma. Please check the URL.');
   }
 
   const data = await res.json();
 
   if (data.kind !== 'event' || !data.data?.event) {
-    throw new Error('URL does not point to a Luma event.');
+    throw new UserFacingError('URL does not point to a Luma event.');
   }
 
   const event = data.data.event;
@@ -401,7 +408,7 @@ async function parseEventbrite(url: string): Promise<EventResult> {
   const og = parseOgMeta(html);
 
   const name = jsonLd?.name || og.title || '';
-  if (!name) throw new Error('Could not parse event details from Eventbrite.');
+  if (!name) throw new UserFacingError('Could not parse event details from Eventbrite.');
 
   const DEFAULT_TZ = 'America/Chicago';
   const startDate = jsonLd?.startDate || '';
@@ -455,7 +462,7 @@ async function parsePartiful(url: string): Promise<EventResult> {
   }
 
   const name = jsonLd?.name || og.title || '';
-  if (!name) throw new Error('Could not parse event details from Partiful.');
+  if (!name) throw new UserFacingError('Could not parse event details from Partiful.');
 
   const DEFAULT_TZ = 'America/Chicago';
   const startDate = jsonLd?.startDate || '';
@@ -491,7 +498,7 @@ async function parseMeetup(url: string): Promise<EventResult> {
   const og = parseOgMeta(html);
 
   const name = jsonLd?.name || og.title || '';
-  if (!name) throw new Error('Could not parse event details from Meetup.');
+  if (!name) throw new UserFacingError('Could not parse event details from Meetup.');
 
   const DEFAULT_TZ = 'America/Chicago';
   const startDate = jsonLd?.startDate || '';
@@ -562,7 +569,7 @@ async function parsePosh(url: string): Promise<EventResult> {
     nextEvent?.name ||
     nextEvent?.title ||
     '';
-  if (!name) throw new Error('Could not parse event details from Posh.');
+  if (!name) throw new UserFacingError('Could not parse event details from Posh.');
 
   const DEFAULT_TZ = 'America/New_York';
 
@@ -645,7 +652,7 @@ async function parseGeneric(url: string): Promise<EventResult> {
 
   const name = jsonLd?.name || og.title || '';
   if (!name) {
-    throw new Error(
+    throw new UserFacingError(
       'Could not find event details on this page. Try entering details manually.'
     );
   }
@@ -723,8 +730,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result);
   } catch (err) {
     console.error('fetch-event API error:', err);
+    // Only surface messages we wrote ourselves; never raw upstream/network errors
     const message =
-      err instanceof Error ? err.message : 'Failed to fetch event details.';
+      err instanceof SafeFetchError || err instanceof UserFacingError
+        ? err.message
+        : 'Failed to fetch event details.';
     return NextResponse.json(
       { error: message },
       { status: 422 }

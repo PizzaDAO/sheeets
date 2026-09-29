@@ -15,6 +15,7 @@ function makeFilters(overrides: Partial<FilterState> = {}): FilterState {
     itineraryOnly: false,
     searchQuery: '',
     timeMode: 'off',
+    selectedOrgs: [],
     ...overrides,
   };
 }

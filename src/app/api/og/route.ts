@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { parseBody, OgBatchSchema } from '@/lib/api-validation';
+import { safeFetch } from '@/lib/safe-fetch';
+import { getEventLinkById } from '@/lib/fetch-events-cached';
+
+// safeFetch relies on node:http/node:dns for SSRF protection
+export const runtime = 'nodejs';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -128,20 +133,18 @@ function extractJsonLdImage(html: string): string | null {
  */
 async function fetchEventbriteImage(url: string): Promise<string | null> {
   try {
-    const res = await fetch(url, {
+    const res = await safeFetch(url, {
       headers: {
         'User-Agent':
           'Mozilla/5.0 (compatible; SheetsEventBot/1.0; +https://sheeets.com)',
         Accept:
           'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
       },
-      redirect: 'follow',
-      signal: AbortSignal.timeout(8000),
     });
 
     if (!res.ok) return null;
 
-    const html = await res.text();
+    const html = res.text;
 
     // 1. Try JSON-LD image first (proven reliable for Eventbrite)
     const jsonLdImage = extractJsonLdImage(html);
@@ -196,37 +199,20 @@ async function resolveImageUrl(url: string): Promise<string | null> {
 
   // Generic: fetch HTML and extract og:image
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-
-    const res = await fetch(url, {
-      signal: controller.signal,
+    // Only read the first 50KB (or up to </head>) to find og:image
+    const res = await safeFetch(url, {
+      timeoutMs: 5000,
+      maxBytes: 50000,
+      stopWhen: (text) => text.includes('</head>'),
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; sheeets-bot/1.0)',
         'Accept': 'text/html',
       },
     });
-    clearTimeout(timeout);
 
     if (!res.ok) return null;
 
-    // Only read first 50KB to find og:image
-    const reader = res.body?.getReader();
-    if (!reader) return null;
-
-    let html = '';
-    const decoder = new TextDecoder();
-    let bytesRead = 0;
-    const MAX_BYTES = 50000;
-
-    while (bytesRead < MAX_BYTES) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      html += decoder.decode(value, { stream: true });
-      bytesRead += value.length;
-      if (html.includes('</head>')) break;
-    }
-    reader.cancel();
+    const html = res.text;
 
     // Extract og:image (handle both attribute orderings)
     const ogMatch = html.match(
@@ -253,11 +239,42 @@ async function resolveImageUrl(url: string): Promise<string | null> {
   }
 }
 
+/** Normalize a URL for equality comparison */
+function normalizeUrl(url: string): string {
+  const trimmed = url.trim();
+  try {
+    return new URL(trimmed).href;
+  } catch {
+    return trimmed;
+  }
+}
+
+/**
+ * Resolve the canonical source URL for an event from server-side data.
+ * - 'not-found': no event with this ID (or lookup failed)
+ * - 'mismatch':  the client-supplied URL is not the event's link
+ * Otherwise returns the event's canonical link.
+ */
+async function resolveEventLink(
+  eventId: string,
+  clientUrl: string
+): Promise<{ link: string } | 'not-found' | 'mismatch'> {
+  let link: string | undefined;
+  try {
+    link = await getEventLinkById(eventId);
+  } catch {
+    return 'not-found';
+  }
+  if (!link) return 'not-found';
+  if (normalizeUrl(link) !== normalizeUrl(clientUrl)) return 'mismatch';
+  return { link: link.trim() };
+}
+
 export async function GET(request: NextRequest) {
-  const url = request.nextUrl.searchParams.get('url');
+  const clientUrl = request.nextUrl.searchParams.get('url');
   const eventId = request.nextUrl.searchParams.get('eventId');
 
-  if (!url) {
+  if (!clientUrl) {
     return NextResponse.json({ imageUrl: null }, { status: 400 });
   }
 
@@ -282,17 +299,32 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // 2. Check in-memory cache (fallback / no eventId)
+  // 2. Verify the client URL against the event's canonical link. Only a
+  //    verified eventId may be persisted to the shared event_images cache.
+  let url = clientUrl;
+  let persist = false;
+  if (eventId) {
+    const resolved = await resolveEventLink(eventId, clientUrl);
+    if (resolved === 'mismatch') {
+      return NextResponse.json({ imageUrl: null }, { status: 400 });
+    }
+    if (resolved !== 'not-found') {
+      url = resolved.link;
+      persist = true;
+    }
+  }
+
+  // 3. Check in-memory cache (fallback / no eventId)
   const memCached = memoryCache.get(url);
   if (memCached && Date.now() - memCached.ts < MEMORY_CACHE_TTL) {
     return NextResponse.json({ imageUrl: memCached.imageUrl });
   }
 
-  // 3. Resolve the image URL from source
+  // 4. Resolve the image URL from source
   const imageUrl = await resolveImageUrl(url);
 
-  // 4. Store in Supabase cache (if eventId provided)
-  if (eventId && supabaseUrl && supabaseServiceKey) {
+  // 5. Store in Supabase cache (only for verified events)
+  if (persist && eventId && supabaseUrl && supabaseServiceKey) {
     try {
       const supabase = getSupabaseWriter();
       await supabase
@@ -311,7 +343,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // 5. Store in memory cache as fallback
+  // 6. Store in memory cache as fallback
   memoryCache.set(url, { imageUrl, ts: Date.now() });
 
   return NextResponse.json({ imageUrl });
@@ -360,10 +392,22 @@ export async function POST(request: NextRequest) {
       uncached.push(...batch);
     }
 
-    // Resolve uncached images in parallel (max 5 concurrent)
+    // Only resolve items whose URL matches the event's canonical link;
+    // unknown or mismatched items get null and are never persisted.
+    const verified: { eventId: string; url: string }[] = [];
+    for (const item of uncached) {
+      const resolved = await resolveEventLink(item.eventId, item.url);
+      if (typeof resolved === 'object') {
+        verified.push({ eventId: item.eventId, url: resolved.link });
+      } else {
+        results[item.eventId] = null;
+      }
+    }
+
+    // Resolve verified images in parallel (max 5 concurrent)
     const CONCURRENCY = 5;
-    for (let i = 0; i < uncached.length; i += CONCURRENCY) {
-      const chunk = uncached.slice(i, i + CONCURRENCY);
+    for (let i = 0; i < verified.length; i += CONCURRENCY) {
+      const chunk = verified.slice(i, i + CONCURRENCY);
       const resolved = await Promise.all(
         chunk.map(async (item) => {
           const imageUrl = await resolveImageUrl(item.url);

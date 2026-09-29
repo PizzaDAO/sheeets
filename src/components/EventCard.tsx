@@ -8,7 +8,7 @@ import { trackEventClick, trackCopyEventLink, trackFriendsGoingOpen, trackFriend
 import { trackAdEvent } from '@/lib/ad-tracking';
 import { trackEvent } from '@/lib/event-tracking';
 import { formatFriendsText } from '@/lib/user-display';
-import { shortenAddress } from '@/lib/utils';
+import { shortenAddress, isSafeHttpUrl } from '@/lib/utils';
 import { distanceMeters } from '@/lib/geo';
 import { AddressLink } from './AddressLink';
 import { StarButton } from './StarButton';
@@ -271,7 +271,7 @@ export const EventCard = memo(function EventCard({
               {event.isFeatured && (
                 <span className="inline-block text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded mr-1.5 align-middle" style={{ color: 'var(--theme-popup-featured-border)', background: 'var(--theme-accent-muted)' }}>Featured</span>
               )}
-              {event.link ? (
+              {isSafeHttpUrl(event.link) ? (
                 <a
                   href={event.link}
                   target="_blank"

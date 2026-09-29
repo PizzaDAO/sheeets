@@ -6,7 +6,7 @@ import { AlertTriangle, Download, ExternalLink, Plus, Check, X, Users } from 'lu
 import type { ETHDenverEvent, ReactionEmoji, FriendInfo } from '@/lib/types';
 import { trackEventClick, trackTableExport, trackOutboundClick } from '@/lib/analytics';
 import { trackEvent } from '@/lib/event-tracking';
-import { shortenAddress } from '@/lib/utils';
+import { shortenAddress, isSafeHttpUrl } from '@/lib/utils';
 import { AddressLink } from './AddressLink';
 import { TagBadge } from './TagBadge';
 import { EventCard } from './EventCard';
@@ -743,7 +743,7 @@ function FeaturedTableRow({
       <td className="px-3 py-2 font-medium text-[var(--theme-text-primary)] overflow-hidden truncate max-w-[25ch] sm:max-w-none" title={event.name}>
         <span className="inline-flex items-center gap-1.5 max-w-full truncate">
           <span className="shrink-0 text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ color: 'var(--theme-popup-featured-border)', background: 'var(--theme-accent-muted)' }}>Featured</span>
-          {event.link ? (
+          {isSafeHttpUrl(event.link) ? (
             <a href={event.link} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--theme-accent)] transition-colors truncate"
               onClick={() => { trackEventClick(event.name, event.link!); trackEvent({ event_id: event.id, event_name: event.name, event_type: 'click', conference, url: event.link!, source: 'table' }); }}>
               {event.name}
@@ -894,7 +894,7 @@ function TableRow({
           {event.isDuplicate && (
             <span title="Duplicate entry in sheet"><AlertTriangle className="w-3.5 h-3.5 text-red-400 shrink-0" /></span>
           )}
-          {event.link ? (
+          {isSafeHttpUrl(event.link) ? (
             <a
               href={event.link}
               target="_blank"

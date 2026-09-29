@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { FriendInfo } from '@/lib/types';
 import { StarButton } from './StarButton';
+import { isSafeHttpUrl } from '@/lib/utils';
 
 interface OGImageProps {
   url: string;
@@ -141,7 +142,7 @@ export function OGImage({ url, eventId, rsvpUrl, onOpenLightbox, isInItinerary, 
                   onToggle={onItineraryToggle}
                 />
               )}
-              {rsvpUrl && (
+              {isSafeHttpUrl(rsvpUrl) && (
                 <a
                   href={rsvpUrl}
                   target="_blank"
@@ -259,7 +260,7 @@ export function FlyerLightbox({ imageUrl, rsvpUrl, onClose, onPrev, onNext, even
               onToggle={onItineraryToggle}
             />
           )}
-          {rsvpUrl && (
+          {isSafeHttpUrl(rsvpUrl) && (
             <a
               href={rsvpUrl}
               target="_blank"
