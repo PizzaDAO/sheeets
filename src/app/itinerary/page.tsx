@@ -11,7 +11,7 @@ import { useItinerary } from '@/hooks/useItinerary';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { VIBE_COLORS } from '@/lib/tags';
-import { formatDateLabel } from '@/lib/utils';
+import { formatDateLabel, isSafeHttpUrl } from '@/lib/utils';
 import { sortByStartTime, detectConflicts } from '@/lib/time-parse';
 import { trackItineraryClear, trackItineraryConferenceTab, trackItineraryShareLink, trackItineraryReorder, trackItineraryView } from '@/lib/analytics';
 import type { ETHDenverEvent } from '@/lib/types';
@@ -424,7 +424,7 @@ export default function ItineraryPage() {
                                   )}
                                 </button>
                               )}
-                              {event.link && (
+                              {isSafeHttpUrl(event.link) && (
                                 <a
                                   href={event.link}
                                   target="_blank"

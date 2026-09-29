@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { getDisplayName } from '@/lib/user-display';
 import UserAvatar from './UserAvatar';
+import { isSafeHttpUrl } from '@/lib/utils';
 
 interface ProfileCardModalProps {
   isOpen: boolean;
@@ -277,7 +278,7 @@ export default function ProfileCardModal({
                   <ExternalLink className="w-3 h-3" />
                 </a>
               )}
-              {linkedinUrl && (
+              {isSafeHttpUrl(linkedinUrl) && (
                 <a
                   href={linkedinUrl}
                   target="_blank"

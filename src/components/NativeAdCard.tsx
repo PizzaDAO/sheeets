@@ -5,6 +5,7 @@ import { ArrowRight, Users, DollarSign } from 'lucide-react';
 import { NativeAd } from '@/lib/types';
 import { trackAdClick, trackAdImpression } from '@/lib/analytics';
 import { trackAdEvent } from '@/lib/ad-tracking';
+import { isSafeHttpUrl } from '@/lib/utils';
 
 interface NativeAdCardProps {
   ad: NativeAd;
@@ -73,7 +74,7 @@ export default function NativeAdCard({ ad, conference, onImpression, onClick }: 
   return (
     <a
       ref={cardRef}
-      href={ad.link}
+      href={isSafeHttpUrl(ad.link) ? ad.link : undefined}
       target="_blank"
       rel="noopener noreferrer"
       className="block group"
