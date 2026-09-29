@@ -69,7 +69,6 @@ const RsvpOverlay = dynamic(
 export function EventApp({ initialConference, initialEvents }: { initialConference?: string; initialEvents?: ETHDenverEvent[] }) {
   const { config } = useAdminConfig();
   const { tabs: conferenceTabs } = useConferenceTabs();
-  const { events, loading, error } = useEvents(initialEvents);
   const {
     filters,
     setFilter,
@@ -84,6 +83,7 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
     activeFilterCount,
     toggleOrg,
   } = useFilters(initialConference, conferenceTabs);
+  const { events, loading, error, loadAll: loadAllEvents } = useEvents(initialEvents, filters.conference);
 
   // Re-apply conference date range once dynamic tabs load
   // (fixes dates for conferences not in FALLBACK_TABS, e.g. Toronto Tech Week)
@@ -477,6 +477,10 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
       setShowOnboarding(true);
     }
   }, []);
+  // Onboarding lets the user pick any conference, so it needs every event.
+  useEffect(() => {
+    if (showOnboarding) loadAllEvents();
+  }, [showOnboarding, loadAllEvents]);
 
   const handleOnboardingComplete = useCallback(
     (config: { conference: string; selectedTags: string[] }) => {
