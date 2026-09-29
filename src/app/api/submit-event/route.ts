@@ -3,7 +3,6 @@ import { appendEventRow, getSheetTitle } from '@/lib/google-sheets';
 import { FALLBACK_TABS } from '@/lib/conferences';
 import { getConferenceTabs } from '@/lib/get-conferences';
 import { parseBody, SubmitEventSchema } from '@/lib/api-validation';
-import { normalizeAddress } from '@/lib/utils';
 import { createClient } from '@supabase/supabase-js';
 
 export async function POST(request: NextRequest) {
@@ -76,24 +75,9 @@ export async function POST(request: NextRequest) {
       console.error('Failed to track submission in Supabase:', trackErr);
     }
 
-    // Upsert geocoded address to Supabase for instant map pin display
-    if (coords && event.address.trim()) {
-      try {
-        const supabase = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!
-        );
-        await supabase.from('geocoded_addresses').upsert({
-          normalized_address: normalizeAddress(event.address.trim()),
-          lat: coords.lat,
-          lng: coords.lng,
-          matched_address: event.address.trim(),
-          conference,
-        });
-      } catch (geoErr) {
-        console.error('Failed to save geocoded address:', geoErr);
-      }
-    }
+    // Note: client-supplied coords are stored on the submission only. They are
+    // written to the shared geocoded_addresses table on admin approval (or by
+    // the geocode cron), never directly from an unauthenticated submission.
 
     return NextResponse.json({ success: true, row, pending: true });
   } catch (err) {
