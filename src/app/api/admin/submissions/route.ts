@@ -6,6 +6,7 @@ import { FALLBACK_TABS } from '@/lib/conferences';
 import { getConferenceTabs } from '@/lib/get-conferences';
 import { normalizeAddress } from '@/lib/utils';
 import { isAdminPassword } from '@/lib/admin-auth';
+import { invalidateEventsCache } from '@/lib/fetch-events-cached';
 
 function getSupabase() {
   return createClient(
@@ -169,6 +170,9 @@ export async function POST(req: NextRequest) {
     } else {
       console.warn(`Review row not found for approval: ${submission.event_name} / ${submission.event_date}`);
     }
+
+    // Sheet changed: drop the cached events so the new event shows immediately
+    invalidateEventsCache();
 
     // 4. Upsert geocoded address if coords exist
     if (submission.coords_lat && submission.coords_lng && eventFields.address) {
