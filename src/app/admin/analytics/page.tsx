@@ -87,9 +87,10 @@ export default function AnalyticsPage() {
   const devicesChartRef = useRef<any>(null);
 
   useEffect(() => {
-    if (sessionStorage.getItem(SESSION_KEY) === 'true') {
+    const saved = sessionStorage.getItem(SESSION_KEY);
+    if (saved && saved !== 'true') {
       setAuthed(true);
-      setPassword('trusttheplan');
+      setPassword(saved);
     }
   }, []);
 
@@ -98,8 +99,8 @@ export default function AnalyticsPage() {
     setError(null);
     try {
       const [analyticsRes, eventsRes] = await Promise.all([
-        fetch('/api/admin/analytics?password=trusttheplan'),
-        fetch('/api/events/report?password=trusttheplan'),
+        fetch(`/api/admin/analytics?password=${encodeURIComponent(password)}`),
+        fetch(`/api/events/report?password=${encodeURIComponent(password)}`),
       ]);
       if (!analyticsRes.ok) {
         const err = await analyticsRes.json();
@@ -117,7 +118,7 @@ export default function AnalyticsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [password]);
 
   useEffect(() => {
     if (authed) {
@@ -250,11 +251,18 @@ export default function AnalyticsPage() {
     };
   }, [chartReady, data?.devices]);
 
-  function handleLogin(e: React.FormEvent) {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    if (password === 'trusttheplan') {
+    const res = await fetch('/api/admin/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    }).catch(() => null);
+    if (res?.ok) {
       setAuthed(true);
-      sessionStorage.setItem(SESSION_KEY, 'true');
+      sessionStorage.setItem(SESSION_KEY, password);
+    } else {
+      setError('Wrong password');
     }
   }
 
@@ -276,6 +284,7 @@ export default function AnalyticsPage() {
             placeholder="Password"
             className="w-full px-3 py-2 rounded-lg bg-stone-800 border border-stone-600 text-white placeholder-stone-400 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+          {error && <p className="text-red-400 text-xs mb-3">{error}</p>}
           <button
             type="submit"
             className="w-full py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-500 transition-colors"

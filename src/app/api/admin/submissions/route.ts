@@ -5,8 +5,7 @@ import { insertEventRowSorted, getSheetTitle, findReviewRow, deleteSheetRow, wri
 import { FALLBACK_TABS } from '@/lib/conferences';
 import { getConferenceTabs } from '@/lib/get-conferences';
 import { normalizeAddress } from '@/lib/utils';
-
-const ADMIN_PASSWORD = 'trusttheplan';
+import { isAdminPassword } from '@/lib/admin-auth';
 
 function getSupabase() {
   return createClient(
@@ -17,7 +16,7 @@ function getSupabase() {
 
 export async function GET(req: NextRequest) {
   const password = req.nextUrl.searchParams.get('password');
-  if (password !== ADMIN_PASSWORD) {
+  if (!isAdminPassword(password)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -52,7 +51,7 @@ export async function POST(req: NextRequest) {
 
   const { password, action, id, rejection_reason, edits } = data;
 
-  if (password !== ADMIN_PASSWORD) {
+  if (!isAdminPassword(password)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
