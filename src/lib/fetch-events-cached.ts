@@ -17,3 +17,14 @@ export const fetchEventsCached: () => Promise<ETHDenverEvent[]> = unstable_cache
   ['events-all'],
   { revalidate: 300 }, // 5 minutes
 );
+
+/**
+ * Look up an event's canonical link by its ID (server-side, from the cached
+ * sheet data). Returns `undefined` if no event has this ID, or `''` if the
+ * event exists but has no link.
+ */
+export async function getEventLinkById(eventId: string): Promise<string | undefined> {
+  const events = await fetchEventsCached();
+  const event = events.find((e) => e.id === eventId);
+  return event ? event.link || '' : undefined;
+}
