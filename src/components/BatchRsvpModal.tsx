@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useBatchRsvp, type BatchProfileData } from '@/hooks/useBatchRsvp';
 import { useProfile } from '@/hooks/useProfile';
+import { useAuth } from '@/contexts/AuthContext';
 import { isLumaUrl } from '@/lib/luma';
 import type { ETHDenverEvent } from '@/lib/types';
 
@@ -57,6 +58,7 @@ export function BatchRsvpModal({
   } = useBatchRsvp();
 
   const { profile, updateProfile } = useProfile();
+  const { user: authUser } = useAuth();
 
   // Luma events in itinerary that aren't already RSVP'd
   const eligibleEvents = events.filter(
@@ -72,7 +74,7 @@ export function BatchRsvpModal({
   // Pre-fill profile data from existing profile
   useEffect(() => {
     if (profile && isOpen) {
-      setProfileField('email', profile.email || '');
+      setProfileField('email', authUser?.email || profile.email || '');
       setProfileField('firstName', profile.first_name || '');
       setProfileField('lastName', profile.last_name || '');
       setProfileField('company', profile.company || '');
@@ -83,7 +85,7 @@ export function BatchRsvpModal({
       setProfileField('linkedin', profile.linkedin_url || '');
       setProfileField('website', profile.website || '');
     }
-  }, [profile, isOpen, setProfileField]);
+  }, [profile, authUser, isOpen, setProfileField]);
 
   // Close on Escape key
   useEffect(() => {
@@ -421,6 +423,9 @@ function ProfileStep({
             value={data[key]}
             onChange={(e) => onChange(key, e.target.value)}
             onBlur={() => onBlur(key)}
+            // RSVPs are only submitted for the signed-in account's (verified) email
+            readOnly={key === 'email'}
+            title={key === 'email' ? 'RSVPs use your signed-in email' : undefined}
             placeholder={`${label}${required ? ' *' : ''}`}
             className="flex-1 bg-[var(--theme-bg-tertiary)] border border-[var(--theme-border-primary)] rounded-lg px-3 py-2 text-sm text-[var(--theme-text-primary)] placeholder:text-[var(--theme-text-muted)] focus:outline-none focus:border-orange-500/50"
           />

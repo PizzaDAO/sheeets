@@ -6,6 +6,7 @@
  */
 
 import type { LumaRegistrationQuestion } from './types';
+import { safeFetch } from './safe-fetch';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -30,16 +31,29 @@ export interface ScannedFormResult {
 // ---------------------------------------------------------------------------
 
 export async function scanLumaFormFields(slug: string): Promise<ScannedFormResult> {
-  const res = await fetch(`https://api.lu.ma/url?url=${encodeURIComponent(slug)}`, {
-    headers: { 'User-Agent': USER_AGENT },
-    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  if (!/^[A-Za-z0-9_-]{1,100}$/.test(slug)) {
+    throw new Error('Invalid Luma slug');
+  }
+
+  // Server-side fetches of user-influenced URLs go through safeFetch
+  // (SSRF guard, per-hop redirect validation, timeout, body size cap).
+  const res = await safeFetch(`https://api.lu.ma/url?url=${encodeURIComponent(slug)}`, {
+    headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
+    timeoutMs: FETCH_TIMEOUT_MS,
+    maxBytes: 1024 * 1024,
   });
 
   if (!res.ok) {
     throw new Error(`Luma API returned HTTP ${res.status} for slug "${slug}"`);
   }
 
-  const data = await res.json();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let data: any;
+  try {
+    data = JSON.parse(res.text);
+  } catch {
+    throw new Error(`Luma API returned invalid JSON for slug "${slug}"`);
+  }
 
   if (data.kind !== 'event' || !data.data?.event) {
     throw new Error(`Slug "${slug}" does not point to a Luma event`);

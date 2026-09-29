@@ -20,18 +20,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Fail closed: if the token can't be verified, refuse.
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (url && key) {
-      const supabase = createClient(url, key);
-      const token = authHeader.slice(7);
-      const { error: authError } = await supabase.auth.getUser(token);
-      if (authError) {
-        return NextResponse.json(
-          { error: 'Invalid or expired token' },
-          { status: 401 }
-        );
-      }
+    if (!url || !key) {
+      console.error('Luma scan-form: missing Supabase env vars');
+      return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 });
+    }
+    const supabase = createClient(url, key, { auth: { persistSession: false } });
+    const token = authHeader.slice(7);
+    const { data: userData, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !userData?.user) {
+      return NextResponse.json(
+        { error: 'Invalid or expired token' },
+        { status: 401 }
+      );
     }
 
     const { data, error } = await parseBody(request, ScanFormFieldsSchema);

@@ -244,6 +244,28 @@ async function submitViaPlaywright(
 }
 
 // ---------------------------------------------------------------------------
+// Job validation
+// ---------------------------------------------------------------------------
+
+const LUMA_SLUG_RE = /^[A-Za-z0-9_-]{1,100}$/;
+
+/** Returns a rejection reason, or null if the job is safe to process. */
+async function validateJob(
+  supabase: SupabaseClient,
+  job: { user_id: string; luma_slug: string; profile_snapshot: Record<string, string> | null },
+): Promise<string | null> {
+  if (!LUMA_SLUG_RE.test(job.luma_slug || '')) return 'Invalid Luma slug';
+  const snapshotEmail = String(job.profile_snapshot?.email || '').trim().toLowerCase();
+  if (!snapshotEmail) return 'Missing email';
+  const { data, error } = await supabase.auth.admin.getUserById(job.user_id);
+  if (error || !data?.user?.email) return 'Could not verify job owner';
+  if (data.user.email.trim().toLowerCase() !== snapshotEmail) {
+    return 'RSVP email does not match the account email';
+  }
+  return null;
+}
+
+// ---------------------------------------------------------------------------
 // Process a single job
 // ---------------------------------------------------------------------------
 
@@ -251,6 +273,8 @@ async function processJob(
   supabase: SupabaseClient,
   job: {
     id: number;
+    user_id: string;
+    event_id: string;
     luma_slug: string;
     event_name: string | null;
     event_api_id: string;
@@ -259,7 +283,21 @@ async function processJob(
   },
   dryRun: boolean,
 ): Promise<'success' | 'failed'> {
-  const profile = job.profile_snapshot;
+  const profile = job.profile_snapshot || {};
+
+  // Defense in depth: job rows are user-writable under RLS, so re-validate
+  // here (service role) before acting on the user's behalf.
+  const rejection = await validateJob(supabase, job);
+  if (rejection) {
+    console.log(`  Rejected: ${rejection}`);
+    if (!dryRun) {
+      await supabase
+        .from('batch_rsvp_jobs')
+        .update({ status: 'failed', error_message: rejection, updated_at: new Date().toISOString() })
+        .eq('id', job.id);
+    }
+    return 'failed';
+  }
 
   console.log(`  Submitting via Playwright for ${job.luma_slug}...`);
 
@@ -291,8 +329,8 @@ async function processJob(
       await supabase
         .from('rsvps')
         .upsert({
-          user_id: (await supabase.from('batch_rsvp_jobs').select('user_id').eq('id', job.id).single()).data?.user_id,
-          event_id: (await supabase.from('batch_rsvp_jobs').select('event_id').eq('id', job.id).single()).data?.event_id,
+          user_id: job.user_id,
+          event_id: job.event_id,
           status: 'confirmed',
           method: 'batch',
         }, { onConflict: 'user_id,event_id' });
@@ -342,7 +380,7 @@ async function main() {
   // Fetch pending jobs
   const { data: jobs, error } = await supabase
     .from('batch_rsvp_jobs')
-    .select('id, luma_slug, event_name, event_api_id, profile_snapshot, custom_answers')
+    .select('id, user_id, event_id, luma_slug, event_name, event_api_id, profile_snapshot, custom_answers')
     .eq('status', 'pending')
     .order('created_at', { ascending: true })
     .limit(args.limit);

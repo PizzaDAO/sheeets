@@ -8,7 +8,7 @@ function getSupabaseAdmin() {
   if (!url || !key) {
     throw new Error('Missing Supabase env vars');
   }
-  return createClient(url, key);
+  return createClient(url, key, { auth: { persistSession: false } });
 }
 
 /**
@@ -45,6 +45,16 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = userData.user.id;
+
+    // Users may only RSVP as themselves: the Luma registration email must be
+    // the signed-in account's (OTP-verified) email.
+    const authEmail = userData.user.email?.trim().toLowerCase();
+    if (!authEmail || data.profile.email.trim().toLowerCase() !== authEmail) {
+      return NextResponse.json(
+        { error: 'RSVP email must match your signed-in email' },
+        { status: 403 }
+      );
+    }
 
     // Build the profile snapshot
     const profileSnapshot: Record<string, string> = {

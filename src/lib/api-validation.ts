@@ -118,31 +118,36 @@ export const ABTrackEventSchema = z.object({
   metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
+/** A Luma slug / api id: a single path segment (no slashes, dots, query chars). */
+export const LUMA_ID_RE = /^[A-Za-z0-9_-]{1,100}$/;
+const LumaSlugSchema = z.string().regex(LUMA_ID_RE, 'Invalid Luma slug');
+const shortText = z.string().max(500);
+
 /** Schema for POST /api/luma/scan-form */
 export const ScanFormFieldsSchema = z.object({
-  slugs: z.array(z.string().min(1)).min(1).max(5),
+  slugs: z.array(LumaSlugSchema).min(1).max(5),
 });
 
 /** Schema for POST /api/batch-rsvp */
 export const BatchRsvpSubmitSchema = z.object({
   events: z.array(z.object({
-    eventId: z.string().min(1),
-    lumaSlug: z.string().min(1),
-    eventName: z.string(),
-    eventApiId: z.string().min(1),
-    customAnswers: z.record(z.string(), z.string()).optional(),
+    eventId: z.string().min(1).max(200),
+    lumaSlug: LumaSlugSchema,
+    eventName: z.string().max(500),
+    eventApiId: z.string().regex(LUMA_ID_RE, 'Invalid event id'),
+    customAnswers: z.record(z.string().max(200), z.string().max(2000)).optional(),
   })).min(1).max(20),
   profile: z.object({
-    email: z.string().email(),
-    firstName: z.string().min(1),
-    lastName: z.string().min(1),
-    company: z.string().optional(),
-    jobTitle: z.string().optional(),
-    phone: z.string().optional(),
-    telegram: z.string().optional(),
-    xHandle: z.string().optional(),
-    linkedin: z.string().optional(),
-    website: z.string().optional(),
+    email: z.string().email().max(320),
+    firstName: z.string().min(1).max(200),
+    lastName: z.string().min(1).max(200),
+    company: shortText.optional(),
+    jobTitle: shortText.optional(),
+    phone: shortText.optional(),
+    telegram: shortText.optional(),
+    xHandle: shortText.optional(),
+    linkedin: shortText.optional(),
+    website: shortText.optional(),
   }),
 });
 
