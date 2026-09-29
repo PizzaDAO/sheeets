@@ -8,4 +8,6 @@ export const STORAGE_KEYS = {
   AB_VISITOR_ID: 'sheeets-ab-visitor',
   EVENTS_CACHE: 'sheeets-events-cache',
   EVENTS_CACHE_TS: 'sheeets-events-cache-ts',
+  ORGS_CACHE: 'sheeets-orgs-cache',
+  ORGS_CACHE_TS: 'sheeets-orgs-cache-ts',
 };

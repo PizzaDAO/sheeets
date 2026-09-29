@@ -5,13 +5,14 @@ import clsx from 'clsx';
 import { X, ListFilter, Clock, Users, MapPin, Plus, Link2, Check, Loader2, ChevronDown } from 'lucide-react';
 import { CalendarIcon } from './icons/CalendarIcon';
 import type { FilterState } from '@/lib/types';
-import { VIBE_COLORS, getTabConfig, TAG_GROUPS, GROUPED_TAGS } from '@/lib/constants';
+import { VIBE_COLORS, getTabConfig, TAG_GROUPS } from '@/lib/constants';
 import type { TabConfig } from '@/lib/conferences';
 import { TAG_ICONS } from './TagBadge';
+import { OrgDropdown } from './OrgDropdown';
 import { SearchBar } from './SearchBar';
-import { DateTimePicker } from './DateTimePicker';
+import { MiniCalendar } from './MiniCalendar';
 import UserAvatar from './UserAvatar';
-import { trackConferenceSelect, trackDateTimeRange, trackTagToggle, trackNowMode, trackClearFilters, trackFriendFilter, trackFriendCodeGenerate, trackFriendCodeCopy } from '@/lib/analytics';
+import { trackConferenceSelect, trackDateTimeRange, trackTagToggle, trackTimeMode, trackClearFilters, trackFriendFilter, trackFriendCodeGenerate, trackFriendCodeCopy, trackTagMatchMode } from '@/lib/analytics';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 
@@ -20,7 +21,7 @@ interface FilterBarProps {
   onSetConference: (conf: string) => void;
   onSetDateTimeRange: (start: string, end: string) => void;
   onToggleVibe: (vibe: string) => void;
-  onToggleNowMode: () => void;
+  onCycleTimeMode: () => void;
   onToggleTagMatchAll: () => void;
   onClearFilters: () => void;
   activeFilterCount: number;
@@ -37,9 +38,16 @@ interface FilterBarProps {
   onSubmitEvent?: () => void;
   onSignIn?: () => void;
   conferenceTabs?: TabConfig[];
+  orgNames: string[];
+  orgEventCounts: Map<string, number>;
+  selectedOrgs: string[];
+  onToggleOrg: (name: string) => void;
   itineraryCount: number;
   onItineraryToggle: () => void;
   isItineraryActive: boolean;
+  onExpandedChange?: (expanded: boolean) => void;
+  friendEventCount: number;
+  orgEventCount: number;
 }
 
 export const FilterBar = memo(function FilterBar({
@@ -47,7 +55,7 @@ export const FilterBar = memo(function FilterBar({
   onSetConference,
   onSetDateTimeRange,
   onToggleVibe,
-  onToggleNowMode,
+  onCycleTimeMode,
   onToggleTagMatchAll,
   onClearFilters,
   activeFilterCount,
@@ -63,13 +71,23 @@ export const FilterBar = memo(function FilterBar({
   eventCount,
   onSubmitEvent,
   onSignIn,
+  orgNames,
+  orgEventCounts,
+  selectedOrgs,
+  onToggleOrg,
   conferenceTabs,
   itineraryCount,
   onItineraryToggle,
   isItineraryActive,
+  onExpandedChange,
+  friendEventCount,
+  orgEventCount,
 }: FilterBarProps) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpandedRaw] = useState(false);
+  const setExpanded = (v: boolean) => { setExpandedRaw(v); onExpandedChange?.(v); };
   const [confOpen, setConfOpen] = useState(false);
+  const [topicsExpanded, setTopicsExpanded] = useState(false);
+  const [audienceExpanded, setAudienceExpanded] = useState(false);
   const confBtnRef = useRef<HTMLButtonElement | null>(null);
 
   // Friend invite link state
@@ -200,19 +218,29 @@ export const FilterBar = memo(function FilterBar({
           {/* Spacer pushes Now + Filters to the right */}
           <div className="flex-1 lg:hidden" />
 
-          {/* Now toggle button */}
+          {/* Time mode cycle button */}
           <button
-            onClick={() => { trackNowMode(!filters.nowMode); onToggleNowMode(); }}
-            aria-label="Now"
+            onClick={() => {
+              const order = ['off', 'now', 'today', 'tomorrow'] as const;
+              const nextMode = order[(order.indexOf(filters.timeMode) + 1) % order.length];
+              trackTimeMode(nextMode);
+              onCycleTimeMode();
+            }}
+            aria-label="Time filter"
             className={clsx(
               'shrink-0 flex items-center gap-1 px-2.5 h-9 rounded-lg text-sm font-semibold transition-colors cursor-pointer',
-              filters.nowMode
+              filters.timeMode !== 'off'
                 ? 'text-[var(--theme-filter-active)] border border-[var(--theme-filter-active)]'
                 : 'bg-[var(--theme-filter-control-bg)] text-[var(--theme-filter-text)] hover:text-[var(--theme-text-primary)] hover:bg-[var(--theme-bg-tertiary)] active:text-[var(--theme-text-primary)] active:bg-[var(--theme-bg-tertiary)] border border-[var(--theme-filter-control-border)]'
             )}
-            style={filters.nowMode ? { backgroundColor: 'var(--theme-filter-active-bg)' } : undefined}
+            style={filters.timeMode !== 'off' ? { backgroundColor: 'var(--theme-filter-active-bg)' } : undefined}
           >
             <Clock className="w-4 h-4" />
+            {filters.timeMode !== 'off' && (
+              <span className="text-xs">
+                {filters.timeMode === 'now' ? 'Now' : filters.timeMode === 'today' ? 'Today' : 'Tmrw'}
+              </span>
+            )}
           </button>
 
           {/* Filter toggle button */}
@@ -282,57 +310,46 @@ export const FilterBar = memo(function FilterBar({
 
         {/* Expandable filter content — overlays map on mobile */}
         {expanded && (
-          <div className="space-y-3 pt-1 sm:relative absolute left-0 right-0 sm:bg-transparent bg-[var(--theme-bg-primary)] sm:px-0 px-2 sm:pb-0 pb-4 sm:shadow-none shadow-lg shadow-black/40 sm:max-h-none max-h-[70vh] overflow-y-auto">
-            {/* Now mode notice */}
-            {filters.nowMode && (
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-sm">
-                <Clock className="w-4 h-4 shrink-0" />
-                <span>Showing events happening now or starting within 1 hour. Start/end filters are overridden.</span>
-              </div>
-            )}
-
-            {/* Date pickers row */}
+          <div className="space-y-3 pt-1 sm:relative absolute left-0 right-0 sm:bg-transparent bg-[var(--theme-bg-filter)] sm:px-0 px-2 sm:pb-0 pb-4 sm:shadow-none shadow-lg shadow-black/40 sm:max-h-none max-h-[70vh] overflow-y-auto">
+            {/* Mini calendar date selector */}
             {(() => {
-              const tabDates = getTabConfig(filters.conference, conferenceTabs).dates;
+              const tab = getTabConfig(filters.conference, conferenceTabs);
+              let calStart = filters.startDateTime;
+              let calEnd = filters.endDateTime;
+              if (filters.timeMode !== 'off') {
+                const now = new Date(new Date().toLocaleString('en-US', { timeZone: tab.timezone }));
+                const pad = (n: number) => String(n).padStart(2, '0');
+                const todayISO = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+                if (filters.timeMode === 'now' || filters.timeMode === 'today') {
+                  calStart = `${todayISO}T00:00`;
+                  calEnd = `${todayISO}T23:30`;
+                } else if (filters.timeMode === 'tomorrow') {
+                  const tmrw = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+                  const tmrwISO = `${tmrw.getFullYear()}-${pad(tmrw.getMonth() + 1)}-${pad(tmrw.getDate())}`;
+                  calStart = `${tmrwISO}T00:00`;
+                  calEnd = `${tmrwISO}T23:30`;
+                }
+              }
               return (
-                <div className={clsx('flex gap-3 items-end', filters.nowMode && 'opacity-30 pointer-events-none')}>
-                  <div className="w-40 shrink-0">
-                    <div className="text-xs uppercase tracking-wider text-[var(--theme-filter-text)] mb-2">Start</div>
-                    <DateTimePicker
-                      value={filters.startDateTime}
-                      min={`${tabDates[0]}T00:00`}
-                      max={filters.endDateTime}
-                      dates={tabDates}
-                      onChange={(v) => {
-                        trackDateTimeRange(v, filters.endDateTime);
-                        onSetDateTimeRange(v, filters.endDateTime);
-                      }}
-                    />
-                  </div>
-                  <div className="w-40 shrink-0">
-                    <div className="text-xs uppercase tracking-wider text-[var(--theme-filter-text)] mb-2">End</div>
-                    <DateTimePicker
-                      value={filters.endDateTime}
-                      min={filters.startDateTime}
-                      max={`${tabDates[tabDates.length - 1]}T23:30`}
-                      dates={tabDates}
-                      onChange={(v) => {
-                        trackDateTimeRange(filters.startDateTime, v);
-                        onSetDateTimeRange(filters.startDateTime, v);
-                      }}
-                    />
-                  </div>
-                </div>
+                <MiniCalendar
+                  dates={tab.dates}
+                  startDateTime={calStart}
+                  endDateTime={calEnd}
+                  timezone={tab.timezone}
+                  onChange={(start, end) => {
+                    trackDateTimeRange(start, end);
+                    onSetDateTimeRange(start, end);
+                  }}
+                />
               );
             })()}
 
-            {/* Tag match mode toggle + Tag groups */}
+            {/* Tag match mode toggle + Ordered filter sections */}
             {(() => {
-              // Union all available tags from both types and vibes
               const allAvailable = new Set([...availableTypes, ...availableVibes]);
 
-              // Render each TAG_GROUP that has at least one available tag with count > 0
-              const groupRows = TAG_GROUPS.map((group) => {
+              // Build a render function for a tag group
+              function renderGroup(group: typeof TAG_GROUPS[0]) {
                 const groupTags = group.tags.filter(
                   (tag) => allAvailable.has(tag) && (tagCounts.get(tag) ?? 0) > 0
                 );
@@ -351,16 +368,17 @@ export const FilterBar = memo(function FilterBar({
                             key={vibe}
                             onClick={() => { trackTagToggle(vibe, !filters.vibes.includes(vibe)); onToggleVibe(vibe); }}
                             className={clsx(
-                              'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap cursor-pointer',
+                              'flex items-center gap-1.5 sm:px-3 px-2 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap cursor-pointer',
                               isActive
                                 ? 'bg-[var(--theme-filter-active-bg)] border'
                                 : 'bg-[var(--theme-filter-control-bg)] text-[var(--theme-filter-text)] hover:bg-[var(--theme-filter-control-border)] active:bg-[var(--theme-filter-control-border)] border border-[var(--theme-filter-control-border)]'
                             )}
                             style={isActive ? { borderColor: vibeColor, color: vibeColor } : undefined}
+                            title={`${vibe} (${count})`}
                           >
                             {Icon && <Icon className="w-3.5 h-3.5" />}
-                            {vibe}
-                            <span className={clsx('text-xs', isActive ? 'opacity-70' : 'opacity-60')}>
+                            <span className="hidden sm:inline">{vibe}</span>
+                            <span className={clsx('text-xs hidden sm:inline', isActive ? 'opacity-70' : 'opacity-60')}>
                               ({count})
                             </span>
                           </button>
@@ -369,12 +387,11 @@ export const FilterBar = memo(function FilterBar({
                     </div>
                   </div>
                 );
-              });
+              }
 
-              // "Other" catch-all for tags not in any TAG_GROUP
-              const otherTags = [...allAvailable].filter(
-                (tag) => !GROUPED_TAGS.has(tag) && (tagCounts.get(tag) ?? 0) > 0
-              );
+              // Find groups by label
+              const vibeGroup = TAG_GROUPS.find(g => g.label === 'Vibe');
+              const detailsGroup = TAG_GROUPS.find(g => g.label === 'Details');
 
               return (
                 <>
@@ -383,7 +400,7 @@ export const FilterBar = memo(function FilterBar({
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-[var(--theme-filter-text)]">Match</span>
                       <button
-                        onClick={onToggleTagMatchAll}
+                        onClick={() => { trackTagMatchMode('any'); onToggleTagMatchAll(); }}
                         className={clsx(
                           'px-2 py-0.5 rounded text-xs font-medium transition-colors cursor-pointer',
                           !filters.tagMatchAll
@@ -394,7 +411,7 @@ export const FilterBar = memo(function FilterBar({
                         Any
                       </button>
                       <button
-                        onClick={onToggleTagMatchAll}
+                        onClick={() => { trackTagMatchMode('all'); onToggleTagMatchAll(); }}
                         className={clsx(
                           'px-2 py-0.5 rounded text-xs font-medium transition-colors cursor-pointer',
                           filters.tagMatchAll
@@ -406,39 +423,12 @@ export const FilterBar = memo(function FilterBar({
                       </button>
                     </div>
                   )}
-                  {groupRows}
-                  {otherTags.length > 0 && (
-                    <div>
-                      <div className="text-xs uppercase tracking-wider text-[var(--theme-filter-text)] mb-1">Other</div>
-                      <div className="flex flex-wrap gap-2">
-                        {otherTags.map((vibe) => {
-                          const isActive = filters.vibes.includes(vibe);
-                          const vibeColor = VIBE_COLORS[vibe] || VIBE_COLORS['default'];
-                          const Icon = TAG_ICONS[vibe];
-                          const count = tagCounts.get(vibe) ?? 0;
-                          return (
-                            <button
-                              key={vibe}
-                              onClick={() => { trackTagToggle(vibe, !filters.vibes.includes(vibe)); onToggleVibe(vibe); }}
-                              className={clsx(
-                                'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap cursor-pointer',
-                                isActive
-                                  ? 'bg-[var(--theme-filter-active-bg)] border'
-                                  : 'bg-[var(--theme-filter-control-bg)] text-[var(--theme-filter-text)] hover:bg-[var(--theme-filter-control-border)] active:bg-[var(--theme-filter-control-border)] border border-[var(--theme-filter-control-border)]'
-                              )}
-                              style={isActive ? { borderColor: vibeColor, color: vibeColor } : undefined}
-                            >
-                              {Icon && <Icon className="w-3.5 h-3.5" />}
-                              {vibe}
-                              <span className={clsx('text-xs', isActive ? 'opacity-70' : 'opacity-60')}>
-                                ({count})
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
+
+                  {/* Vibe */}
+                  {vibeGroup && renderGroup(vibeGroup)}
+
+                  {/* Details */}
+                  {detailsGroup && renderGroup(detailsGroup)}
                 </>
               );
             })()}
@@ -446,7 +436,7 @@ export const FilterBar = memo(function FilterBar({
             {/* Friends filter */}
             <div>
               <div className="text-xs uppercase tracking-wider text-[var(--theme-filter-text)] mb-1">
-                Friends
+                Friends{friendEventCount > 0 && <span className="normal-case tracking-normal opacity-60"> ({friendEventCount})</span>}
               </div>
               {friendsForFilter.length > 0 ? (
                 <div className="overflow-x-auto flex gap-2 pb-1">
@@ -481,9 +471,9 @@ export const FilterBar = memo(function FilterBar({
                 </div>
               ) : (
                 <div
-                  className={clsx('bg-[var(--theme-filter-control-bg)] rounded-lg p-4 flex items-center gap-3 border border-[var(--theme-filter-control-border)]', !user && 'cursor-pointer hover:bg-[var(--theme-filter-control-border)] transition-colors')}
+                  className={clsx('bg-[var(--theme-filter-control-bg)] rounded-lg px-3 py-2 flex items-center gap-2 border border-[var(--theme-filter-control-border)]', !user && 'cursor-pointer hover:bg-[var(--theme-filter-control-border)] transition-colors')}
                 >
-                  <Users className="w-5 h-5 text-[var(--theme-filter-text)] shrink-0" />
+                  <Users className="w-4 h-4 text-[var(--theme-filter-text)] shrink-0" />
                   <div className="flex-1 min-w-0" onClick={!user ? onSignIn : undefined}>
                     <p className="text-[var(--theme-filter-text)] text-sm">{user ? 'Add friends to see their plans' : 'Sign in to add friends'}</p>
                   </div>
@@ -519,6 +509,130 @@ export const FilterBar = memo(function FilterBar({
                 </div>
               )}
             </div>
+
+            {/* Organizations */}
+            {orgNames.length > 0 && (
+              <OrgDropdown
+                orgNames={orgNames}
+                orgEventCounts={orgEventCounts}
+                selectedOrgs={selectedOrgs}
+                onToggleOrg={onToggleOrg}
+                orgEventCount={orgEventCount}
+              />
+            )}
+
+            {/* Audience — collapsed by default */}
+            {(() => {
+              const allAvailable = new Set([...availableTypes, ...availableVibes]);
+              const audienceGroup = TAG_GROUPS.find(g => g.label === 'Audience');
+              if (!audienceGroup) return null;
+              const audienceTags = audienceGroup.tags.filter(
+                (tag) => allAvailable.has(tag) && (tagCounts.get(tag) ?? 0) > 0
+              );
+              if (audienceTags.length === 0) return null;
+              const hasActiveAudience = audienceTags.some(t => filters.vibes.includes(t));
+              return (
+                <div>
+                  <button
+                    onClick={() => setAudienceExpanded(!audienceExpanded)}
+                    className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-[var(--theme-filter-text)] mb-1 cursor-pointer hover:text-[var(--theme-filter-active)] transition-colors"
+                  >
+                    <span>Audience</span>
+                    {hasActiveAudience && !audienceExpanded && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--theme-filter-active)]" />
+                    )}
+                    <ChevronDown className={clsx('w-3 h-3 transition-transform', !(audienceExpanded || hasActiveAudience) && 'rotate-90')} />
+                  </button>
+                  {(audienceExpanded || hasActiveAudience) && (
+                    <div className="flex flex-wrap gap-2">
+                      {audienceTags.map((vibe) => {
+                        const isActive = filters.vibes.includes(vibe);
+                        const vibeColor = VIBE_COLORS[vibe] || VIBE_COLORS['default'];
+                        const Icon = TAG_ICONS[vibe];
+                        const count = tagCounts.get(vibe) ?? 0;
+                        return (
+                          <button
+                            key={vibe}
+                            onClick={() => { trackTagToggle(vibe, !filters.vibes.includes(vibe)); onToggleVibe(vibe); }}
+                            className={clsx(
+                              'flex items-center gap-1.5 sm:px-3 px-2 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap cursor-pointer',
+                              isActive
+                                ? 'bg-[var(--theme-filter-active-bg)] border'
+                                : 'bg-[var(--theme-filter-control-bg)] text-[var(--theme-filter-text)] hover:bg-[var(--theme-filter-control-border)] active:bg-[var(--theme-filter-control-border)] border border-[var(--theme-filter-control-border)]'
+                            )}
+                            style={isActive ? { borderColor: vibeColor, color: vibeColor } : undefined}
+                            title={`${vibe} (${count})`}
+                          >
+                            {Icon && <Icon className="w-3.5 h-3.5" />}
+                            <span className="hidden sm:inline">{vibe}</span>
+                            <span className={clsx('text-xs hidden sm:inline', isActive ? 'opacity-70' : 'opacity-60')}>
+                              ({count})
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Topics — collapsed by default */}
+            {(() => {
+              const allAvailable = new Set([...availableTypes, ...availableVibes]);
+              const topicsGroup = TAG_GROUPS.find(g => g.label === 'Topics');
+              if (!topicsGroup) return null;
+              const topicsTags = topicsGroup.tags.filter(
+                (tag) => allAvailable.has(tag) && (tagCounts.get(tag) ?? 0) > 0
+              );
+              if (topicsTags.length === 0) return null;
+              const hasActiveTopics = topicsTags.some(t => filters.vibes.includes(t));
+
+              return (
+                <div className="pb-2">
+                  <button
+                    onClick={() => setTopicsExpanded(!topicsExpanded)}
+                    className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-[var(--theme-filter-text)] mb-1 cursor-pointer hover:text-[var(--theme-filter-active)] transition-colors"
+                  >
+                    <span>Topics</span>
+                    {hasActiveTopics && !topicsExpanded && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--theme-filter-active)]" />
+                    )}
+                    <ChevronDown className={clsx('w-3 h-3 transition-transform', !(topicsExpanded || hasActiveTopics) && 'rotate-90')} />
+                  </button>
+                  {(topicsExpanded || hasActiveTopics) && (
+                    <div className="flex flex-wrap gap-2">
+                      {topicsTags.map((vibe) => {
+                        const isActive = filters.vibes.includes(vibe);
+                        const vibeColor = VIBE_COLORS[vibe] || VIBE_COLORS['default'];
+                        const Icon = TAG_ICONS[vibe];
+                        const count = tagCounts.get(vibe) ?? 0;
+                        return (
+                          <button
+                            key={vibe}
+                            onClick={() => { trackTagToggle(vibe, !filters.vibes.includes(vibe)); onToggleVibe(vibe); }}
+                            className={clsx(
+                              'flex items-center gap-1.5 sm:px-3 px-2 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap cursor-pointer',
+                              isActive
+                                ? 'bg-[var(--theme-filter-active-bg)] border'
+                                : 'bg-[var(--theme-filter-control-bg)] text-[var(--theme-filter-text)] hover:bg-[var(--theme-filter-control-border)] active:bg-[var(--theme-filter-control-border)] border border-[var(--theme-filter-control-border)]'
+                            )}
+                            style={isActive ? { borderColor: vibeColor, color: vibeColor } : undefined}
+                            title={`${vibe} (${count})`}
+                          >
+                            {Icon && <Icon className="w-3.5 h-3.5" />}
+                            <span className="hidden sm:inline">{vibe}</span>
+                            <span className={clsx('text-xs hidden sm:inline', isActive ? 'opacity-70' : 'opacity-60')}>
+                              ({count})
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Clear all */}
             {activeFilterCount > 0 && (

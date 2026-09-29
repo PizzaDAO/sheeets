@@ -360,13 +360,20 @@ export function MapView({
       const key = coordKey(lat, lng);
       const colocated = colocatedMap.get(key);
 
-      // Track pin click for all events at this location
+      // Track pin click and impression for all events at this location
       if (colocated && colocated.length > 1) {
         for (const evt of colocated) {
           trackEvent({
             event_id: evt.id,
             event_name: evt.name,
             event_type: 'pin-click',
+            conference,
+            source: 'map',
+          });
+          trackEvent({
+            event_id: evt.id,
+            event_name: evt.name,
+            event_type: 'impression',
             conference,
             source: 'map',
           });
@@ -380,6 +387,13 @@ export function MapView({
           event_id: event.id,
           event_name: event.name,
           event_type: 'pin-click',
+          conference,
+          source: 'map',
+        });
+        trackEvent({
+          event_id: event.id,
+          event_name: event.name,
+          event_type: 'impression',
           conference,
           source: 'map',
         });

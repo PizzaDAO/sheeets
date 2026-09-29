@@ -1,13 +1,15 @@
 export function parseDateToISO(dateStr: string): string {
   if (!dateStr) return '';
   const months: Record<string, string> = {
-    'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
-    'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
-    'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12',
+    jan: '01', feb: '02', mar: '03', apr: '04',
+    may: '05', jun: '06', jul: '07', aug: '08',
+    sep: '09', oct: '10', nov: '11', dec: '12',
   };
-  const match = dateStr.match(/(\w+)\s+(\d+)/);
+  // Match the month token (handles "Sep 2", "September 2", and "Wed, September 2"),
+  // then normalize to its first three letters so full names and abbreviations both resolve.
+  const match = dateStr.match(/([A-Za-z]+)\s+(\d+)/);
   if (!match) return '';
-  const month = months[match[1]] || months[dateStr.split(',')[1]?.trim().split(' ')[0]];
+  const month = months[match[1].slice(0, 3).toLowerCase()];
   if (!month) return '';
   const day = match[2].padStart(2, '0');
   return `2026-${month}-${day}`;
@@ -86,4 +88,30 @@ export function formatDateLabel(isoDate: string): string {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const d = new Date(isoDate + 'T12:00:00');
   return `${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}`;
+}
+
+/**
+ * True if `url` is an absolute http(s) URL. Use before rendering untrusted
+ * links (sheet/event links, ad links, CTA URLs, profile URLs) as href so
+ * `javascript:` / `data:` etc. can never become clickable.
+ */
+export function isSafeHttpUrl(url: string | null | undefined): url is string {
+  if (!url || typeof url !== 'string') return false;
+  try {
+    const u = new URL(url.trim());
+    return u.protocol === 'http:' || u.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+/** Like isSafeHttpUrl, but also allows mailto: links (e.g. "Get in touch" CTAs). */
+export function isSafeLinkUrl(url: string | null | undefined): url is string {
+  if (!url || typeof url !== 'string') return false;
+  try {
+    const protocol = new URL(url.trim()).protocol;
+    return protocol === 'http:' || protocol === 'https:' || protocol === 'mailto:';
+  } catch {
+    return false;
+  }
 }

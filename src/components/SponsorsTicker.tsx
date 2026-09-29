@@ -4,6 +4,7 @@ import { memo, useEffect, useRef } from 'react';
 import { SponsorEntry } from '@/lib/types';
 import { trackAdClick, trackAdImpression } from '@/lib/analytics';
 import { trackAdEvent, slugifySponsor } from '@/lib/ad-tracking';
+import { isSafeHttpUrl } from '@/lib/utils';
 
 const defaultSponsors: SponsorEntry[] = [
   {
@@ -68,7 +69,7 @@ export const SponsorsTicker = memo(function SponsorsTicker({ sponsors, conferenc
         <span key={i}>
           {i > 0 && <span className="mx-6 text-[var(--theme-text-faint)]">&#10022;</span>}
           {s.beforeText} <a
-            href={s.url}
+            href={isSafeHttpUrl(s.url) ? s.url : undefined}
             target="_blank"
             rel="noopener noreferrer"
             className="underline decoration-[var(--theme-text-muted)] underline-offset-2 hover:text-[var(--theme-text-primary)] hover:decoration-[var(--theme-text-secondary)] transition-colors"
@@ -94,7 +95,7 @@ export const SponsorsTicker = memo(function SponsorsTicker({ sponsors, conferenc
   );
 
   return (
-    <div ref={tickerRef} className="w-full overflow-hidden border-b border-[var(--theme-ticker-border)] py-1.5 bg-[var(--theme-ticker-bg)]">
+    <div ref={tickerRef} className="w-full overflow-hidden border-b border-[var(--theme-ticker-border)] py-1.5 bg-[var(--theme-ticker-bg)] shrink-0">
       <div className="sponsors-scroll inline-flex whitespace-nowrap text-xs text-[var(--theme-text-secondary)]">
         {item}{item}{item}{item}{item}{item}{item}{item}
       </div>

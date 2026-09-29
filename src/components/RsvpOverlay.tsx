@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Copy, Check, User, Mail, Send, Building2, Briefcase, Linkedin, ExternalLink } from 'lucide-react';
+import { isSafeHttpUrl } from '@/lib/utils';
 
 interface RsvpOverlayProps {
   eventName: string;
@@ -134,7 +135,7 @@ export function RsvpOverlay({
                 RSVP
               </h2>
               <a
-                href={lumaUrl}
+                href={isSafeHttpUrl(lumaUrl) ? lumaUrl : undefined}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-xs text-[var(--theme-text-secondary)] hover:underline truncate max-w-full"

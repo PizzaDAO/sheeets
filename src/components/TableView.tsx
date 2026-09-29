@@ -4,9 +4,9 @@ import { memo, useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { AlertTriangle, Download, ExternalLink, Plus, Check, X, Users } from 'lucide-react';
 import type { ETHDenverEvent, ReactionEmoji, FriendInfo } from '@/lib/types';
-import { trackEventClick } from '@/lib/analytics';
+import { trackEventClick, trackTableExport, trackOutboundClick } from '@/lib/analytics';
 import { trackEvent } from '@/lib/event-tracking';
-import { shortenAddress } from '@/lib/utils';
+import { shortenAddress, isSafeHttpUrl } from '@/lib/utils';
 import { AddressLink } from './AddressLink';
 import { TagBadge } from './TagBadge';
 import { EventCard } from './EventCard';
@@ -44,6 +44,11 @@ interface TableViewProps {
   onRsvp?: (eventId: string, lumaUrl: string, eventName: string) => void;
 }
 
+/** Day-of-week abbreviations for mobile badges */
+const DAY_ABBR: Record<number, string> = {
+  0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat',
+};
+
 /** Format a dateISO string like "2026-02-10" into "Mon Feb 10" */
 function formatDateHeader(dateISO: string): string {
   // Parse as local date (avoid timezone offset issues with new Date(string))
@@ -53,6 +58,24 @@ function formatDateHeader(dateISO: string): string {
   const monthName = d.toLocaleDateString('en-US', { month: 'short' });
   const dayNum = d.getDate();
   return `${dayName} ${monthName} ${dayNum}`;
+}
+
+/** Render a styled day badge on mobile, plain text on desktop */
+function DayBadge({ dateISO, label }: { dateISO: string; label: string }) {
+  const [year, month, day] = dateISO.split('-').map(Number);
+  const d = new Date(year, month - 1, day);
+  const dow = d.getDay();
+  const abbr = DAY_ABBR[dow];
+
+  return (
+    <>
+      <span className="sm:hidden inline-flex items-center gap-0.5 text-xs text-white">
+        <span className="font-bold">{abbr}</span>
+        <span>{label.replace(/^\w+\s/, '')}</span>
+      </span>
+      <span className="hidden sm:inline">{label}</span>
+    </>
+  );
 }
 
 /** Group events by dateISO, preserving order */
@@ -350,6 +373,7 @@ export const TableView = memo(function TableView({
 
   // Generate and download CSV from currently displayed events
   const downloadCSV = useCallback(() => {
+    trackTableExport();
     const escapeCSV = (value: string) => {
       if (value.includes(',') || value.includes('"') || value.includes('\n')) {
         return `"${value.replace(/"/g, '""')}"`;
@@ -403,12 +427,27 @@ export const TableView = memo(function TableView({
             <tr>
               <th className="py-2.5"><div className="flex justify-center"><CalendarIcon className="w-5 h-5" /></div></th>
               <th className="px-1 py-2.5 text-center" title={!isSignedIn ? 'Sign in to add friends and see who\'s going' : 'Friends going'}><Users className="w-3.5 h-3.5 mx-auto" /></th>
-              <th className="px-3 py-2.5 whitespace-nowrap">
+              <th className="px-3 py-2.5 whitespace-nowrap align-middle">
                 {currentDateLabel === 'Time' ? (
                   'WHEN'
                 ) : (
                   <span className="text-[var(--theme-table-header-text)] font-semibold">
-                    {currentDateLabel.toUpperCase()}
+                    <span className="hidden sm:inline">{currentDateLabel.toUpperCase()}</span>
+                    <span className="sm:hidden flex flex-col leading-tight text-white">
+                      {(() => {
+                        const g = groups.find(gr => formatDateHeader(gr.dateISO) === currentDateLabel);
+                        if (!g) return <span className="text-[11px]">{currentDateLabel.toUpperCase()}</span>;
+                        const [y, m, d] = g.dateISO.split('-').map(Number);
+                        const date = new Date(y, m - 1, d);
+                        const dow = date.getDay();
+                        return (
+                          <>
+                            <span className="text-[11px] font-bold">{DAY_ABBR[dow]}</span>
+                            <span className="text-[10px]">{currentDateLabel.replace(/^\w+\s/, '').toUpperCase()}</span>
+                          </>
+                        );
+                      })()}
+                    </span>
                   </span>
                 )}
               </th>
@@ -434,6 +473,7 @@ export const TableView = memo(function TableView({
                       className="p-1 rounded text-[var(--theme-text-muted)] hover:text-[var(--theme-text-primary)] transition-colors"
                       title="Open spreadsheet"
                       aria-label="Open spreadsheet"
+                      onClick={() => trackOutboundClick('spreadsheet', 'https://plan.wtf/data')}
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
                     </a>
@@ -578,6 +618,336 @@ function EventDetailModal({
   );
 }
 
+/** Shared row-level props passed down to TableRow / FeaturedTableRow */
+interface TableRowSharedProps {
+  itinerary?: Set<string>;
+  onItineraryToggle?: (eventId: string) => void;
+  friendsByEvent?: Map<string, FriendInfo[]>;
+  checkInCounts?: Map<string, number>;
+  onSelectEvent: (event: ETHDenverEvent) => void;
+  conference?: string;
+  isSignedIn?: boolean;
+  onSignIn?: () => void;
+  liveEventIds?: Map<string, 'green' | 'yellow' | 'red'>;
+  userLocation?: { lat: number; lng: number } | null;
+}
+
+/** A single featured event row with impression tracking */
+function FeaturedTableRow({
+  event,
+  itinerary,
+  onItineraryToggle,
+  friendsByEvent,
+  checkInCounts,
+  onSelectEvent,
+  conference,
+  isSignedIn,
+  onSignIn,
+  liveEventIds,
+  userLocation,
+}: TableRowSharedProps & { event: ETHDenverEvent }) {
+  const rowRef = useRef<HTMLTableRowElement>(null);
+  const impressionTracked = useRef(false);
+
+  useEffect(() => {
+    const el = rowRef.current;
+    if (!el || impressionTracked.current) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !impressionTracked.current) {
+          impressionTracked.current = true;
+          trackEvent({
+            event_id: event.id,
+            event_name: event.name,
+            event_type: 'impression',
+            conference,
+            source: 'table',
+          });
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.5 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [event.id, event.name, conference]);
+
+  const isInItinerary = itinerary?.has(event.id) ?? false;
+
+  return (
+    <tr
+      ref={rowRef}
+      key={`featured-${event.id}`}
+      className="hover:bg-[var(--theme-bg-secondary)]/70 transition-colors cursor-pointer bg-[var(--theme-bg-primary)]"
+      style={{ outline: '2px solid var(--theme-popup-featured-border)', outlineOffset: '-2px' }}
+      onClick={(e) => {
+        const target = e.target as HTMLElement;
+        if (target.closest('a, button')) return;
+        onSelectEvent(event);
+      }}
+    >
+      <td className="px-2 py-2">
+        <button
+          onClick={() => onItineraryToggle?.(event.id)}
+          className="cursor-pointer p-0.5"
+          title={isInItinerary ? 'Remove from itinerary' : 'Add to itinerary'}
+        >
+          <span className={`w-6 h-6 flex items-center justify-center rounded-full border transition-colors ${
+            isInItinerary
+              ? 'text-[var(--theme-accent)] border-[var(--theme-accent)]'
+              : 'text-[var(--theme-text-secondary)] border-[var(--theme-border-primary)] hover:text-[var(--theme-text-primary)]'
+          }`} style={isInItinerary ? { backgroundColor: 'var(--theme-accent-muted)' } : undefined}>
+            {isInItinerary ? <Check className="w-3 h-3" strokeWidth={3} /> : <Plus className="w-3 h-3" strokeWidth={2.5} />}
+          </span>
+        </button>
+      </td>
+      <td className="px-1 py-2">
+        <div className="flex justify-center">
+          {(() => {
+            if (!isSignedIn) return (
+              <button
+                onClick={(e) => { e.stopPropagation(); onSignIn?.(); }}
+                className="text-[var(--theme-text-muted)] hover:text-[var(--theme-text-secondary)] text-xs cursor-pointer transition-colors"
+                title="Sign in to add friends and see who's going"
+              >?</button>
+            );
+            const friends = friendsByEvent?.get(event.id);
+            return friends && friends.length > 0 ? (
+              <FriendAvatarStack friends={friends} maxShow={1} size="sm" />
+            ) : null;
+          })()}
+        </div>
+      </td>
+      <td className="px-3 py-2 text-[var(--theme-text-secondary)] sm:whitespace-nowrap">
+        <div className="flex items-start sm:items-center gap-1.5">
+          {(() => { const u = liveEventIds?.get(event.id); return u ? <span className={`w-1.5 h-1.5 rounded-full animate-pulse shrink-0 mt-1.5 sm:mt-0 ${u === 'red' ? 'bg-red-400' : u === 'yellow' ? 'bg-yellow-400' : 'bg-green-400'}`} title={u === 'red' ? 'Ending soon' : u === 'yellow' ? 'Less than 1hr left' : 'Live now'} /> : null; })()}
+          <span className="relative inline-block">
+            <span className="sm:inline hidden">{event.startTime}{event.endTime ? `-${event.endTime}` : ''}</span>
+            <span className="sm:hidden flex flex-col leading-tight">
+              <span>{event.startTime}</span>
+              {event.endTime && <span className="text-[10px] text-[var(--theme-text-muted)]">{event.endTime}</span>}
+            </span>
+            {(checkInCounts?.get(event.id) ?? 0) > 0 && (
+              <span className="absolute -top-1.5 -right-3 min-w-[14px] h-[14px] flex items-center justify-center rounded-full bg-green-500 text-white text-[8px] font-bold px-0.5 pointer-events-none">
+                {checkInCounts!.get(event.id)}
+              </span>
+            )}
+          </span>
+          {userLocation && event.lat && event.lng && (
+            <span className="text-[10px] text-[var(--theme-text-muted)]">{formatDistance(distanceMeters(userLocation.lat, userLocation.lng, event.lat, event.lng))}</span>
+          )}
+        </div>
+      </td>
+      <td className="px-3 py-2 text-[var(--theme-text-secondary)] truncate hidden sm:table-cell" title={event.organizer}>{event.organizer}</td>
+      <td className="px-3 py-2 font-medium text-[var(--theme-text-primary)] overflow-hidden truncate max-w-[25ch] sm:max-w-none" title={event.name}>
+        <span className="inline-flex items-center gap-1.5 max-w-full truncate">
+          <span className="shrink-0 text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ color: 'var(--theme-popup-featured-border)', background: 'var(--theme-accent-muted)' }}>Featured</span>
+          {isSafeHttpUrl(event.link) ? (
+            <a href={event.link} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--theme-accent)] transition-colors truncate"
+              onClick={() => { trackEventClick(event.name, event.link!); trackEvent({ event_id: event.id, event_name: event.name, event_type: 'click', conference, url: event.link!, source: 'table' }); }}>
+              {event.name}
+            </a>
+          ) : (<span className="truncate">{event.name}</span>)}
+        </span>
+        {event.organizer && (<div className="sm:hidden text-[var(--theme-text-secondary)] text-xs font-normal truncate mt-0.5">{event.organizer}</div>)}
+      </td>
+      <td className="px-3 py-2 text-[var(--theme-text-secondary)] truncate max-w-[20ch] sm:max-w-none" title={event.address}>
+        {event.address ? (
+          <AddressLink address={event.address} navAddress={event.matchedAddress} lat={event.lat} lng={event.lng} eventId={event.id} eventName={event.name} className="hover:text-[var(--theme-accent)] transition-colors">{shortenAddress(event.address)}</AddressLink>
+        ) : null}
+      </td>
+      <td className="px-3 py-2 whitespace-nowrap">
+        <div className="flex gap-1 items-center" title={event.tags.join(', ')}>
+          {event.tags.slice(0, 10).map((tag) => (<TagBadge key={tag} tag={tag} iconOnly />))}
+        </div>
+      </td>
+    </tr>
+  );
+}
+
+/** A single regular event row with impression tracking */
+function TableRow({
+  event,
+  itinerary,
+  onItineraryToggle,
+  friendsByEvent,
+  checkInCounts,
+  onSelectEvent,
+  conference,
+  isSignedIn,
+  onSignIn,
+  liveEventIds,
+  userLocation,
+  onShowFriends,
+}: TableRowSharedProps & { event: ETHDenverEvent; onShowFriends?: (eventName: string, friends: FriendInfo[]) => void }) {
+  const rowRef = useRef<HTMLTableRowElement>(null);
+  const impressionTracked = useRef(false);
+
+  useEffect(() => {
+    const el = rowRef.current;
+    if (!el || impressionTracked.current) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !impressionTracked.current) {
+          impressionTracked.current = true;
+          trackEvent({
+            event_id: event.id,
+            event_name: event.name,
+            event_type: 'impression',
+            conference,
+            source: 'table',
+          });
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.5 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [event.id, event.name, conference]);
+
+  const isInItinerary = itinerary?.has(event.id) ?? false;
+
+  return (
+    <tr
+      ref={rowRef}
+      className={`hover:bg-[var(--theme-bg-secondary)]/70 transition-colors cursor-pointer ${event.isDuplicate ? 'bg-red-950/30' : 'bg-[var(--theme-bg-primary)]'}`}
+      style={event.isFeatured && !event.isDuplicate ? { outline: '2px solid var(--theme-popup-featured-border)', outlineOffset: '-2px' } : undefined}
+      title={event.isDuplicate ? 'Possible duplicate — same name, date, and time as another event' : undefined}
+      onClick={(e) => {
+        const target = e.target as HTMLElement;
+        if (target.closest('a, button')) return;
+        onSelectEvent(event);
+      }}
+    >
+      {/* Star (toggles itinerary) */}
+      <td className="px-2 py-2">
+        <button
+          onClick={() => onItineraryToggle?.(event.id)}
+          className="cursor-pointer p-0.5"
+          title={isInItinerary ? 'Remove from itinerary' : 'Add to itinerary'}
+        >
+          <span className={`w-6 h-6 flex items-center justify-center rounded-full border transition-colors ${
+            isInItinerary
+              ? 'text-[var(--theme-accent)] border-[var(--theme-accent)]'
+              : 'text-[var(--theme-text-secondary)] border-[var(--theme-border-primary)] hover:text-[var(--theme-text-primary)]'
+          }`} style={isInItinerary ? { backgroundColor: 'var(--theme-accent-muted)' } : undefined}>
+            {isInItinerary ? <Check className="w-3 h-3" strokeWidth={3} /> : <Plus className="w-3 h-3" strokeWidth={2.5} />}
+          </span>
+        </button>
+      </td>
+
+      {/* Friends avatars */}
+      <td className="px-1 py-2" onClick={(e) => { e.stopPropagation(); const friends = friendsByEvent?.get(event.id); if (friends && friends.length > 0) onShowFriends?.(event.name, friends); }}>
+        <div className="flex justify-center">
+          {(() => {
+            if (!isSignedIn) return (
+              <button
+                onClick={(e) => { e.stopPropagation(); onSignIn?.(); }}
+                className="text-[var(--theme-text-muted)] hover:text-[var(--theme-text-secondary)] text-xs cursor-pointer transition-colors"
+                title="Sign in to add friends and see who's going"
+              >?</button>
+            );
+            const friends = friendsByEvent?.get(event.id);
+            return friends && friends.length > 0 ? (
+              <FriendAvatarStack friends={friends} maxShow={1} size="sm" />
+            ) : null;
+          })()}
+        </div>
+      </td>
+
+      {/* Time */}
+      <td className="px-3 py-2 text-[var(--theme-text-secondary)] sm:whitespace-nowrap">
+        <div className="flex items-start sm:items-center gap-1.5">
+          {(() => { const u = liveEventIds?.get(event.id); return u ? <span className={`w-1.5 h-1.5 rounded-full animate-pulse shrink-0 mt-1.5 sm:mt-0 ${u === 'red' ? 'bg-red-400' : u === 'yellow' ? 'bg-yellow-400' : 'bg-green-400'}`} title={u === 'red' ? 'Ending soon' : u === 'yellow' ? 'Less than 1hr left' : 'Live now'} /> : null; })()}
+          <span className="relative inline-block">
+            <span className="sm:inline hidden">
+              {event.startTime}
+              {event.endTime ? `-${event.endTime}` : ''}
+            </span>
+            <span className="sm:hidden flex flex-col leading-tight">
+              <span>{event.startTime}</span>
+              {event.endTime && <span className="text-[10px] text-[var(--theme-text-muted)]">{event.endTime}</span>}
+            </span>
+            {(checkInCounts?.get(event.id) ?? 0) > 0 && (
+              <span className="absolute -top-1.5 -right-3 min-w-[14px] h-[14px] flex items-center justify-center rounded-full bg-green-500 text-white text-[8px] font-bold px-0.5 pointer-events-none">
+                {checkInCounts!.get(event.id)}
+              </span>
+            )}
+          </span>
+          {userLocation && event.lat && event.lng && (
+            <span className="text-[10px] text-[var(--theme-text-muted)]">{formatDistance(distanceMeters(userLocation.lat, userLocation.lng, event.lat, event.lng))}</span>
+          )}
+        </div>
+      </td>
+
+      {/* Organizer (hidden on mobile portrait — shown inside Event cell instead) */}
+      <td className="px-3 py-2 text-[var(--theme-text-secondary)] truncate hidden sm:table-cell" title={event.organizer}>
+        {event.organizer}
+      </td>
+
+      {/* Event Name (+ organizer on mobile portrait) */}
+      <td className="px-3 py-2 font-medium text-[var(--theme-text-primary)] overflow-hidden truncate max-w-[25ch] sm:max-w-none" title={event.name}>
+        <span className="inline-flex items-center gap-1 max-w-full truncate">
+          {event.isDuplicate && (
+            <span title="Duplicate entry in sheet"><AlertTriangle className="w-3.5 h-3.5 text-red-400 shrink-0" /></span>
+          )}
+          {isSafeHttpUrl(event.link) ? (
+            <a
+              href={event.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[var(--theme-accent)] transition-colors truncate"
+              onClick={() => {
+                trackEventClick(event.name, event.link!);
+                trackEvent({
+                  event_id: event.id,
+                  event_name: event.name,
+                  event_type: 'click',
+                  conference,
+                  url: event.link!,
+                  source: 'table',
+                });
+              }}
+            >
+              {event.name}
+            </a>
+          ) : (
+            <span className="truncate">{event.name}</span>
+          )}
+        </span>
+        {event.organizer && (
+          <div className="sm:hidden text-[var(--theme-text-secondary)] text-xs font-normal truncate mt-0.5">
+            {event.organizer}
+          </div>
+        )}
+      </td>
+
+      {/* Location */}
+      <td className="px-3 py-2 text-[var(--theme-text-secondary)] truncate max-w-[20ch] sm:max-w-none" title={event.address}>
+        {event.address ? (
+          <AddressLink address={event.address} navAddress={event.matchedAddress} lat={event.lat} lng={event.lng}
+            eventId={event.id} eventName={event.name}
+            className="hover:text-[var(--theme-accent)] transition-colors">
+            {shortenAddress(event.address)}
+          </AddressLink>
+        ) : null}
+      </td>
+
+      {/* Tags — single row, all visible */}
+      <td className="px-3 py-2 whitespace-nowrap">
+        <div className="flex gap-1 items-center" title={event.tags.join(', ')}>
+          {event.tags.slice(0, 10).map((tag) => (
+            <TagBadge key={tag} tag={tag} iconOnly />
+          ))}
+        </div>
+      </td>
+    </tr>
+  );
+}
+
 /** Renders a date separator row + all event rows for that date */
 function DateGroup({
   group,
@@ -627,232 +997,46 @@ function DateGroup({
           colSpan={COLUMN_COUNT - 1}
           className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider border-b border-[var(--theme-date-sep-border)] text-[var(--theme-date-sep-text)]"
         >
-          {group.label}
+          <DayBadge dateISO={group.dateISO} label={group.label} />
         </td>
       </tr>
 
       {/* Featured events for this date */}
-      {featuredEvents && featuredEvents.length > 0 && featuredEvents.map((event) => {
-        const isInItinerary = itinerary?.has(event.id) ?? false;
-        return (
-          <tr
-            key={`featured-${event.id}`}
-            className="hover:bg-[var(--theme-bg-secondary)]/70 transition-colors cursor-pointer bg-[var(--theme-bg-primary)]"
-            style={{ outline: '2px solid var(--theme-popup-featured-border)', outlineOffset: '-2px' }}
-            onClick={(e) => {
-              const target = e.target as HTMLElement;
-              if (target.closest('a, button')) return;
-              onSelectEvent(event);
-            }}
-          >
-            <td className="px-2 py-2">
-              <button
-                onClick={() => onItineraryToggle?.(event.id)}
-                className="cursor-pointer p-0.5"
-                title={isInItinerary ? 'Remove from itinerary' : 'Add to itinerary'}
-              >
-                <span className={`w-6 h-6 flex items-center justify-center rounded-full border transition-colors ${
-                  isInItinerary
-                    ? 'text-[var(--theme-accent)] border-[var(--theme-accent)]'
-                    : 'text-[var(--theme-text-secondary)] border-[var(--theme-border-primary)] hover:text-[var(--theme-text-primary)]'
-                }`} style={isInItinerary ? { backgroundColor: 'var(--theme-accent-muted)' } : undefined}>
-                  {isInItinerary ? <Check className="w-3 h-3" strokeWidth={3} /> : <Plus className="w-3 h-3" strokeWidth={2.5} />}
-                </span>
-              </button>
-            </td>
-            <td className="px-1 py-2">
-              <div className="flex justify-center">
-                {(() => {
-                  if (!isSignedIn) return (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); onSignIn?.(); }}
-                      className="text-[var(--theme-text-muted)] hover:text-[var(--theme-text-secondary)] text-xs cursor-pointer transition-colors"
-                      title="Sign in to add friends and see who's going"
-                    >?</button>
-                  );
-                  const friends = friendsByEvent?.get(event.id);
-                  return friends && friends.length > 0 ? (
-                    <FriendAvatarStack friends={friends} maxShow={1} size="sm" />
-                  ) : null;
-                })()}
-              </div>
-            </td>
-            <td className="px-3 py-2 text-[var(--theme-text-secondary)] whitespace-nowrap">
-              {(() => { const u = liveEventIds?.get(event.id); return u ? <span className={`w-1.5 h-1.5 rounded-full animate-pulse inline-block align-middle mr-1.5 ${u === 'red' ? 'bg-red-400' : u === 'yellow' ? 'bg-yellow-400' : 'bg-green-400'}`} title={u === 'red' ? 'Ending soon' : u === 'yellow' ? 'Less than 1hr left' : 'Live now'} /> : null; })()}
-              <span className="relative inline-block">
-                <span>{event.startTime}{event.endTime ? `-${event.endTime}` : ''}</span>
-                {(checkInCounts?.get(event.id) ?? 0) > 0 && (
-                  <span className="absolute -top-1.5 -right-3 min-w-[14px] h-[14px] flex items-center justify-center rounded-full bg-green-500 text-white text-[8px] font-bold px-0.5 pointer-events-none">
-                    {checkInCounts!.get(event.id)}
-                  </span>
-                )}
-              </span>
-              {userLocation && event.lat && event.lng && (
-                <span className="text-[10px] text-[var(--theme-text-muted)] ml-1.5">{formatDistance(distanceMeters(userLocation.lat, userLocation.lng, event.lat, event.lng))}</span>
-              )}
-            </td>
-            <td className="px-3 py-2 text-[var(--theme-text-secondary)] truncate hidden sm:table-cell" title={event.organizer}>{event.organizer}</td>
-            <td className="px-3 py-2 font-medium text-[var(--theme-text-primary)] overflow-hidden truncate max-w-[25ch] sm:max-w-none" title={event.name}>
-              <span className="inline-flex items-center gap-1.5 max-w-full truncate">
-                <span className="shrink-0 text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ color: 'var(--theme-popup-featured-border)', background: 'var(--theme-accent-muted)' }}>Featured</span>
-                {event.link ? (
-                  <a href={event.link} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--theme-accent)] transition-colors truncate"
-                    onClick={() => { trackEventClick(event.name, event.link!); trackEvent({ event_id: event.id, event_name: event.name, event_type: 'click', conference, url: event.link!, source: 'table' }); }}>
-                    {event.name}
-                  </a>
-                ) : (<span className="truncate">{event.name}</span>)}
-              </span>
-              {event.organizer && (<div className="sm:hidden text-[var(--theme-text-secondary)] text-xs font-normal truncate mt-0.5">{event.organizer}</div>)}
-            </td>
-            <td className="px-3 py-2 text-[var(--theme-text-secondary)] truncate max-w-[20ch] sm:max-w-none" title={event.address}>
-              {event.address ? (
-                <AddressLink address={event.address} navAddress={event.matchedAddress} lat={event.lat} lng={event.lng} eventId={event.id} eventName={event.name} className="hover:text-[var(--theme-accent)] transition-colors">{shortenAddress(event.address)}</AddressLink>
-              ) : null}
-            </td>
-            <td className="px-3 py-2 whitespace-nowrap">
-              <div className="flex gap-1 items-center" title={event.tags.join(', ')}>
-                {event.tags.slice(0, 10).map((tag) => (<TagBadge key={tag} tag={tag} iconOnly />))}
-              </div>
-            </td>
-          </tr>
-        );
-      })}
+      {featuredEvents && featuredEvents.length > 0 && featuredEvents.map((event) => (
+        <FeaturedTableRow
+          key={`featured-${event.id}`}
+          event={event}
+          itinerary={itinerary}
+          onItineraryToggle={onItineraryToggle}
+          friendsByEvent={friendsByEvent}
+          checkInCounts={checkInCounts}
+          onSelectEvent={onSelectEvent}
+          conference={conference}
+          isSignedIn={isSignedIn}
+          onSignIn={onSignIn}
+          liveEventIds={liveEventIds}
+          userLocation={userLocation}
+        />
+      ))}
 
       {/* Regular event rows */}
-      {group.events.map((event) => {
-        const isInItinerary = itinerary?.has(event.id) ?? false;
-
-        return (
-          <tr
-            key={event.id}
-            className={`hover:bg-[var(--theme-bg-secondary)]/70 transition-colors cursor-pointer ${event.isDuplicate ? 'bg-red-950/30' : 'bg-[var(--theme-bg-primary)]'}`}
-            style={event.isFeatured && !event.isDuplicate ? { outline: '2px solid var(--theme-popup-featured-border)', outlineOffset: '-2px' } : undefined}
-            title={event.isDuplicate ? 'Possible duplicate — same name, date, and time as another event' : undefined}
-            onClick={(e) => {
-              const target = e.target as HTMLElement;
-              if (target.closest('a, button')) return;
-              onSelectEvent(event);
-            }}
-          >
-            {/* Star (toggles itinerary) */}
-            <td className="px-2 py-2">
-              <button
-                onClick={() => onItineraryToggle?.(event.id)}
-                className="cursor-pointer p-0.5"
-                title={isInItinerary ? 'Remove from itinerary' : 'Add to itinerary'}
-              >
-                <span className={`w-6 h-6 flex items-center justify-center rounded-full border transition-colors ${
-                  isInItinerary
-                    ? 'text-[var(--theme-accent)] border-[var(--theme-accent)]'
-                    : 'text-[var(--theme-text-secondary)] border-[var(--theme-border-primary)] hover:text-[var(--theme-text-primary)]'
-                }`} style={isInItinerary ? { backgroundColor: 'var(--theme-accent-muted)' } : undefined}>
-                  {isInItinerary ? <Check className="w-3 h-3" strokeWidth={3} /> : <Plus className="w-3 h-3" strokeWidth={2.5} />}
-                </span>
-              </button>
-            </td>
-
-            {/* Friends avatars */}
-            <td className="px-1 py-2" onClick={(e) => { e.stopPropagation(); const friends = friendsByEvent?.get(event.id); if (friends && friends.length > 0) onShowFriends?.(event.name, friends); }}>
-              <div className="flex justify-center">
-                {(() => {
-                  if (!isSignedIn) return (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); onSignIn?.(); }}
-                      className="text-[var(--theme-text-muted)] hover:text-[var(--theme-text-secondary)] text-xs cursor-pointer transition-colors"
-                      title="Sign in to add friends and see who's going"
-                    >?</button>
-                  );
-                  const friends = friendsByEvent?.get(event.id);
-                  return friends && friends.length > 0 ? (
-                    <FriendAvatarStack friends={friends} maxShow={1} size="sm" />
-                  ) : null;
-                })()}
-              </div>
-            </td>
-
-            {/* Time */}
-            <td className="px-3 py-2 text-[var(--theme-text-secondary)] whitespace-nowrap">
-              {(() => { const u = liveEventIds?.get(event.id); return u ? <span className={`w-1.5 h-1.5 rounded-full animate-pulse inline-block align-middle mr-1.5 ${u === 'red' ? 'bg-red-400' : u === 'yellow' ? 'bg-yellow-400' : 'bg-green-400'}`} title={u === 'red' ? 'Ending soon' : u === 'yellow' ? 'Less than 1hr left' : 'Live now'} /> : null; })()}
-              <span className="relative inline-block">
-                <span>
-                  {event.startTime}
-                  {event.endTime ? `-${event.endTime}` : ''}
-                </span>
-                {(checkInCounts?.get(event.id) ?? 0) > 0 && (
-                  <span className="absolute -top-1.5 -right-3 min-w-[14px] h-[14px] flex items-center justify-center rounded-full bg-green-500 text-white text-[8px] font-bold px-0.5 pointer-events-none">
-                    {checkInCounts!.get(event.id)}
-                  </span>
-                )}
-              </span>
-              {userLocation && event.lat && event.lng && (
-                <span className="text-[10px] text-[var(--theme-text-muted)] ml-1.5">{formatDistance(distanceMeters(userLocation.lat, userLocation.lng, event.lat, event.lng))}</span>
-              )}
-            </td>
-
-            {/* Organizer (hidden on mobile portrait — shown inside Event cell instead) */}
-            <td className="px-3 py-2 text-[var(--theme-text-secondary)] truncate hidden sm:table-cell" title={event.organizer}>
-              {event.organizer}
-            </td>
-
-            {/* Event Name (+ organizer on mobile portrait) */}
-            <td className="px-3 py-2 font-medium text-[var(--theme-text-primary)] overflow-hidden truncate max-w-[25ch] sm:max-w-none" title={event.name}>
-              <span className="inline-flex items-center gap-1 max-w-full truncate">
-                {event.isDuplicate && (
-                  <span title="Duplicate entry in sheet"><AlertTriangle className="w-3.5 h-3.5 text-red-400 shrink-0" /></span>
-                )}
-                {event.link ? (
-                  <a
-                    href={event.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-[var(--theme-accent)] transition-colors truncate"
-                    onClick={() => {
-                      trackEventClick(event.name, event.link!);
-                      trackEvent({
-                        event_id: event.id,
-                        event_name: event.name,
-                        event_type: 'click',
-                        conference,
-                        url: event.link!,
-                        source: 'table',
-                      });
-                    }}
-                  >
-                    {event.name}
-                  </a>
-                ) : (
-                  <span className="truncate">{event.name}</span>
-                )}
-              </span>
-              {event.organizer && (
-                <div className="sm:hidden text-[var(--theme-text-secondary)] text-xs font-normal truncate mt-0.5">
-                  {event.organizer}
-                </div>
-              )}
-            </td>
-
-            {/* Location */}
-            <td className="px-3 py-2 text-[var(--theme-text-secondary)] truncate max-w-[20ch] sm:max-w-none" title={event.address}>
-              {event.address ? (
-                <AddressLink address={event.address} navAddress={event.matchedAddress} lat={event.lat} lng={event.lng}
-                  eventId={event.id} eventName={event.name}
-                  className="hover:text-[var(--theme-accent)] transition-colors">
-                  {shortenAddress(event.address)}
-                </AddressLink>
-              ) : null}
-            </td>
-
-            {/* Tags — single row, all visible */}
-            <td className="px-3 py-2 whitespace-nowrap">
-              <div className="flex gap-1 items-center" title={event.tags.join(', ')}>
-                {event.tags.slice(0, 10).map((tag) => (
-                  <TagBadge key={tag} tag={tag} iconOnly />
-                ))}
-              </div>
-            </td>
-          </tr>
-        );
-      })}
+      {group.events.map((event) => (
+        <TableRow
+          key={event.id}
+          event={event}
+          itinerary={itinerary}
+          onItineraryToggle={onItineraryToggle}
+          friendsByEvent={friendsByEvent}
+          checkInCounts={checkInCounts}
+          onSelectEvent={onSelectEvent}
+          conference={conference}
+          isSignedIn={isSignedIn}
+          onSignIn={onSignIn}
+          liveEventIds={liveEventIds}
+          userLocation={userLocation}
+          onShowFriends={onShowFriends}
+        />
+      ))}
     </>
   );
 }

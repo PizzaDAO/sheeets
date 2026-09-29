@@ -11,7 +11,7 @@ import { useItinerary } from '@/hooks/useItinerary';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { VIBE_COLORS } from '@/lib/tags';
-import { formatDateLabel } from '@/lib/utils';
+import { formatDateLabel, isSafeHttpUrl } from '@/lib/utils';
 import { sortByStartTime, detectConflicts } from '@/lib/time-parse';
 import { trackItineraryClear, trackItineraryConferenceTab, trackItineraryShareLink, trackItineraryReorder, trackItineraryView } from '@/lib/analytics';
 import type { ETHDenverEvent } from '@/lib/types';
@@ -127,7 +127,7 @@ export default function ItineraryPage() {
       groupMap.get(key)!.push(event);
     }
     return Array.from(groupMap.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
       .map(([dateISO, groupEvents]) => ({
         dateISO,
         label: dateISO === 'unknown' ? 'Date TBD' : formatDateLabel(dateISO),
@@ -424,7 +424,7 @@ export default function ItineraryPage() {
                                   )}
                                 </button>
                               )}
-                              {event.link && (
+                              {isSafeHttpUrl(event.link) && (
                                 <a
                                   href={event.link}
                                   target="_blank"

@@ -9,27 +9,31 @@ interface UseNowModeOptions {
   filters: FilterState;
   itinerary: Set<string>;
   selectedFriendEventIds?: Set<string>;
+  filterOptions?: { skipVibes?: boolean; orgEventIds?: Set<string>; eventIdToOrgs?: Map<string, string[]> };
 }
 
 /**
- * Manages the "Now" mode auto-refresh tick and computes filtered events.
- * Bumps every 5 minutes while nowMode is active so the event list updates.
+ * Manages the time-mode auto-refresh tick and computes filtered events.
+ * Bumps every 5 minutes while any time mode is active so the event list updates.
  */
 export function useNowMode({
   events,
   filters,
   itinerary,
   selectedFriendEventIds,
+  filterOptions,
 }: UseNowModeOptions) {
   const [nowTick, setNowTick] = useState(0);
 
+  const timeModeActive = filters.timeMode !== 'off';
+
   useEffect(() => {
-    if (!filters.nowMode) return;
+    if (!timeModeActive) return;
     const interval = setInterval(() => {
       setNowTick((t) => t + 1);
     }, 5 * 60 * 1000); // 5 minutes
     return () => clearInterval(interval);
-  }, [filters.nowMode]);
+  }, [timeModeActive]);
 
   const filteredEvents = useMemo(
     () =>
@@ -37,11 +41,12 @@ export function useNowMode({
         events,
         filters,
         itinerary,
-        filters.nowMode ? getConferenceNow(filters.conference).getTime() : undefined,
-        selectedFriendEventIds
+        timeModeActive ? getConferenceNow(filters.conference).getTime() : undefined,
+        selectedFriendEventIds,
+        filterOptions
       ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [events, filters, itinerary, nowTick, selectedFriendEventIds]
+    [events, filters, itinerary, nowTick, selectedFriendEventIds, filterOptions]
   );
 
   return { filteredEvents };

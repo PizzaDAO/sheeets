@@ -12,7 +12,7 @@ import { useItinerary } from '@/hooks/useItinerary';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { VIBE_COLORS } from '@/lib/tags';
-import { formatDateLabel } from '@/lib/utils';
+import { formatDateLabel, isSafeHttpUrl } from '@/lib/utils';
 import { sortByStartTime } from '@/lib/time-parse';
 import type { ETHDenverEvent } from '@/lib/types';
 import { Loading } from '@/components/Loading';
@@ -96,7 +96,7 @@ export default function SharedItineraryPage() {
       groupMap.get(key)!.push(event);
     }
     return Array.from(groupMap.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
       .map(([dateISO, groupEvents]) => ({
         dateISO,
         label: dateISO === 'unknown' ? 'Date TBD' : formatDateLabel(dateISO),
@@ -289,7 +289,7 @@ export default function SharedItineraryPage() {
                       className="bg-[var(--theme-bg-secondary)] rounded-lg p-3 border border-[var(--theme-border-primary)]"
                     >
                       <h4 className="text-sm font-semibold text-[var(--theme-text-primary)] leading-tight">
-                        {event.link ? (
+                        {isSafeHttpUrl(event.link) ? (
                           <a
                             href={event.link}
                             target="_blank"

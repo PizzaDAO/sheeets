@@ -1,13 +1,13 @@
 interface DisplayNameSource {
   display_name?: string | null;
   x_handle?: string | null;
-  email?: string | null;
+  rsvp_name?: string | null;
   avatar_url?: string | null;
 }
 
 /**
  * Get a display name from a user/friend profile, with fallback chain:
- * display_name -> @x_handle -> email -> fallback
+ * display_name -> @x_handle -> rsvp_name -> fallback
  */
 export function getDisplayName(
   source: DisplayNameSource,
@@ -16,17 +16,17 @@ export function getDisplayName(
   return (
     source.display_name ||
     (source.x_handle ? `@${source.x_handle}` : null) ||
-    source.email ||
+    source.rsvp_name ||
     fallback
   );
 }
 
 /**
  * Get the first character initial for an avatar, uppercase.
- * Falls back through display_name -> x_handle -> email -> '?'
+ * Falls back through display_name -> x_handle -> rsvp_name -> '?'
  */
 export function getDisplayInitial(source: DisplayNameSource): string {
-  const raw = source.display_name || source.x_handle || source.email || '?';
+  const raw = source.display_name || source.x_handle || source.rsvp_name || '?';
   return raw[0]?.toUpperCase() ?? '?';
 }
 

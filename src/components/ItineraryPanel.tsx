@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { X, AlertTriangle, Trash2, CalendarX, Share2, ExternalLink, GripVertical, Eye, EyeOff } from 'lucide-react';
 import type { ETHDenverEvent } from '@/lib/types';
 import { VIBE_COLORS } from '@/lib/tags';
-import { formatDateLabel } from '@/lib/utils';
+import { formatDateLabel, isSafeHttpUrl } from '@/lib/utils';
 import { sortByStartTime, detectConflicts } from '@/lib/time-parse';
 import { useDragReorder } from '@/hooks/useDragReorder';
 import { useProfile } from '@/hooks/useProfile';
@@ -96,7 +96,7 @@ export function ItineraryPanel({
     }
 
     return Array.from(groupMap.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
       .map(([dateISO, groupEvents]) => ({
         dateISO,
         label:
@@ -327,7 +327,7 @@ export function ItineraryPanel({
                                   {event.name}
                                 </h4>
                                 <div className="flex items-center gap-0.5 shrink-0" data-export-hide>
-                                  {event.link && (
+                                  {isSafeHttpUrl(event.link) && (
                                     <a
                                       href={event.link}
                                       target="_blank"

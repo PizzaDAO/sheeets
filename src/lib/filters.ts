@@ -99,20 +99,40 @@ export function passesNowFilter(event: ETHDenverEvent, now: Date): boolean {
   return false;
 }
 
+/** Check if an event overlaps a given day (midnight to midnight) */
+function passesDateFilter(event: ETHDenverEvent, dayStart: Date, dayEnd: Date): boolean {
+  const eventRange = eventToDateRange(event);
+  if (!eventRange) return true; // benefit of the doubt
+  return eventRange.start < dayEnd && eventRange.end > dayStart;
+}
+
 export function applyFilters(
   events: ETHDenverEvent[],
   filters: FilterState,
   itinerary?: Set<string>,
   nowTimestamp?: number,
   friendEventIds?: Set<string>,
-  options?: { skipVibes?: boolean },
+  options?: { skipVibes?: boolean; orgEventIds?: Set<string>; eventIdToOrgs?: Map<string, string[]> },
 ): ETHDenverEvent[] {
   // Create the "now" Date once using conference timezone
   const now = nowTimestamp ? new Date(nowTimestamp) : getConferenceNow(filters.conference);
 
+  const timeModeActive = filters.timeMode !== 'off';
+
   // Pre-compute filter bounds outside the loop
-  const filterStart = !filters.nowMode && filters.startDateTime ? new Date(filters.startDateTime) : null;
-  const filterEnd = !filters.nowMode && filters.endDateTime ? new Date(filters.endDateTime) : null;
+  const filterStart = !timeModeActive && filters.startDateTime ? new Date(filters.startDateTime) : null;
+  const filterEnd = !timeModeActive && filters.endDateTime ? new Date(filters.endDateTime) : null;
+
+  // Pre-compute day boundaries for today/tomorrow/week modes
+  let dayStart: Date | null = null;
+  let dayEnd: Date | null = null;
+  if (filters.timeMode === 'today') {
+    dayStart = now; // exclude events that already ended
+    dayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+  } else if (filters.timeMode === 'tomorrow') {
+    dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+    dayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 2, 0, 0, 0);
+  }
 
   return events.filter((event) => {
     // Conference filter
@@ -120,9 +140,11 @@ export function applyFilters(
       return false;
     }
 
-    // Now mode overrides datetime filters
-    if (filters.nowMode) {
+    // Time mode overrides datetime filters
+    if (filters.timeMode === 'now') {
       if (!passesNowFilter(event, now)) return false;
+    } else if (dayStart && dayEnd) {
+      if (!passesDateFilter(event, dayStart, dayEnd)) return false;
     } else if (filterStart && filterEnd) {
       const eventRange = eventToDateRange(event);
       if (eventRange) {
@@ -157,6 +179,11 @@ export function applyFilters(
     if (filters.selectedFriends.length > 0 && friendEventIds && !friendEventIds.has(event.id))
       return false;
 
+    // Org filter
+    if (filters.selectedOrgs.length > 0 && options?.orgEventIds) {
+      if (!options.orgEventIds.has(event.id)) return false;
+    }
+
     // Search
     if (filters.searchQuery) {
       const q = filters.searchQuery.toLowerCase();
@@ -171,7 +198,13 @@ export function applyFilters(
         .filter(Boolean)
         .join(' ')
         .toLowerCase();
-      if (!searchable.includes(q)) return false;
+      if (!searchable.includes(q)) {
+        // Check org names for this event
+        const orgs = options?.eventIdToOrgs?.get(event.id);
+        if (!orgs || !orgs.some(o => o.toLowerCase().includes(q))) {
+          return false;
+        }
+      }
     }
 
     return true;

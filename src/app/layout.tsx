@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
-import { buildWebSiteJsonLd } from "@/lib/json-ld";
+import { buildWebSiteJsonLd, serializeJsonLd } from "@/lib/json-ld";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -58,7 +58,7 @@ export default function RootLayout({
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(websiteJsonLd) }}
         />
       </head>
       <body className={`${inter.variable} antialiased`}>

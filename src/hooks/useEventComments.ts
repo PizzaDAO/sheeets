@@ -37,19 +37,19 @@ export function useEventComments(eventId: string | null) {
 
       // Fetch display names for comment authors
       const userIds = [...new Set((data ?? []).map((c: { user_id: string }) => c.user_id))];
-      let profileMap = new Map<string, { display_name: string | null; x_handle: string | null; avatar_url: string | null }>();
+      let profileMap = new Map<string, { display_name: string | null; x_handle: string | null; rsvp_name: string | null; avatar_url: string | null; job_title: string | null; company: string | null; linkedin_url: string | null; telegram_handle: string | null }>();
 
       if (userIds.length > 0) {
         const { data: profiles } = await supabase
           .from('profiles')
-          .select('user_id, display_name, x_handle, avatar_url')
+          .select('user_id, display_name, x_handle, rsvp_name, avatar_url, job_title, company, linkedin_url, telegram_handle')
           .in('user_id', userIds);
 
         if (profiles) {
           profileMap = new Map(
-            profiles.map((p: { user_id: string; display_name: string | null; x_handle: string | null; avatar_url: string | null }) => [
+            profiles.map((p: { user_id: string; display_name: string | null; x_handle: string | null; rsvp_name: string | null; avatar_url: string | null; job_title: string | null; company: string | null; linkedin_url: string | null; telegram_handle: string | null }) => [
               p.user_id,
-              { display_name: p.display_name, x_handle: p.x_handle, avatar_url: p.avatar_url },
+              { display_name: p.display_name, x_handle: p.x_handle, rsvp_name: p.rsvp_name, avatar_url: p.avatar_url, job_title: p.job_title, company: p.company, linkedin_url: p.linkedin_url, telegram_handle: p.telegram_handle },
             ])
           );
         }
@@ -63,7 +63,12 @@ export function useEventComments(eventId: string | null) {
             visibility: c.visibility as 'public' | 'friends',
             display_name: profile?.display_name ?? undefined,
             x_handle: profile?.x_handle ?? undefined,
+            rsvp_name: profile?.rsvp_name ?? undefined,
             avatar_url: profile?.avatar_url ?? undefined,
+            job_title: profile?.job_title ?? undefined,
+            company: profile?.company ?? undefined,
+            linkedin_url: profile?.linkedin_url ?? undefined,
+            telegram_handle: profile?.telegram_handle ?? undefined,
           };
         })
       );
@@ -97,7 +102,7 @@ export function useEventComments(eventId: string | null) {
         // Fetch own profile for display
         const { data: profile } = await supabase
           .from('profiles')
-          .select('display_name, x_handle, avatar_url')
+          .select('display_name, x_handle, rsvp_name, avatar_url, job_title, company, linkedin_url, telegram_handle')
           .eq('user_id', user.id)
           .single();
 
@@ -108,7 +113,12 @@ export function useEventComments(eventId: string | null) {
             visibility: data.visibility as 'public' | 'friends',
             display_name: profile?.display_name ?? undefined,
             x_handle: profile?.x_handle ?? undefined,
+            rsvp_name: profile?.rsvp_name ?? undefined,
             avatar_url: profile?.avatar_url ?? undefined,
+            job_title: profile?.job_title ?? undefined,
+            company: profile?.company ?? undefined,
+            linkedin_url: profile?.linkedin_url ?? undefined,
+            telegram_handle: profile?.telegram_handle ?? undefined,
           },
         ]);
       }

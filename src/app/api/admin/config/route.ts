@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { parseBody, AdminConfigSchema } from '@/lib/api-validation';
+import { isAdminPassword } from '@/lib/admin-auth';
 
 function getSupabase() {
   return createClient(
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest) {
 
   const { password, key, value } = data;
 
-  if (password !== 'trusttheplan') {
+  if (!isAdminPassword(password)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

@@ -13,6 +13,7 @@ import { useViewMode } from '@/hooks/useViewMode';
 import { useAuthGatedActions } from '@/hooks/useAuthGatedActions';
 import { useConferenceData } from '@/hooks/useConferenceData';
 import { useNowMode } from '@/hooks/useNowMode';
+import { useOrgs } from '@/hooks/useOrgs';
 import { useAdminConfig } from '@/hooks/useAdminConfig';
 import { useConferenceTabs } from '@/hooks/useConferenceTabs';
 import { useABTest } from '@/hooks/useABTest';
@@ -61,10 +62,11 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
     toggleVibe,
     toggleFriend,
     toggleBool,
-    toggleNowMode,
+    cycleTimeMode,
     toggleTagMatchAll,
     clearFilters,
     activeFilterCount,
+    toggleOrg,
   } = useFilters(initialConference, conferenceTabs);
 
   // Re-apply conference date range once dynamic tabs load
@@ -94,6 +96,7 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
     toggleHidden,
   } = useItinerary();
 
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
   const { pois, addPOI, removePOI, updatePOI, ownerNames } = usePOIs();
 
   const { friends, removeFriend, refreshFriends } = useFriends();
@@ -136,11 +139,56 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
     setFilter,
   });
 
+  const { orgMapping } = useOrgs(filters.conference);
+
+  const orgNames = useMemo(() => orgMapping.orgs.map(o => o.name), [orgMapping]);
+
+  const orgEventCounts = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const org of orgMapping.orgs) m.set(org.name, org.eventIds.length);
+    return m;
+  }, [orgMapping]);
+
+  const friendEventCount = friendsCountByEvent.size;
+
+  const orgEventCount = useMemo(() => {
+    const ids = new Set<string>();
+    for (const org of orgMapping.orgs) {
+      for (const id of org.eventIds) ids.add(id);
+    }
+    return ids.size;
+  }, [orgMapping]);
+
+  const orgEventIds = useMemo(() => {
+    if (filters.selectedOrgs.length === 0) return undefined;
+    const ids = new Set<string>();
+    for (const org of orgMapping.orgs) {
+      if (filters.selectedOrgs.includes(org.name)) {
+        for (const id of org.eventIds) ids.add(id);
+      }
+    }
+    return ids;
+  }, [orgMapping, filters.selectedOrgs]);
+
+  const eventIdToOrgs = useMemo(() => {
+    const map = new Map<string, string[]>();
+    for (const [eventId, orgNamesList] of Object.entries(orgMapping.eventOrgs)) {
+      map.set(eventId, orgNamesList);
+    }
+    return map;
+  }, [orgMapping]);
+
+  const nowModeFilterOptions = useMemo(() => ({
+    orgEventIds,
+    eventIdToOrgs,
+  }), [orgEventIds, eventIdToOrgs]);
+
   const { filteredEvents } = useNowMode({
     events,
     filters,
     itinerary,
     selectedFriendEventIds,
+    filterOptions: nowModeFilterOptions,
   });
 
   const featuredEvents = useMemo(
@@ -150,9 +198,9 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
 
   // Events filtered by everything EXCEPT vibes — used to compute tag counts
   const baseFilteredEvents = useMemo(
-    () => applyFilters(events, filters, itinerary, filters.nowMode ? getConferenceNow(filters.conference).getTime() : undefined, selectedFriendEventIds, { skipVibes: true }),
+    () => applyFilters(events, filters, itinerary, filters.timeMode !== 'off' ? getConferenceNow(filters.conference).getTime() : undefined, selectedFriendEventIds, { skipVibes: true, orgEventIds, eventIdToOrgs }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [events, filters, itinerary, selectedFriendEventIds]
+    [events, filters, itinerary, selectedFriendEventIds, orgEventIds, eventIdToOrgs]
   );
 
   const tagCounts = useMemo(
@@ -516,7 +564,7 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
       {/* Filter bar -- collapses on scroll down in table/list views */}
       <div className={
         viewMode === 'table' || viewMode === 'list' || viewMode === 'gallery'
-          ? `shrink-0 transition-all duration-200 ${contentScrolled ? 'lg:overflow-visible lg:max-h-none overflow-hidden max-h-0' : ''}`
+          ? `shrink-0 transition-all duration-200 ${contentScrolled && !filtersExpanded ? 'lg:overflow-visible lg:max-h-none overflow-hidden max-h-0' : ''}`
           : 'shrink-0'
       }>
         <FilterBar
@@ -524,7 +572,7 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
           onSetConference={setConference}
           onSetDateTimeRange={setDateTimeRange}
           onToggleVibe={toggleVibe}
-          onToggleNowMode={toggleNowMode}
+          onCycleTimeMode={cycleTimeMode}
           onToggleTagMatchAll={toggleTagMatchAll}
           onClearFilters={clearFilters}
           activeFilterCount={activeFilterCount}
@@ -540,16 +588,23 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
           eventCount={filteredEvents.length}
           onSubmitEvent={handleOpenSubmitEvent}
           onSignIn={handleOpenSignIn}
+          orgNames={orgNames}
+          orgEventCounts={orgEventCounts}
+          selectedOrgs={filters.selectedOrgs}
+          onToggleOrg={toggleOrg}
           conferenceTabs={conferenceTabs}
           itineraryCount={filteredItineraryCount}
           onItineraryToggle={handleItineraryFilterToggle}
           isItineraryActive={filters.itineraryOnly}
+          onExpandedChange={setFiltersExpanded}
+          friendEventCount={friendEventCount}
+          orgEventCount={orgEventCount}
         />
       </div>
 
       {/* Main content area */}
       {viewMode === 'map' ? (
-        <main className="flex-1 min-h-0">
+        <main key="map" className="flex-1 min-h-0">
           <MapViewWrapper
             events={filteredEvents}
             itinerary={itinerary}
@@ -579,7 +634,7 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
           />
         </main>
       ) : viewMode === 'table' ? (
-        <main className="flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden bg-[var(--theme-bg-list)]">
+        <main key="table" className="flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden bg-[var(--theme-bg-list)]">
           <TableView
             events={filteredEvents}
             totalCount={conferenceEventCount}
@@ -604,7 +659,7 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
           />
         </main>
       ) : viewMode === 'gallery' ? (
-        <main ref={listMainRef} onScroll={handleListScroll} className="flex-1 min-h-0 overflow-y-auto bg-[var(--theme-bg-list)]">
+        <main key="gallery" ref={listMainRef} onScroll={handleListScroll} className="flex-1 min-h-0 overflow-y-auto bg-[var(--theme-bg-list)]">
           <GalleryView
             events={filteredEvents}
             totalCount={conferenceEventCount}
@@ -623,7 +678,7 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
           />
         </main>
       ) : (
-        <main ref={listMainRef} onScroll={handleListScroll} className="flex-1 min-h-0 overflow-y-auto bg-[var(--theme-bg-list)]">
+        <main key="list" ref={listMainRef} onScroll={handleListScroll} className="flex-1 min-h-0 overflow-y-auto bg-[var(--theme-bg-list)]">
           <ListView
             events={filteredEvents}
             totalCount={conferenceEventCount}

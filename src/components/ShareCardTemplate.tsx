@@ -24,7 +24,7 @@ const ShareCardTemplate = forwardRef<HTMLDivElement, ShareCardTemplateProps>(
         groupMap.get(key)!.push(event);
       }
       return Array.from(groupMap.entries())
-        .sort(([a], [b]) => a.localeCompare(b))
+        .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
         .map(([dateISO, groupEvents]) => ({
           dateISO,
           label: dateISO === 'unknown' ? 'Date TBD' : formatDateLabel(dateISO),

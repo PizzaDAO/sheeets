@@ -158,7 +158,7 @@ export const ListView = memo(function ListView({
       groupMap.get(key)!.push(event);
     }
     return Array.from(groupMap.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
       .map(([dateISO, groupEvents]) => ({
         dateISO,
         label: dateISO === 'unknown' ? 'Date TBD' : formatDateLabel(dateISO),
@@ -187,6 +187,7 @@ export const ListView = memo(function ListView({
       return 180; // event card estimate
     },
     overscan: 4,
+    initialOffset: 0,
     measureElement: (el) => {
       // Include the item's actual height (padding is part of the element)
       return el.getBoundingClientRect().height;
@@ -196,9 +197,11 @@ export const ListView = memo(function ListView({
   /* ---- force virtualizer to recalculate once scroll container is mounted ---- */
   useEffect(() => {
     if (containerRef.current) {
+      containerRef.current.scrollTop = 0;
+      virtualizer.scrollToOffset(0);
       virtualizer.measure();
     }
-  }, [virtualizer, containerRef]);
+  }, [virtualizer, containerRef, flatItems]);
 
   /* ---- flyer lightbox navigation ---- */
   const [lightboxEventIndex, setLightboxEventIndex] = useState<number | null>(null);

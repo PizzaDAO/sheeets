@@ -107,6 +107,10 @@ export function useEventCheckIn() {
 
         if (error) throw error;
 
+        for (const e of liveItinerary) {
+          trackCheckIn(e.id, true);
+        }
+
         const names = liveItinerary.map((e) => e.name).join(', ');
         setResult({
           ok: true,

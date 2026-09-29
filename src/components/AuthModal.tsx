@@ -21,6 +21,7 @@ import { useAdminConfig } from '@/hooks/useAdminConfig';
 import { trackAdClick, trackAdImpression } from '@/lib/analytics';
 import { trackAdEvent } from '@/lib/ad-tracking';
 import { ExternalLink } from 'lucide-react';
+import { isSafeHttpUrl } from '@/lib/utils';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -978,7 +979,7 @@ export function UserMenu({ events, itinerary, onOpenFriends, onSubmitEvent, pend
                   if (!profileAd) return null;
                   return (
                     <a
-                      href={profileAd.link}
+                      href={isSafeHttpUrl(profileAd.link) ? profileAd.link : undefined}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="block mt-4"

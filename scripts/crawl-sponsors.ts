@@ -360,17 +360,26 @@ async function main() {
   });
   console.log(`  Events with valid links: ${eventsWithLinks.length}`);
 
+  // 4b. Deduplicate events by URL (same URL can appear in multiple sheet rows)
+  const seenUrls = new Set<string>();
+  const uniqueEvents = eventsWithLinks.filter((e) => {
+    if (seenUrls.has(e.link)) return false;
+    seenUrls.add(e.link);
+    return true;
+  });
+  console.log(`  Unique event URLs: ${uniqueEvents.length} (deduped ${eventsWithLinks.length - uniqueEvents.length})`);
+
   // 5. Check crawl log — skip already-crawled (unless --force)
-  let eventsToCrawl = eventsWithLinks;
+  let eventsToCrawl = uniqueEvents;
 
   if (!args.force) {
     const { data: crawlLog } = await supabase
       .from('sponsor_crawl_log')
       .select('event_url')
-      .in('event_url', eventsWithLinks.map((e) => e.link));
+      .in('event_url', uniqueEvents.map((e) => e.link));
 
     const crawledUrls = new Set((crawlLog || []).map((r: { event_url: string }) => r.event_url));
-    eventsToCrawl = eventsWithLinks.filter((e) => !crawledUrls.has(e.link));
+    eventsToCrawl = uniqueEvents.filter((e) => !crawledUrls.has(e.link));
     console.log(`  Already crawled: ${crawledUrls.size}`);
   }
 

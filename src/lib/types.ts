@@ -45,7 +45,8 @@ export interface FilterState {
   selectedFriends: string[];
   itineraryOnly: boolean;
   searchQuery: string;
-  nowMode: boolean;
+  timeMode: 'off' | 'now' | 'today' | 'tomorrow';
+  selectedOrgs: string[];
 }
 
 export interface UserState {
@@ -127,7 +128,12 @@ export interface EventComment {
   created_at: string;
   display_name?: string;
   x_handle?: string;
+  rsvp_name?: string;
   avatar_url?: string;
+  job_title?: string;
+  company?: string;
+  linkedin_url?: string;
+  telegram_handle?: string;
 }
 
 export interface FriendLocation {
@@ -251,9 +257,9 @@ export interface EventSponsor {
   sponsor_name: string;
   sponsor_url: string | null;
   sponsor_logo_url: string | null;
-  sponsor_type: 'sponsor' | 'partner' | 'presenter' | 'host';
+  sponsor_type: 'sponsor' | 'partner' | 'presenter' | 'host' | 'individual';
   confidence: 'high' | 'medium' | 'low';
-  extraction_method: 'api' | 'json-ld' | 'html-section' | 'description' | 'ai';
+  extraction_method: 'api' | 'json-ld' | 'html-section' | 'description' | 'ai' | 'vision';
   crawled_at: string;
 }
 

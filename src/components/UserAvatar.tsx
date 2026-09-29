@@ -54,7 +54,7 @@ export default function UserAvatar({
   const [unavatarError, setUnavatarError] = useState(false);
 
   const sizeClass = sizeClasses[size];
-  const initial = getDisplayInitial({ display_name: displayName, email: email || undefined });
+  const initial = getDisplayInitial({ display_name: displayName, rsvp_name: email || undefined });
 
   // Priority 1: Uploaded avatar
   if (avatarUrl && !imgError) {

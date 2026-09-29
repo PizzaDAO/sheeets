@@ -28,6 +28,9 @@ export function useViewMode() {
   // Persist to localStorage on change (after initial restore)
   const setViewMode = useCallback((mode: ViewMode) => {
     setViewModeState(mode);
+    setContentScrolled(false);
+    listScrolledRef.current = false;
+    listLastScrollTopRef.current = 0;
     localStorage.setItem(STORAGE_KEYS.VIEW_MODE, mode);
   }, []);
 

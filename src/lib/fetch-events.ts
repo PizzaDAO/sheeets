@@ -128,6 +128,8 @@ export async function fetchEvents(runtimeAddresses?: GeoAddressMap, tabs?: TabCo
       const syntheticTags: string[] = [];
       if (!isFreeEvent(costVal)) {
         syntheticTags.push('$$');
+      } else {
+        syntheticTags.push('Free');
       }
       if (foodBool) syntheticTags.push('Food');
       if (barBool) syntheticTags.push('Drinks');

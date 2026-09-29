@@ -4,8 +4,10 @@
  *
  * Layers:
  *   1. Platform API data (Luma hosts/sponsors)
+ *   1.5. JSON-LD structured data
  *   2. HTML section detection (sponsor/partner headings + link/image grids)
- *   3. AI-powered sponsor extraction (GPT-4o-mini)
+ *   3. AI-powered sponsor extraction (GPT-4o-mini on description text)
+ *   4. Vision-based logo extraction (GPT-4o on cover images)
  */
 
 import type OpenAI from 'openai';
@@ -16,9 +18,9 @@ import type OpenAI from 'openai';
 
 export type Platform = 'luma' | 'eventbrite' | 'partiful' | 'meetup' | 'posh' | 'unknown';
 
-export type SponsorType = 'sponsor' | 'partner' | 'presenter' | 'host';
+export type SponsorType = 'sponsor' | 'partner' | 'presenter' | 'host' | 'individual';
 export type Confidence = 'high' | 'medium' | 'low';
-export type ExtractionMethod = 'api' | 'json-ld' | 'html-section' | 'description' | 'ai';
+export type ExtractionMethod = 'api' | 'json-ld' | 'html-section' | 'description' | 'ai' | 'vision';
 
 export interface ExtractedSponsor {
   sponsor_name: string;
@@ -64,7 +66,42 @@ const SKIP_NAMES = new Set([
   'click here', 'read more', 'view all', 'see all', 'more info',
   'our sponsors', 'our partners', 'event sponsors', 'event partners',
   'logo', 'image', 'link', 'website', 'home', 'about',
+  'user uploaded image', 'n/a', 'tbd', 'tba', 'none',
 ]);
+
+// ---------------------------------------------------------------------------
+// ProseMirror/TipTap document → plain text converter
+// ---------------------------------------------------------------------------
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function proseMirrorToText(node: any): string {
+  if (!node || typeof node !== 'object') return '';
+
+  // Text leaf nodes
+  if (node.type === 'text') {
+    return node.text || '';
+  }
+
+  // Hard break
+  if (node.type === 'hardBreak') {
+    return '\n';
+  }
+
+  // Recursively process children
+  let text = '';
+  if (Array.isArray(node.content)) {
+    for (const child of node.content) {
+      text += proseMirrorToText(child);
+    }
+  }
+
+  // Add newlines after block-level elements
+  if (['paragraph', 'heading', 'blockquote', 'listItem'].includes(node.type)) {
+    text += '\n';
+  }
+
+  return text;
+}
 
 // ---------------------------------------------------------------------------
 // Platform detection
@@ -157,17 +194,18 @@ export async function extractSponsorsFromLuma(
 
   const { hosts, event } = apiData.data;
 
-  // Extract hosts as potential sponsors/presenters
+  // Extract hosts — classify as 'host' or 'individual' based on person detection
   if (Array.isArray(hosts)) {
     for (const host of hosts) {
       const name = host.name?.trim();
       if (!name || isSkipName(name)) continue;
 
+      const isPerson = isPersonName(host);
       sponsors.push({
         sponsor_name: name,
         sponsor_url: host.url || host.website || host.instagram_url || null,
         sponsor_logo_url: host.avatar_url || null,
-        sponsor_type: 'host',
+        sponsor_type: isPerson ? 'individual' : 'host',
         confidence: 'high',
         extraction_method: 'api',
       });
@@ -196,13 +234,27 @@ export async function extractSponsorsFromLuma(
     }
   }
 
-  // Layer 3: AI-powered description extraction (replaces regex mining)
-  const description = event?.description || event?.description_mirror || '';
+  // Layer 3: AI-powered description extraction using ProseMirror text
+  const descriptionMirror = apiData.data.description_mirror;
+  const description = descriptionMirror
+    ? proseMirrorToText(descriptionMirror)
+    : (event?.description || '');
+
   if (description && openaiClient) {
     const aiSponsors = await extractSponsorsWithAI(description, openaiClient);
     for (const ds of aiSponsors) {
-      if (!sponsors.some((s) => normalizeName(s.sponsor_name) === normalizeName(ds.sponsor_name))) {
+      if (!sponsors.some((s) => isFuzzyMatch(s.sponsor_name, ds.sponsor_name))) {
         sponsors.push(ds);
+      }
+    }
+  }
+
+  // Layer 4: Vision-based extraction from cover image
+  if (openaiClient && event?.cover_url) {
+    const visionSponsors = await extractSponsorsFromImage(event.cover_url, openaiClient);
+    for (const vs of visionSponsors) {
+      if (!sponsors.some((s) => isFuzzyMatch(s.sponsor_name, vs.sponsor_name))) {
+        sponsors.push(vs);
       }
     }
   }
@@ -363,6 +415,22 @@ export async function extractSponsorsFromHtml(
       const aiSponsors = await extractSponsorsWithAI(aiText, openaiClient);
       allSponsors.push(...aiSponsors);
     }
+
+    // Layer 4: Vision extraction from og:image (skip og.luma.com proxy URLs)
+    const ogImageMatch = html.match(
+      /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i
+    ) || html.match(
+      /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i
+    );
+
+    if (ogImageMatch) {
+      const imageUrl = ogImageMatch[1];
+      // Skip og.luma.com proxy URLs — Luma events already handled by API path with cover_url
+      if (!imageUrl.includes('og.luma.com')) {
+        const visionSponsors = await extractSponsorsFromImage(imageUrl, openaiClient);
+        allSponsors.push(...visionSponsors);
+      }
+    }
   }
 
   return deduplicateSponsors(allSponsors);
@@ -437,7 +505,7 @@ function extractSponsorsFromJsonLd(html: string): ExtractedSponsor[] {
 }
 
 // ---------------------------------------------------------------------------
-// Layer 3: Description text mining
+// Layer 3: Description text mining (legacy, kept as fallback)
 // ---------------------------------------------------------------------------
 
 function extractSponsorsFromDescription(text: string): ExtractedSponsor[] {
@@ -481,7 +549,7 @@ function extractSponsorsFromDescription(text: string): ExtractedSponsor[] {
 }
 
 // ---------------------------------------------------------------------------
-// Layer 3 (AI): GPT-4o-mini sponsor extraction
+// Layer 3 (AI): GPT-4o-mini sponsor extraction from text
 // ---------------------------------------------------------------------------
 
 export async function extractSponsorsWithAI(
@@ -500,16 +568,19 @@ export async function extractSponsorsWithAI(
         {
           role: 'system',
           content:
-            'You extract sponsor and partner names from event descriptions. ' +
-            'Return a JSON object with a single key "sponsors" containing an array of strings. ' +
-            'Each string should be a real company or organization name. ' +
-            'Do NOT include generic words like "Open bar", "Cocktails", "Networking", "Builders", "VCs", etc. ' +
-            'Only include actual company/organization names that are clearly sponsors, partners, or hosts. ' +
-            'If there are no real sponsors/partners mentioned, return {"sponsors": []}.',
+            'You extract sponsor and partner company/organization names from event descriptions. ' +
+            'Return JSON: {"sponsors": ["Company Name 1", "Company Name 2"]}.\n' +
+            'Rules:\n' +
+            '- Include companies/orgs mentioned as sponsors, partners, hosts, collaborators, "presented by", "powered by", "supported by"\n' +
+            '- Only include real company or organization names\n' +
+            '- Do NOT include: generic words, event names, venue names, individual people\'s names\n' +
+            '- Do NOT include: "Open bar", "Cocktails", "Networking", "Builders", "VCs", food/drink items\n' +
+            '- Do NOT include: URLs, email addresses, social media handles\n' +
+            '- If no real sponsors/partners are mentioned, return {"sponsors": []}',
         },
         {
           role: 'user',
-          content: `Extract sponsor and partner company names from this event description:\n\n${truncated}`,
+          content: `Extract sponsor and partner company/organization names from this event description:\n\n${truncated}`,
         },
       ],
     });
@@ -539,6 +610,97 @@ export async function extractSponsorsWithAI(
 }
 
 // ---------------------------------------------------------------------------
+// Layer 4: Vision-based sponsor extraction from cover images (GPT-4o)
+// ---------------------------------------------------------------------------
+
+export async function extractSponsorsFromImage(
+  imageUrl: string,
+  openaiClient: OpenAI,
+): Promise<ExtractedSponsor[]> {
+  try {
+    // Handle og.luma.com proxy URLs — extract direct image URL from img= parameter
+    let directUrl = imageUrl;
+    if (imageUrl.includes('og.luma.com')) {
+      try {
+        const u = new URL(imageUrl);
+        const imgParam = u.searchParams.get('img');
+        if (imgParam) {
+          directUrl = decodeURIComponent(imgParam);
+        } else {
+          // Try regex fallback for img= in path-based proxy URLs
+          const imgMatch = imageUrl.match(/img=([^&]+)/);
+          if (imgMatch) {
+            directUrl = decodeURIComponent(imgMatch[1]);
+          } else {
+            return []; // Can't extract direct URL from proxy
+          }
+        }
+      } catch {
+        return [];
+      }
+    }
+
+    // Skip GIFs (usually animations, not sponsor logos)
+    if (directUrl.toLowerCase().includes('.gif')) return [];
+
+    const response = await openaiClient.chat.completions.create({
+      model: 'gpt-4o',
+      temperature: 0,
+      max_tokens: 500,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text:
+                'Look at this event flyer/cover image. List all company or organization LOGOS ' +
+                'visible as sponsors, partners, or "presented by" branding. ' +
+                'Return JSON: {"sponsors": ["Company Name 1", "Company Name 2"]}.\n' +
+                'Rules:\n' +
+                '- Only include names visible as logos or branding in the image\n' +
+                '- Do NOT include the event name or title itself\n' +
+                '- Do NOT include venue names, generic text, or people\'s names\n' +
+                '- If no sponsor logos are visible, return {"sponsors": []}',
+            },
+            {
+              type: 'image_url',
+              image_url: { url: directUrl, detail: 'low' },
+            },
+          ],
+        },
+      ],
+    });
+
+    const content = response.choices[0]?.message?.content;
+    if (!content) return [];
+
+    // Extract JSON from response (may be wrapped in markdown code block)
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return [];
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    const names: string[] = Array.isArray(parsed.sponsors) ? parsed.sponsors : [];
+
+    return names
+      .map((name) => name.trim())
+      .filter((name) => name && !isSkipName(name))
+      .map((name) => ({
+        sponsor_name: name,
+        sponsor_url: null,
+        sponsor_logo_url: null,
+        sponsor_type: 'sponsor' as SponsorType,
+        confidence: 'low' as Confidence,
+        extraction_method: 'vision' as ExtractionMethod,
+      }));
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.warn(`  Vision extraction failed: ${message}`);
+    return [];
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
@@ -546,8 +708,55 @@ function normalizeName(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
+/**
+ * Fuzzy match: exact normalized match OR prefix match (min 3 chars).
+ * Catches "Pyth" matching "Pyth Network", etc.
+ */
+function isFuzzyMatch(a: string, b: string): boolean {
+  const na = normalizeName(a);
+  const nb = normalizeName(b);
+  if (na === nb) return true;
+  // Prefix match: shorter must be at least 3 chars
+  if (na.length >= 3 && nb.startsWith(na)) return true;
+  if (nb.length >= 3 && na.startsWith(nb)) return true;
+  return false;
+}
+
 function isSkipName(name: string): boolean {
-  return SKIP_NAMES.has(name.toLowerCase().trim()) || name.length < 2 || name.length > 100;
+  const lower = name.toLowerCase().trim();
+  if (SKIP_NAMES.has(lower)) return true;
+  if (name.length < 2 || name.length > 100) return true;
+  // Skip email addresses (including HTML-encoded ones like email&#160;protected)
+  if (lower.includes('@') || /email.*protected/i.test(lower) || lower.includes('&#160;')) return true;
+  // Skip bare domain names (e.g. "torontotechweek.com")
+  if (/^[\w.-]+\.(com|org|net|io|xyz|co|gg|fi|ai|app)$/i.test(lower)) return true;
+  return false;
+}
+
+/**
+ * Classify a Luma host as an individual person vs organization.
+ * Uses Luma API host data fields (first_name/last_name, website, name patterns).
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function isPersonName(host: any): boolean {
+  // Luma individual accounts have first_name/last_name fields
+  if (host.first_name && host.last_name) return true;
+
+  const name = (host.name || '').trim();
+
+  // Pipe-separated names like "Jane | Protocol Labs" → person
+  if (name.includes('|')) return true;
+
+  // No website/URL and name looks like a person name (2-3 capitalized words)
+  if (!host.url && !host.website && !host.instagram_url) {
+    const words = name.split(/\s+/).filter(Boolean);
+    if (words.length >= 2 && words.length <= 3) {
+      const allCapitalized = words.every((w: string) => /^[A-Z][a-zA-Z'-]+$/.test(w));
+      if (allCapitalized) return true;
+    }
+  }
+
+  return false;
 }
 
 function guessSponsorType(sectionHtml: string): SponsorType {
@@ -578,24 +787,35 @@ function decodeHtmlEntities(str: string): string {
 }
 
 /**
- * Deduplicate sponsors by normalized name, keeping the highest-confidence entry.
+ * Deduplicate sponsors by normalized name (with fuzzy matching),
+ * keeping the highest-confidence entry.
  */
 function deduplicateSponsors(sponsors: ExtractedSponsor[]): ExtractedSponsor[] {
   const confidenceRank: Record<Confidence, number> = { high: 3, medium: 2, low: 1 };
-  const map = new Map<string, ExtractedSponsor>();
+  const result: ExtractedSponsor[] = [];
 
   for (const s of sponsors) {
-    const key = normalizeName(s.sponsor_name);
-    const existing = map.get(key);
-    if (!existing || confidenceRank[s.confidence] > confidenceRank[existing.confidence]) {
-      // Merge: keep best URL/logo from either
-      map.set(key, {
-        ...s,
-        sponsor_url: s.sponsor_url || existing?.sponsor_url || null,
-        sponsor_logo_url: s.sponsor_logo_url || existing?.sponsor_logo_url || null,
-      });
+    // Find existing match using fuzzy matching
+    const existingIdx = result.findIndex((r) => isFuzzyMatch(r.sponsor_name, s.sponsor_name));
+
+    if (existingIdx === -1) {
+      result.push({ ...s });
+    } else {
+      const existing = result[existingIdx];
+      if (confidenceRank[s.confidence] > confidenceRank[existing.confidence]) {
+        // Keep the higher-confidence entry but merge URL/logo from either
+        result[existingIdx] = {
+          ...s,
+          sponsor_url: s.sponsor_url || existing.sponsor_url,
+          sponsor_logo_url: s.sponsor_logo_url || existing.sponsor_logo_url,
+        };
+      } else {
+        // Just fill in missing URL/logo
+        if (!existing.sponsor_url && s.sponsor_url) existing.sponsor_url = s.sponsor_url;
+        if (!existing.sponsor_logo_url && s.sponsor_logo_url) existing.sponsor_logo_url = s.sponsor_logo_url;
+      }
     }
   }
 
-  return Array.from(map.values());
+  return result;
 }

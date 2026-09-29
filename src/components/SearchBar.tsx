@@ -47,6 +47,7 @@ export function SearchBar({ value, onChange, eventCount }: SearchBarProps) {
       clearTimeout(debounceRef.current);
     }
     onChange('');
+    trackSearch('');
   };
 
   return (
