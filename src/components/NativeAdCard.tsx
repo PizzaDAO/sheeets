@@ -88,6 +88,8 @@ export default function NativeAdCard({ ad, conference, onImpression, onClick }: 
                 src={ad.imageUrl}
                 alt={ad.title}
                 className="w-full h-full object-contain"
+                loading="lazy"
+                decoding="async"
               />
             </div>
           )}

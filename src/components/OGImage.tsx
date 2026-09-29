@@ -107,6 +107,7 @@ export function OGImage({ url, eventId, rsvpUrl, onOpenLightbox, isInItinerary, 
             alt=""
             className="w-full h-auto rounded-lg"
             loading="lazy"
+            decoding="async"
             onError={() => setError(true)}
           />
         )}
@@ -162,7 +163,7 @@ export function OGImage({ url, eventId, rsvpUrl, onOpenLightbox, isInItinerary, 
                       title={friend.displayName}
                     >
                       {friend.avatarUrl ? (
-                        <img src={friend.avatarUrl} alt="" className="w-full h-full object-cover" />
+                        <img src={friend.avatarUrl} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                       ) : (
                         <div
                           className="w-full h-full flex items-center justify-center text-[9px] font-bold text-white"
@@ -280,7 +281,7 @@ export function FlyerLightbox({ imageUrl, rsvpUrl, onClose, onPrev, onNext, even
                   title={friend.displayName}
                 >
                   {friend.avatarUrl ? (
-                    <img src={friend.avatarUrl} alt="" className="w-full h-full object-cover" />
+                    <img src={friend.avatarUrl} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                   ) : (
                     <div
                       className="w-full h-full flex items-center justify-center text-[9px] font-bold text-white"
