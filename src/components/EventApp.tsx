@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { useEvents } from '@/hooks/useEvents';
 import { useFilters } from '@/hooks/useFilters';
 import { useItinerary } from '@/hooks/useItinerary';
@@ -19,6 +20,7 @@ import { useConferenceTabs } from '@/hooks/useConferenceTabs';
 import { useABTest } from '@/hooks/useABTest';
 import { useEventCheckIn } from '@/hooks/useEventCheckIn';
 import { useFriendCode } from '@/hooks/useFriendCode';
+import { useHasOpened } from '@/hooks/useHasOpened';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ThemeId, DEFAULT_THEME, THEME_OPTIONS } from '@/lib/themes';
 import type { ABTest, ETHDenverEvent } from '@/lib/types';
@@ -31,11 +33,8 @@ import { TableView } from './TableView';
 import { MapViewWrapper } from './MapViewWrapper';
 import { Loading } from './Loading';
 import { AuthModal } from './AuthModal';
-import { SubmitEventModal } from './SubmitEventModal';
-import { FriendsPanel } from './FriendsPanel';
 import { SponsorsTicker } from './SponsorsTicker';
 import { CheckInFAB } from './CheckInFAB';
-import { OnboardingWizard } from './OnboardingWizard';
 import { STORAGE_KEYS } from '@/lib/storage-keys';
 import { trackAuthPrompt, trackRsvpOpen, trackRsvpConfirm, setConferenceProperty } from '@/lib/analytics';
 import { getTabConfig } from '@/lib/conferences';
@@ -46,7 +45,26 @@ import { distanceMeters } from '@/lib/geo';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRsvp } from '@/hooks/useRsvp';
 import { useProfile } from '@/hooks/useProfile';
-import { RsvpOverlay } from './RsvpOverlay';
+
+// Conditionally-shown modals are code-split and only mounted on first open
+// (see useHasOpened) so their chunks aren't fetched on initial load.
+// AuthModal stays static: its module also exports UserMenu, which Header imports.
+const SubmitEventModal = dynamic(
+  () => import('./SubmitEventModal').then((mod) => ({ default: mod.SubmitEventModal })),
+  { ssr: false }
+);
+const FriendsPanel = dynamic(
+  () => import('./FriendsPanel').then((mod) => ({ default: mod.FriendsPanel })),
+  { ssr: false }
+);
+const OnboardingWizard = dynamic(
+  () => import('./OnboardingWizard').then((mod) => ({ default: mod.OnboardingWizard })),
+  { ssr: false }
+);
+const RsvpOverlay = dynamic(
+  () => import('./RsvpOverlay').then((mod) => ({ default: mod.RsvpOverlay })),
+  { ssr: false }
+);
 
 export function EventApp({ initialConference, initialEvents }: { initialConference?: string; initialEvents?: ETHDenverEvent[] }) {
   const { config } = useAdminConfig();
@@ -439,6 +457,10 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
   const handleCloseAuth = useCallback(() => { dismissAuth(); setShowSignIn(false); }, [dismissAuth]);
   const handleCloseSubmitEvent = useCallback(() => setShowSubmitEvent(false), []);
   const handleCloseFriends = useCallback(() => setShowFriends(false), []);
+
+  // Lazy-loaded modals mount on first open, then stay mounted
+  const submitEventMounted = useHasOpened(showSubmitEvent);
+  const friendsMounted = useHasOpened(showFriends);
   const handleOnboardingAuth = useCallback(() => { setShowOnboarding(false); setShowSignIn(true); }, []);
 
   // Memoized derived value
@@ -449,6 +471,7 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
 
   // Onboarding wizard for first-time users
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const onboardingMounted = useHasOpened(showOnboarding);
   useEffect(() => {
     if (!localStorage.getItem(STORAGE_KEYS.ONBOARDING_COMPLETED)) {
       setShowOnboarding(true);
@@ -704,23 +727,29 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
       )}
 
       <AuthModal isOpen={showAuthForStar || showSignIn} onClose={handleCloseAuth} />
-      <SubmitEventModal isOpen={showSubmitEvent} onClose={handleCloseSubmitEvent} upsellCopy={config?.upsell_copy} initialConference={filters.conference} conferenceTabs={conferenceTabs} />
-      <FriendsPanel
-        isOpen={showFriends}
-        onClose={handleCloseFriends}
-        friends={friends}
-        onRemoveFriend={removeFriend}
-      />
-      <OnboardingWizard
-        isOpen={showOnboarding}
-        onComplete={handleOnboardingComplete}
-        onDismiss={handleOnboardingDismiss}
-        availableConferences={availableConferences}
-        conferenceEventCounts={conferenceEventCounts}
-        events={events}
-        onOpenAuth={handleOnboardingAuth}
-        conferenceTabs={conferenceTabs}
-      />
+      {submitEventMounted && (
+        <SubmitEventModal isOpen={showSubmitEvent} onClose={handleCloseSubmitEvent} upsellCopy={config?.upsell_copy} initialConference={filters.conference} conferenceTabs={conferenceTabs} />
+      )}
+      {friendsMounted && (
+        <FriendsPanel
+          isOpen={showFriends}
+          onClose={handleCloseFriends}
+          friends={friends}
+          onRemoveFriend={removeFriend}
+        />
+      )}
+      {onboardingMounted && (
+        <OnboardingWizard
+          isOpen={showOnboarding}
+          onComplete={handleOnboardingComplete}
+          onDismiss={handleOnboardingDismiss}
+          availableConferences={availableConferences}
+          conferenceEventCounts={conferenceEventCounts}
+          events={events}
+          onOpenAuth={handleOnboardingAuth}
+          conferenceTabs={conferenceTabs}
+        />
+      )}
       {activeRsvp && (
         <RsvpOverlay
           eventName={activeRsvp.eventName}
