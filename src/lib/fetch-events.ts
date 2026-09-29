@@ -62,7 +62,7 @@ function isEmptyRow(row: GVizRow): boolean {
 async function fetchPage(gid: number, offset: number): Promise<string> {
   const tq = encodeURIComponent(`select * limit 500 offset ${offset}`);
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${gid}&headers=1&tq=${tq}`;
-  const response = await fetch(url);
+  const response = await fetch(url, { signal: AbortSignal.timeout(10_000) });
   return response.text();
 }
 
