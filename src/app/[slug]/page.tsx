@@ -5,7 +5,7 @@ import { EventApp } from '@/components/EventApp';
 import { FALLBACK_TABS, getTabBySlug } from '@/lib/constants';
 import { getAllConferenceTabs } from '@/lib/get-conferences';
 import { fetchEventsCached } from '@/lib/fetch-events-cached';
-import { buildCollectionPageJsonLd, buildBreadcrumbJsonLd } from '@/lib/json-ld';
+import { buildCollectionPageJsonLd, buildBreadcrumbJsonLd, serializeJsonLd } from '@/lib/json-ld';
 
 // Revalidate every 60s so new conferences/events appear without a redeploy
 export const revalidate = 60;
@@ -56,11 +56,11 @@ export default async function ConferencePage({ params }: { params: Promise<{ slu
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(collectionJsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }}
       />
       <Suspense>
         <EventApp initialConference={tab.name} initialEvents={conferenceEvents} />
