@@ -566,7 +566,6 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
           onToggleFriend={toggleFriend}
           searchQuery={filters.searchQuery}
           onSearchChange={handleSearchChange}
-          eventCount={filteredEvents.length}
           onSubmitEvent={handleOpenSubmitEvent}
           onSignIn={handleOpenSignIn}
           orgNames={orgNames}

@@ -34,7 +34,6 @@ interface FilterBarProps {
   onToggleFriend: (friendId: string) => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
-  eventCount: number;
   onSubmitEvent?: () => void;
   onSignIn?: () => void;
   conferenceTabs?: TabConfig[];
@@ -68,7 +67,6 @@ export const FilterBar = memo(function FilterBar({
   onToggleFriend,
   searchQuery,
   onSearchChange,
-  eventCount,
   onSubmitEvent,
   onSignIn,
   orgNames,
@@ -202,7 +200,7 @@ export const FilterBar = memo(function FilterBar({
 
           {/* Desktop: inline search bar between conference dropdown and Now */}
           <div className="hidden md:flex items-center gap-2 flex-1">
-            <SearchBar value={searchQuery} onChange={onSearchChange} eventCount={eventCount} />
+            <SearchBar value={searchQuery} onChange={onSearchChange} />
             {onSubmitEvent && (
               <button
                 onClick={onSubmitEvent}
@@ -296,7 +294,7 @@ export const FilterBar = memo(function FilterBar({
 
         {/* Search bar — mobile only (desktop is inline in the row above) */}
         <div className="md:hidden flex items-center gap-2">
-          <SearchBar value={searchQuery} onChange={onSearchChange} eventCount={eventCount} />
+          <SearchBar value={searchQuery} onChange={onSearchChange} />
           {onSubmitEvent && (
             <button
               onClick={onSubmitEvent}

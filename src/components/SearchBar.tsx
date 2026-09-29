@@ -7,10 +7,9 @@ import { trackSearch } from '@/lib/analytics';
 interface SearchBarProps {
   value: string;
   onChange: (query: string) => void;
-  eventCount?: number;
 }
 
-export function SearchBar({ value, onChange, eventCount }: SearchBarProps) {
+export function SearchBar({ value, onChange }: SearchBarProps) {
   const [localValue, setLocalValue] = useState(value);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -57,7 +56,7 @@ export function SearchBar({ value, onChange, eventCount }: SearchBarProps) {
         type="text"
         value={localValue}
         onChange={(e) => handleChange(e.target.value)}
-        placeholder={eventCount != null ? `${eventCount} events` : 'Events'}
+        placeholder="Search events…"
         className="w-full pl-10 pr-9 py-2 bg-[var(--theme-filter-control-bg)] border border-[var(--theme-filter-control-border)] text-[var(--theme-filter-active)] placeholder-[var(--theme-filter-text)] rounded-lg text-sm focus:outline-none focus:border-[var(--theme-accent)] transition-colors"
       />
       {localValue && (
