@@ -3,10 +3,12 @@
  *
  * - Reuses the visitor ID from A/B testing (localStorage `sheeets-ab-visitor`)
  * - Deduplicates impressions per ad_id per page session (in-memory Set)
+ * - Batched via tracking-queue: impressions flush every ~3s, clicks immediately
  * - Fire-and-forget: never blocks UI, never surfaces errors
  */
 
 import { getVisitorId } from './ab-testing';
+import { createTrackingQueue } from './tracking-queue';
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
@@ -27,6 +29,8 @@ export interface AdTrackParams {
 /* ------------------------------------------------------------------ */
 
 const trackedImpressions = new Set<string>();
+
+const queue = createTrackingQueue<Record<string, unknown>>('/api/ads/track');
 
 /* ------------------------------------------------------------------ */
 /* Main tracking function                                              */
@@ -50,11 +54,8 @@ export function trackAdEvent(params: AdTrackParams): void {
   const visitor_id = getVisitorId();
   if (!visitor_id) return;
 
-  // Fire-and-forget POST
-  fetch('/api/ads/track', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
+  queue.enqueue(
+    {
       ad_id: params.ad_id,
       ad_name: params.ad_name,
       placement: params.placement,
@@ -63,10 +64,10 @@ export function trackAdEvent(params: AdTrackParams): void {
       visitor_id,
       url: params.url,
       metadata: params.metadata,
-    }),
-  }).catch(() => {
-    // Silently fail -- tracking should never break the app
-  });
+    },
+    // Clicks flush immediately so outbound navigations don't drop them
+    { immediate: params.event_type === 'click' }
+  );
 }
 
 /* ------------------------------------------------------------------ */
