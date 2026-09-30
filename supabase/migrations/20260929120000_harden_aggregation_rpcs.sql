@@ -77,9 +77,15 @@ grant execute on function public.get_reaction_summaries(uuid) to service_role;
 -- ------------------------------------------------------------
 -- 3. cleanup_old_tracking_data
 -- ------------------------------------------------------------
-alter function public.cleanup_old_tracking_data() set search_path = public;
-
-revoke execute on function public.cleanup_old_tracking_data() from public;
-revoke execute on function public.cleanup_old_tracking_data() from anon;
-revoke execute on function public.cleanup_old_tracking_data() from authenticated;
-grant execute on function public.cleanup_old_tracking_data() to service_role;
+-- Guarded: the function may not exist in every environment.
+do $$
+begin
+  if exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+             where n.nspname = 'public' and p.proname = 'cleanup_old_tracking_data') then
+    alter function public.cleanup_old_tracking_data() set search_path = public;
+    revoke execute on function public.cleanup_old_tracking_data() from public;
+    revoke execute on function public.cleanup_old_tracking_data() from anon;
+    revoke execute on function public.cleanup_old_tracking_data() from authenticated;
+    grant execute on function public.cleanup_old_tracking_data() to service_role;
+  end if;
+end $$;
