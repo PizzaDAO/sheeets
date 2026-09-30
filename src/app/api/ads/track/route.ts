@@ -1,18 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
-import { parseBody } from '@/lib/api-validation';
-
-const AdTrackSchema = z.object({
-  ad_id: z.string().min(1, 'ad_id is required'),
-  ad_name: z.string().optional(),
-  placement: z.string().min(1, 'placement is required'),
-  event_type: z.enum(['impression', 'click']),
-  conference: z.string().optional(),
-  visitor_id: z.string().optional(),
-  url: z.string().optional(),
-  metadata: z.record(z.string(), z.unknown()).optional(),
-});
+import { AdTrackSchema, parseBatchBody } from '@/lib/api-validation';
 
 function getSupabase() {
   return createClient(
@@ -21,13 +9,20 @@ function getSupabase() {
   );
 }
 
+/**
+ * Body: a single ad event object (legacy) OR `{ events: [...] }` with up to 50
+ * events (sent by src/lib/tracking-queue.ts via sendBeacon). Invalid items in
+ * a batch are dropped; batches over 50 are rejected with 413.
+ */
 export async function POST(req: NextRequest) {
-  const { data, error: parseError } = await parseBody(req, AdTrackSchema);
+  const { items, error: parseError } = await parseBatchBody(req, AdTrackSchema);
   if (parseError) return parseError;
 
-  const supabase = getSupabase();
+  if (items.length === 0) {
+    return NextResponse.json({ success: true, inserted: 0 });
+  }
 
-  const { error } = await supabase.from('ad_events').insert({
+  const rows = items.map((data) => ({
     ad_id: data.ad_id,
     ad_name: data.ad_name || null,
     placement: data.placement,
@@ -36,7 +31,10 @@ export async function POST(req: NextRequest) {
     visitor_id: data.visitor_id || null,
     url: data.url || null,
     metadata: data.metadata || {},
-  });
+  }));
+
+  const supabase = getSupabase();
+  const { error } = await supabase.from('ad_events').insert(rows);
 
   if (error) {
     // If the table doesn't exist yet, silently accept (graceful degradation)
@@ -46,5 +44,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, inserted: rows.length });
 }

@@ -37,6 +37,90 @@ export async function parseBody<T>(
   return { data: result.data };
 }
 
+/* ------------------------------------------------------------------ */
+/* Batch parsing (tracking beacons)                                    */
+/* ------------------------------------------------------------------ */
+
+/** Max items accepted per tracking request. Keep in sync with tracking-queue. */
+export const MAX_BATCH_ITEMS = 50;
+
+export type BatchParseResult<T> =
+  | { items: T[]; dropped: number; error?: never }
+  | { items?: never; dropped?: never; error: { status: number; message: string } };
+
+/**
+ * Parse a tracking payload that is EITHER a single object (legacy) OR
+ * `{ events: [...] }` (batched, up to MAX_BATCH_ITEMS).
+ *
+ * - Single object: must be valid, else 400 (backwards compatible).
+ * - Batch: invalid items are dropped; valid ones are returned.
+ * - Batch larger than `max`: 413.
+ */
+export function parseBatch<T>(
+  raw: unknown,
+  schema: ZodSchema<T>,
+  max: number = MAX_BATCH_ITEMS
+): BatchParseResult<T> {
+  const isBatch =
+    typeof raw === 'object' &&
+    raw !== null &&
+    !Array.isArray(raw) &&
+    Array.isArray((raw as { events?: unknown }).events);
+
+  if (!isBatch) {
+    const result = schema.safeParse(raw);
+    if (!result.success) {
+      const messages = result.error.issues.map(
+        (i) => `${i.path.join('.')}: ${i.message}`
+      );
+      return { error: { status: 400, message: messages.join('; ') } };
+    }
+    return { items: [result.data], dropped: 0 };
+  }
+
+  const events = (raw as { events: unknown[] }).events;
+  if (events.length > max) {
+    return { error: { status: 413, message: `Too many events (max ${max})` } };
+  }
+
+  const items: T[] = [];
+  for (const e of events) {
+    const result = schema.safeParse(e);
+    if (result.success) items.push(result.data);
+  }
+  return { items, dropped: events.length - items.length };
+}
+
+/**
+ * Read the request body (works for sendBeacon Blobs too — req.json() ignores
+ * the content-type) and run parseBatch. Returns { items } or { error }.
+ */
+export async function parseBatchBody<T>(
+  req: NextRequest,
+  schema: ZodSchema<T>,
+  max: number = MAX_BATCH_ITEMS
+): Promise<{ items: T[]; dropped: number; error?: never } | { items?: never; error: NextResponse }> {
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    return {
+      error: NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 }),
+    };
+  }
+
+  const result = parseBatch(raw, schema, max);
+  if (result.error) {
+    return {
+      error: NextResponse.json(
+        { error: result.error.message },
+        { status: result.error.status }
+      ),
+    };
+  }
+  return { items: result.items, dropped: result.dropped };
+}
+
 // ---------------------------------------------------------------------------
 // Shared Zod schemas for API routes
 // ---------------------------------------------------------------------------
@@ -115,6 +199,30 @@ export const ABTrackEventSchema = z.object({
   variant_id: z.string().min(1, 'variant_id is required'),
   visitor_id: z.string().min(1, 'visitor_id is required'),
   event_type: z.enum(['impression', 'click', 'conversion']),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+});
+
+/** Schema for one item of POST /api/events/track */
+export const EventTrackSchema = z.object({
+  event_id: z.string().min(1, 'event_id is required'),
+  event_name: z.string().optional(),
+  event_type: z.enum(['click', 'impression', 'pin-click']),
+  conference: z.string().optional(),
+  visitor_id: z.string().optional(),
+  url: z.string().optional(),
+  source: z.string().optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+});
+
+/** Schema for one item of POST /api/ads/track */
+export const AdTrackSchema = z.object({
+  ad_id: z.string().min(1, 'ad_id is required'),
+  ad_name: z.string().optional(),
+  placement: z.string().min(1, 'placement is required'),
+  event_type: z.enum(['impression', 'click']),
+  conference: z.string().optional(),
+  visitor_id: z.string().optional(),
+  url: z.string().optional(),
   metadata: z.record(z.string(), z.unknown()).optional(),
 });
 

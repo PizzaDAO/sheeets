@@ -3,10 +3,12 @@
  *
  * - Reuses the visitor ID from A/B testing (localStorage `sheeets-ab-visitor`)
  * - Deduplicates per event_id + event_type per page session (in-memory Set)
+ * - Batched via tracking-queue: impressions flush every ~3s, clicks immediately
  * - Fire-and-forget: never blocks UI, never surfaces errors
  */
 
 import { getVisitorId } from './ab-testing';
+import { createTrackingQueue } from './tracking-queue';
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
@@ -28,6 +30,8 @@ export interface EventTrackParams {
 
 const trackedEvents = new Set<string>();
 
+const queue = createTrackingQueue<Record<string, unknown>>('/api/events/track');
+
 /* ------------------------------------------------------------------ */
 /* Main tracking function                                              */
 /* ------------------------------------------------------------------ */
@@ -37,6 +41,7 @@ const trackedEvents = new Set<string>();
  * Supabase event_tracking table.
  *
  * - All event types are deduplicated per event_id:event_type per page session.
+ * - Impressions are batched; clicks and pin-clicks are sent immediately.
  * - Fire-and-forget: errors are silently caught.
  */
 export function trackEvent(params: EventTrackParams): void {
@@ -47,11 +52,8 @@ export function trackEvent(params: EventTrackParams): void {
   const visitor_id = getVisitorId();
   if (!visitor_id) return;
 
-  // Fire-and-forget POST
-  fetch('/api/events/track', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
+  queue.enqueue(
+    {
       event_id: params.event_id,
       event_name: params.event_name,
       event_type: params.event_type,
@@ -60,8 +62,8 @@ export function trackEvent(params: EventTrackParams): void {
       url: params.url,
       source: params.source,
       metadata: params.metadata,
-    }),
-  }).catch(() => {
-    // Silently fail -- tracking should never break the app
-  });
+    },
+    // Clicks flush immediately so outbound navigations don't drop them
+    { immediate: params.event_type !== 'impression' }
+  );
 }
