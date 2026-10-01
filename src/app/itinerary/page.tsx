@@ -91,14 +91,10 @@ export default function ItineraryPage() {
     () => [...new Set(allItineraryEvents.map((e) => e.conference).filter(Boolean))],
     [allItineraryEvents]
   );
-  const [activeConference, setActiveConference] = useState('');
-
-  // Auto-select first conference when data loads
-  useMemo(() => {
-    if (conferences.length > 0 && !activeConference) {
-      setActiveConference(conferences[0]);
-    }
-  }, [conferences, activeConference]);
+  // Conference the user explicitly picked; until then, default to the first one
+  // that has itinerary events (derived during render, no state sync needed).
+  const [selectedConference, setActiveConference] = useState('');
+  const activeConference = selectedConference || conferences[0] || '';
 
   const itineraryEvents = useMemo(
     () => allItineraryEvents.filter((e) => !activeConference || e.conference === activeConference),

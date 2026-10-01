@@ -22,20 +22,18 @@ interface OGImageProps {
 export const imageCache = new Map<string, string | null>();
 
 export function OGImage({ url, eventId, rsvpUrl, onOpenLightbox, isInItinerary, onItineraryToggle, friendsGoing }: OGImageProps) {
-  const [imageUrl, setImageUrl] = useState<string | null>(
-    imageCache.get(url) ?? null
-  );
-  const [loaded, setLoaded] = useState(imageCache.has(url));
+  // Result of the last /api/og fetch, tagged with the url it was for so a url
+  // change falls back to the shared cache (or "loading") without an effect.
+  const [fetched, setFetched] = useState<{ url: string; imageUrl: string | null } | null>(null);
+  const fetchedForUrl = fetched?.url === url;
+  const imageUrl = fetchedForUrl ? fetched.imageUrl : imageCache.get(url) ?? null;
+  const loaded = fetchedForUrl || imageCache.has(url);
   const [error, setError] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (imageCache.has(url)) {
-      setImageUrl(imageCache.get(url) ?? null);
-      setLoaded(true);
-      return;
-    }
+    if (imageCache.has(url)) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -49,12 +47,11 @@ export function OGImage({ url, eventId, rsvpUrl, onOpenLightbox, isInItinerary, 
           .then((res) => res.json())
           .then((data) => {
             imageCache.set(url, data.imageUrl);
-            setImageUrl(data.imageUrl);
-            setLoaded(true);
+            setFetched({ url, imageUrl: data.imageUrl });
           })
           .catch(() => {
             imageCache.set(url, null);
-            setLoaded(true);
+            setFetched({ url, imageUrl: null });
           });
       },
       { rootMargin: '200px' }

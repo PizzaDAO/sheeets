@@ -11,14 +11,15 @@ interface CheckInFABProps {
 }
 
 export function CheckInFAB({ liveItineraryCount, onCheckIn, loading, result }: CheckInFABProps) {
-  const [showResult, setShowResult] = useState(false);
+  // Each new result is shown for 3s; once its timer fires it is remembered as
+  // expired so the toast hides without a synchronous setState in the effect.
+  const [expiredResult, setExpiredResult] = useState<CheckInFABProps['result']>(null);
+  const showResult = result !== null && result !== expiredResult;
 
   useEffect(() => {
-    if (result) {
-      setShowResult(true);
-      const timer = setTimeout(() => setShowResult(false), 3000);
-      return () => clearTimeout(timer);
-    }
+    if (!result) return;
+    const timer = setTimeout(() => setExpiredResult(result), 3000);
+    return () => clearTimeout(timer);
   }, [result]);
 
   if (liveItineraryCount <= 0) return null;

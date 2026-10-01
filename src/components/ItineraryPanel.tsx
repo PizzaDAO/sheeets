@@ -60,18 +60,17 @@ export function ItineraryPanel({
     [allItineraryEvents]
   );
 
-  // Default to the active conference from the main view, fall back to first conference with events
-  const [selectedConference, setSelectedConference] = useState('');
-  // Sync selectedConference when the active conference or available conferences change.
-  // Using useEffect instead of useMemo to avoid setState during render (which causes
-  // cascading re-renders and was a contributing factor to the row duplication bug).
-  useEffect(() => {
-    if (activeConference && conferences.includes(activeConference)) {
-      setSelectedConference(activeConference);
-    } else if (conferences.length > 0 && !selectedConference) {
-      setSelectedConference(conferences[0]);
-    }
-  }, [activeConference, conferences, selectedConference]);
+  // Default to the active conference from the main view, fall back to first conference with events.
+  // A tab the user picks wins until the main view's active conference changes.
+  // Derived during render (no effect) to avoid cascading re-renders.
+  const [picked, setPicked] = useState<{ conference: string; forActive: string | undefined } | null>(null);
+  const selectedConference =
+    picked && picked.forActive === activeConference && conferences.includes(picked.conference)
+      ? picked.conference
+      : activeConference && conferences.includes(activeConference)
+        ? activeConference
+        : conferences[0] ?? '';
+  const setSelectedConference = (conference: string) => setPicked({ conference, forActive: activeConference });
 
   // Filter to selected conference
   const itineraryEvents = useMemo(

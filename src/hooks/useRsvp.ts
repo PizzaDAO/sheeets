@@ -9,9 +9,16 @@ export function useRsvp() {
   const [confirmedIds, setConfirmedIds] = useState<Set<string>>(new Set());
   const [activeRsvp, setActiveRsvp] = useState<{ eventId: string; lumaUrl: string; eventName: string } | null>(null);
 
+  // Clear on sign-out (adjusted during render, not in an effect).
+  const [prevUser, setPrevUser] = useState(user);
+  if (user !== prevUser) {
+    setPrevUser(user);
+    if (!user) setConfirmedIds(new Set());
+  }
+
   // Load user's RSVPs on mount
   useEffect(() => {
-    if (!user) { setConfirmedIds(new Set()); return; }
+    if (!user) return;
     supabase
       .from('rsvps')
       .select('event_id')

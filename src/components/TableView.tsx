@@ -253,10 +253,13 @@ export const TableView = memo(function TableView({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [selectedEvent]);
 
-  // Reset to "Time" when groups change (e.g. filter change)
-  useEffect(() => {
+  // Reset to "Time" when groups change (e.g. filter change). Adjusted during
+  // render rather than in an effect to avoid an extra commit.
+  const [prevGroups, setPrevGroups] = useState(groups);
+  if (groups !== prevGroups) {
+    setPrevGroups(groups);
     setCurrentDateLabel('Time');
-  }, [groups]);
+  }
 
   // Track which date separator is at/near the top using IntersectionObserver
   useEffect(() => {

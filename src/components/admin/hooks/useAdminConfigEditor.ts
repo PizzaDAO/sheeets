@@ -22,7 +22,9 @@ export type SaveConfigFn = (key: string, value: unknown) => Promise<void>;
  */
 export function useAdminConfigEditor(authed: boolean, password: string) {
   const [adminConfig, setAdminConfig] = useState<AdminConfig | null>(null);
-  const [configLoading, setConfigLoading] = useState(false);
+  // Loading while authed and the (single) config fetch hasn't settled yet.
+  const [configSettled, setConfigSettled] = useState(false);
+  const configLoading = authed && !configSettled;
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
   const [conferences, setConferences] = useState<ConferenceConfig[]>([]);
@@ -30,7 +32,6 @@ export function useAdminConfigEditor(authed: boolean, password: string) {
   // Fetch admin config when authed
   useEffect(() => {
     if (!authed) return;
-    setConfigLoading(true);
     fetch('/api/admin/config')
       .then(res => res.json())
       .then((data: AdminConfig) => {
@@ -52,7 +53,7 @@ export function useAdminConfigEditor(authed: boolean, password: string) {
         }
       })
       .catch(() => {})
-      .finally(() => setConfigLoading(false));
+      .finally(() => setConfigSettled(true));
   }, [authed]);
 
   async function saveConfig(key: string, value: unknown) {
