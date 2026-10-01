@@ -121,6 +121,7 @@ export function useFriendCode({ openAuth, refreshFriends }: UseFriendCodeOptions
     window.history.replaceState(null, '', newUrl);
 
     if (user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- async: its setState calls all run after an await, not synchronously in the effect
       redeemCode(code);
     } else {
       // Store pending code and trigger auth

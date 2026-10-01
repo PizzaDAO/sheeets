@@ -332,13 +332,17 @@ export function GalleryView({
     );
   }
 
-  // Track a running global index across date groups for lightbox
-  let globalIndex = 0;
+  // Global (flattened) index of each date group's first event, for the lightbox
+  const groupStartIndices: number[] = [];
+  for (let i = 0, n = 0; i < dateGroups.length; i++) {
+    groupStartIndices.push(n);
+    n += dateGroups[i].events.length;
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-2 sm:px-4 pb-8">
       {dateGroups.map((group, groupIdx) => {
-        const startIndex = globalIndex;
+        const startIndex = groupStartIndices[groupIdx];
         const cards = group.events.map((event, eventIdx) => {
           const idx = startIndex + eventIdx;
           return (
@@ -353,7 +357,6 @@ export function GalleryView({
             />
           );
         });
-        globalIndex += group.events.length;
 
         return (
           <div key={group.dateISO}>

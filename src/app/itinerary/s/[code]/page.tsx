@@ -76,6 +76,7 @@ export default function SharedItineraryPage() {
   useEffect(() => {
     if (pendingCopy && user && sharedEventIds) {
       addMany(sharedEventIds);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- completes a copy deferred until external auth (sign-in) finishes
       setCopyStatus('copied');
       setPendingCopy(false);
       setTimeout(() => setCopyStatus('idle'), 2500);

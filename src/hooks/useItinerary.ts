@@ -57,6 +57,7 @@ export function useItinerary() {
     if (authLoading) return;
 
     if (user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs from external auth state + localStorage, coupled to the Supabase sync state machine below (refs); refactor is high-risk
       setReady(false); // Wait for Supabase sync before ready
       try {
         const saved = localStorage.getItem(STORAGE_KEYS.ITINERARY);
