@@ -2,6 +2,7 @@
 
 import { memo, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { User, MapPin, Loader2 } from 'lucide-react';
 import { trackAuthPrompt } from '@/lib/analytics';
 import { ETHDenverEvent } from '@/lib/types';
@@ -40,7 +41,7 @@ export const Header = memo(function Header({
         <div className="px-2 sm:px-4 py-3 flex items-center justify-between gap-4">
           {/* Left: Branding */}
           <div className="flex items-center min-w-0">
-            <a href="/" style={{ marginTop: '-4px' }}><Image src="/logo.png" alt="plan.wtf" width={130} height={36} style={{ filter: 'var(--theme-header-logo-filter)' }} priority /></a>
+            <Link href="/" style={{ marginTop: '-4px' }}><Image src="/logo.png" alt="plan.wtf" width={130} height={36} style={{ filter: 'var(--theme-header-logo-filter)' }} priority /></Link>
           </div>
 
           {/* Right: Controls */}

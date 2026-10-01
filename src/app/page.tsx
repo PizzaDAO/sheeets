@@ -282,6 +282,7 @@ export default async function Home() {
       {/* Spreadsheet link */}
       <p className="text-sm mb-8" style={{ color: 'var(--theme-text-muted)' }}>
         Looking for the old sheeets.xyz?{' '}
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- /data is a redirect (next.config.ts) to an external Google Sheet, so it needs a full-page navigation */}
         <a href="/data" className="underline hover:opacity-80 transition-opacity" style={{ color: 'var(--theme-text-secondary)' }}>
           Find it at plan.wtf/data
         </a>

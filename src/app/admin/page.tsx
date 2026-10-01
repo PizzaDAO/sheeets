@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import { Search, ArrowLeft } from 'lucide-react';
 import { fetchEvents } from '@/lib/fetch-events';
 import { FALLBACK_TABS } from '@/lib/constants';
@@ -168,9 +169,9 @@ export default function AdminPage() {
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <a href="/" className="text-stone-400 hover:text-white transition-colors">
+              <Link href="/" className="text-stone-400 hover:text-white transition-colors">
                 <ArrowLeft className="w-5 h-5" />
-              </a>
+              </Link>
               <h1 className="text-lg font-bold">Admin</h1>
               {activeTab === 'featured' && (
                 <span className="text-xs text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">
