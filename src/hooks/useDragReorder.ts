@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 interface UseDragReorderOptions {
   /** Called with the new ordered array when a drop completes */
@@ -50,7 +50,9 @@ export function useDragReorder({ onReorder }: UseDragReorderOptions) {
   const itemRefs = useRef<Map<string, HTMLElement>>(new Map());
   const orderedIdsRef = useRef<string[]>([]);
   const onReorderRef = useRef(onReorder);
-  onReorderRef.current = onReorder;
+  useEffect(() => {
+    onReorderRef.current = onReorder;
+  }, [onReorder]);
 
   /** Keep the ordered IDs in sync so drag handlers can access them */
   const setOrderedIds = useCallback((ids: string[]) => {

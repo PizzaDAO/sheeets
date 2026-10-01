@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { createPortal } from 'react-dom';
 import { Send, Trash2, MessageCircle, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -20,7 +21,7 @@ interface CommentSectionProps {
 export function CommentSection({ eventId, commentCount = 0, eventName }: CommentSectionProps) {
   const { user } = useAuth();
   const [expanded, setExpanded] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useMediaQuery('(max-width: 639px)');
   const { comments, loading, addComment, deleteComment } = useEventComments(
     expanded ? eventId : null
   );
@@ -36,15 +37,6 @@ export function CommentSection({ eventId, commentCount = 0, eventName }: Comment
     linkedinUrl?: string | null;
     telegramHandle?: string | null;
   } | null>(null);
-
-  // Detect mobile viewport
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 639px)');
-    setIsMobile(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
 
   // Body scroll lock when modal is open on mobile
   useEffect(() => {

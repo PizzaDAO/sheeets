@@ -64,6 +64,7 @@ export function useAuthGatedActions({
     if (user && itineraryReady && pendingStarRef.current) {
       toggleItinerary(pendingStarRef.current);
       pendingStarRef.current = null;
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- completes a deferred action once external auth + itinerary sync finish (pending action lives in a ref)
       setShowAuthForStar(false);
     }
   }, [user, itineraryReady, toggleItinerary]);

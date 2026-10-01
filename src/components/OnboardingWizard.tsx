@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useIsClient } from '@/hooks/useIsClient';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { X, CirclePlus, Clock, Users, Map, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -76,11 +77,7 @@ export function OnboardingWizard({
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedConference, setSelectedConference] = useState(conferenceTabs[0]?.name || availableConferences[0] || '');
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useIsClient();
 
   useEffect(() => {
     if (isOpen) {

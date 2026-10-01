@@ -6,7 +6,6 @@ import type { ETHDenverEvent, ReactionEmoji, NativeAd, FriendInfo } from '@/lib/
 import { formatDateLabel } from '@/lib/utils';
 import { sortByStartTime } from '@/lib/time-parse';
 import { EventCard } from './EventCard';
-import { FeaturedSection } from './FeaturedSection';
 import NativeAdCard from './NativeAdCard';
 import { imageCache, FlyerLightbox } from './OGImage';
 
@@ -122,7 +121,6 @@ function buildFlatList(
 
 export const ListView = memo(function ListView({
   events,
-  totalCount,
   itinerary,
   onItineraryToggle,
   friendsCountByEvent,

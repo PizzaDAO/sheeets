@@ -18,9 +18,8 @@ import { useFriends } from '@/hooks/useFriends';
 import { useFriendRequests } from '@/hooks/useFriendRequests';
 import type { ETHDenverEvent, NativeAd, UserSearchResult, FriendRequest } from '@/lib/types';
 import { useAdminConfig } from '@/hooks/useAdminConfig';
-import { trackAdClick, trackAdImpression } from '@/lib/analytics';
+import { trackAdClick } from '@/lib/analytics';
 import { trackAdEvent } from '@/lib/ad-tracking';
-import { ExternalLink } from 'lucide-react';
 import { isSafeHttpUrl } from '@/lib/utils';
 
 interface AuthModalProps {
@@ -372,7 +371,7 @@ interface UserMenuProps {
   activeConference?: string;
 }
 
-export function UserMenu({ events, itinerary, onOpenFriends, onSubmitEvent, pendingIncomingCount: externalCount, externalRefreshFriends, activeConference }: UserMenuProps) {
+export function UserMenu({ events, itinerary, onOpenFriends, pendingIncomingCount: externalCount, externalRefreshFriends, activeConference }: UserMenuProps) {
   const { user, signOut } = useAuth();
   const { profile, updateProfile, uploadAvatar } = useProfile();
   const { friendCount, refreshFriends: localRefreshFriends } = useFriends();
@@ -405,7 +404,6 @@ export function UserMenu({ events, itinerary, onOpenFriends, onSubmitEvent, pend
   const [company, setCompany] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [jobTitle, setJobTitle] = useState('');
-  const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saved'>('idle');
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -527,7 +525,6 @@ export function UserMenu({ events, itinerary, onOpenFriends, onSubmitEvent, pend
     if (saveTimeout.current) clearTimeout(saveTimeout.current);
     setSaveStatus('idle');
     saveTimeout.current = setTimeout(async () => {
-      setSaving(true);
       await updateProfile({
         display_name: displayName.trim() || null,
         x_handle: xHandle.trim() || null,
@@ -537,7 +534,6 @@ export function UserMenu({ events, itinerary, onOpenFriends, onSubmitEvent, pend
         linkedin_url: linkedinUrl.trim() || null,
         job_title: jobTitle.trim() || null,
       });
-      setSaving(false);
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
     }, 800);

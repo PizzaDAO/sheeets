@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, useCallback, useRef, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
 import { ThemeId, DEFAULT_THEME, THEME_OPTIONS } from '@/lib/themes';
 
 const STORAGE_KEY = 'user-theme-override';
@@ -35,28 +35,15 @@ function readStoredTheme(): ThemeId | null {
 }
 
 export function ThemeProvider({ children, adminConfig, conference }: ThemeProviderProps) {
-  const [theme, setThemeState] = useState<ThemeId>(() => readStoredTheme() ?? DEFAULT_THEME);
-  const userOverride = useRef<boolean>(readStoredTheme() !== null);
+  // Theme the user picked manually (persisted); wins over the admin config.
+  const [userTheme, setUserTheme] = useState<ThemeId | null>(readStoredTheme);
 
-  // Read theme from admin config when conference changes,
-  // but only if user hasn't manually toggled
-  useEffect(() => {
-    if (userOverride.current) return;
-
-    if (!adminConfig || !conference) {
-      setThemeState(DEFAULT_THEME);
-      return;
-    }
-
-    const configKey = `theme:${conference}`;
-    const configTheme = adminConfig[configKey] as string | undefined;
-
-    if (configTheme && validIds.includes(configTheme)) {
-      setThemeState(configTheme as ThemeId);
-    } else {
-      setThemeState(DEFAULT_THEME);
-    }
-  }, [adminConfig, conference]);
+  // Otherwise use the per-conference theme from admin config (derived during render).
+  const configTheme = adminConfig && conference
+    ? (adminConfig[`theme:${conference}`] as string | undefined)
+    : undefined;
+  const theme: ThemeId = userTheme
+    ?? (configTheme && validIds.includes(configTheme) ? (configTheme as ThemeId) : DEFAULT_THEME);
 
   // Apply data-theme attribute to document
   useEffect(() => {
@@ -67,8 +54,7 @@ export function ThemeProvider({ children, adminConfig, conference }: ThemeProvid
   }, [theme]);
 
   const setTheme = useCallback((newTheme: ThemeId) => {
-    userOverride.current = true;
-    setThemeState(newTheme);
+    setUserTheme(newTheme);
     try {
       localStorage.setItem(STORAGE_KEY, newTheme);
     } catch {}

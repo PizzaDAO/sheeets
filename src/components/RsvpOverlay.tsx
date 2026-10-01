@@ -188,7 +188,7 @@ export function RsvpOverlay({
               onClick={onConfirm}
               className="flex-1 px-4 py-2.5 rounded-lg bg-green-600 hover:bg-green-500 text-white text-sm font-semibold transition-colors cursor-pointer"
             >
-              Done — I RSVP'd
+              Done — I RSVP&apos;d
             </button>
           </div>
         </div>

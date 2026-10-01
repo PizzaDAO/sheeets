@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Loader2, Plus, Trash2, Pencil, X, Copy, MapPin, ChevronDown } from 'lucide-react';
 import { FALLBACK_TABS } from '@/lib/constants';
 import type { AdminConfig, AdInventoryItem, AdvertisePageConfig } from '@/lib/types';
@@ -55,9 +55,11 @@ export default function AdInventoryTab({ adminConfig, allConferenceTabs, configL
     ));
   }, [adminConfig, adConference, adConferenceList]);
 
-  // Load per-conference ad config when conference changes
-  useEffect(() => {
-    if (!adminConfig) return;
+  // Load per-conference ad config when conference / adminConfig change
+  // (adjusted during render instead of in an effect).
+  const [loadedFor, setLoadedFor] = useState<{ conference: string; config: AdminConfig } | null>(null);
+  if (adminConfig && (loadedFor?.conference !== adConference || loadedFor.config !== adminConfig)) {
+    setLoadedFor({ conference: adConference, config: adminConfig });
     const inv = adminConfig[`ad_inventory:${adConference}`] as AdInventoryItem[] | undefined;
     setAdInventory(inv && Array.isArray(inv) ? inv : []);
     const page = adminConfig[`advertise_page:${adConference}`] as AdvertisePageConfig | undefined;
@@ -68,7 +70,7 @@ export default function AdInventoryTab({ adminConfig, allConferenceTabs, configL
     });
     setEditingInventoryId(null);
     setShowCopyFrom(false);
-  }, [adConference, adminConfig]);
+  }
 
   function handleCopyFrom(sourceConf: string) {
     if (!adminConfig) return;

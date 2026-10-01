@@ -35,7 +35,6 @@ const FORMAT_TAGS = TYPE_TAGS.filter((t) => !EXCLUDED_TAGS.includes(t));
 const TOPIC_TAGS = Object.keys(VIBE_COLORS).filter(
   (t) => !TYPE_TAGS.includes(t) && t !== 'default' && !EXCLUDED_TAGS.includes(t)
 );
-const ALL_TAGS = [...FORMAT_TAGS, ...TOPIC_TAGS];
 
 export function SubmitEventModal({ isOpen, onClose, upsellCopy, initialConference, conferenceTabs = [] }: SubmitEventModalProps) {
   const [step, setStep] = useState<Step>('input');
@@ -61,12 +60,17 @@ export function SubmitEventModal({ isOpen, onClose, upsellCopy, initialConferenc
   const [hasBar, setHasBar] = useState(false);
   const [addressCoords, setAddressCoords] = useState<{ lat: number; lng: number } | null>(null);
 
-  // Sync conference when modal opens
+  // Sync conference when modal opens (adjust state during render on prop
+  // change instead of in an effect — https://react.dev/learn/you-might-not-need-an-effect)
+  const [prevOpenKey, setPrevOpenKey] = useState<string | null>(null);
+  const openKey = isOpen ? `open:${initialConference ?? ''}` : null;
+  if (openKey !== prevOpenKey) {
+    setPrevOpenKey(openKey);
+    if (isOpen && initialConference) setConference(initialConference);
+  }
+
   useEffect(() => {
-    if (isOpen) {
-      trackSubmitEventOpen();
-      if (initialConference) setConference(initialConference);
-    }
+    if (isOpen) trackSubmitEventOpen();
   }, [isOpen, initialConference]);
 
   function resetForm() {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useMemo } from 'react';
+import Link from 'next/link';
 import { useAdminConfig } from '@/hooks/useAdminConfig';
 import { useABTest } from '@/hooks/useABTest';
 import { EVENT_TABS } from '@/lib/constants';
@@ -482,18 +483,18 @@ export function AdvertiseContent() {
             </a>
           </p>
           <div className="flex gap-4">
-            <a
+            <Link
               href="/api"
               className="text-sm text-stone-400 hover:text-amber-400 transition-colors"
             >
               API Docs
-            </a>
-            <a
+            </Link>
+            <Link
               href="/"
               className="text-sm text-stone-400 hover:text-amber-400 transition-colors"
             >
               Back to App
-            </a>
+            </Link>
           </div>
         </div>
       </div>

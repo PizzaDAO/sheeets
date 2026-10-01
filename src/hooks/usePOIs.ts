@@ -12,15 +12,22 @@ export function usePOIs() {
   const [loading, setLoading] = useState(true);
   const [ownerNames, setOwnerNames] = useState<Map<string, string>>(new Map());
 
-  // Fetch on mount when authenticated
-  useEffect(() => {
+  // Reset when the user changes (adjusted during render, not in an effect).
+  const [prevUser, setPrevUser] = useState<typeof user | undefined>(undefined);
+  if (user !== prevUser) {
+    setPrevUser(user);
     if (!user) {
       setPois([]);
       setOwnerNames(new Map());
       setLoading(false);
-      return;
+    } else {
+      setLoading(true);
     }
-    setLoading(true);
+  }
+
+  // Fetch on mount when authenticated
+  useEffect(() => {
+    if (!user) return;
     (async () => {
       const { data } = await supabase
         .from('pois')

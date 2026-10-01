@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useEffect, useRef } from 'react';
+import { useMemo, useEffect, useRef, useCallback } from 'react';
 import type { ABTest, ABTestVariant } from '@/lib/types';
 import { getVisitorId, assignVariant, trackImpressionOnce, trackABEvent } from '@/lib/ab-testing';
 
@@ -55,19 +55,24 @@ export function useABTest({ test, trackImpression = true }: UseABTestOptions): U
 
   const config = useMemo(() => variant?.config ?? {}, [variant]);
 
-  const trackClick = useMemo(() => {
-    if (!test || !variant) return () => {};
-    return (metadata?: Record<string, unknown>) => {
-      trackABEvent(test.id, variant.id, 'click', metadata);
-    };
-  }, [test, variant]);
+  const testId = test?.id;
+  const variantId = variant?.id;
 
-  const trackConversion = useMemo(() => {
-    if (!test || !variant) return () => {};
-    return (metadata?: Record<string, unknown>) => {
-      trackABEvent(test.id, variant.id, 'conversion', metadata);
-    };
-  }, [test, variant]);
+  const trackClick = useCallback(
+    (metadata?: Record<string, unknown>) => {
+      if (!testId || !variantId) return;
+      trackABEvent(testId, variantId, 'click', metadata);
+    },
+    [testId, variantId]
+  );
+
+  const trackConversion = useCallback(
+    (metadata?: Record<string, unknown>) => {
+      if (!testId || !variantId) return;
+      trackABEvent(testId, variantId, 'conversion', metadata);
+    },
+    [testId, variantId]
+  );
 
   return { variant, config, trackClick, trackConversion, isActive };
 }

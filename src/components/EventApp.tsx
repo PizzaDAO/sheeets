@@ -107,10 +107,7 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
   const {
     itinerary,
     toggle: toggleItinerary,
-    count: itineraryCount,
     ready: itineraryReady,
-    hiddenEvents,
-    toggleHidden,
   } = useItinerary();
 
   const [filtersExpanded, setFiltersExpanded] = useState(false);
@@ -140,7 +137,6 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
     availableTypes,
     availableVibes,
     conferenceEventCount,
-    conferenceItineraryCount,
     friendsForFilter,
     selectedFriendEventIds,
     friendsCountByEvent,
@@ -216,7 +212,6 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
   // Events filtered by everything EXCEPT vibes — used to compute tag counts
   const baseFilteredEvents = useMemo(
     () => applyFilters(events, filters, itinerary, filters.timeMode !== 'off' ? getConferenceNow(filters.conference).getTime() : undefined, selectedFriendEventIds, { skipVibes: true, orgEventIds, eventIdToOrgs }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [events, filters, itinerary, selectedFriendEventIds, orgEventIds, eventIdToOrgs]
   );
 
@@ -232,7 +227,6 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
     checkInToNearbyEvents,
     loading: checkInLoading,
     result: checkInResult,
-    clearResult: clearCheckInResult,
   } = useEventCheckIn();
 
   const { getRsvpStatus, openRsvp, confirmRsvp, closeRsvp, activeRsvp } = useRsvp();
@@ -391,13 +385,11 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
   } = useABTest({ test: adFrequencyTest });
 
   const {
-    config: sponsorConfig,
     trackClick: trackSponsorClick,
     isActive: sponsorTestActive,
   } = useABTest({ test: sponsorCopyTest });
 
   const {
-    config: nativeAdConfig,
     trackClick: trackNativeAdClick,
     isActive: nativeAdTestActive,
   } = useABTest({ test: nativeAdContentTest });
@@ -409,7 +401,7 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
 
 
   // Ad impression/click tracking for A/B tests
-  const handleAdImpression = useCallback((_adId: string) => {
+  const handleAdImpression = useCallback(() => {
     // Impressions are tracked via the useABTest hook automatically
   }, []);
 

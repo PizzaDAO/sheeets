@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useSyncExternalStore } from 'react';
+import Link from 'next/link';
 import { Search, ArrowLeft } from 'lucide-react';
 import { fetchEvents } from '@/lib/fetch-events';
 import { FALLBACK_TABS } from '@/lib/constants';
@@ -24,6 +25,18 @@ import { useAdminConfigEditor } from '@/components/admin/hooks/useAdminConfigEdi
 
 const SESSION_KEY = 'sheeets-admin-auth';
 
+const noopSubscribe = () => () => {};
+/** Admin password remembered for this tab (null during SSR/hydration). */
+function useSessionPassword(): string | null {
+  const saved = useSyncExternalStore(
+    noopSubscribe,
+    () => sessionStorage.getItem(SESSION_KEY),
+    () => null
+  );
+  // Legacy sessions stored the literal 'true' instead of the password.
+  return saved && saved !== 'true' ? saved : null;
+}
+
 type AdminTab = 'submissions' | 'featured' | 'conferences' | 'sponsors' | 'nativeAds' | 'upsell' | 'adInventory' | 'theme' | 'abTests' | 'adReports' | 'eventAnalytics' | 'sponsorData' | 'errors';
 
 const TAB_LABELS: { key: AdminTab; label: string }[] = [
@@ -43,11 +56,17 @@ const TAB_LABELS: { key: AdminTab; label: string }[] = [
 ];
 
 export default function AdminPage() {
-  const [password, setPassword] = useState('');
+  const [typedPassword, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
-  const [authed, setAuthed] = useState(false);
+  const [loggedIn, setAuthed] = useState(false);
+  // Restore the session (sessionStorage) after hydration, without an effect.
+  const sessionPassword = useSessionPassword();
+  const authed = loggedIn || sessionPassword !== null;
+  const password = loggedIn || sessionPassword === null ? typedPassword : sessionPassword;
   const [events, setEvents] = useState<ETHDenverEvent[]>([]);
-  const [loading, setLoading] = useState(false);
+  // Events are loading while authed and the fetch hasn't settled yet.
+  const [eventsSettled, setEventsSettled] = useState(false);
+  const loading = authed && !eventsSettled;
   // Featured tab filters live here because their controls sit in the sticky header
   const [conference, setConference] = useState(FALLBACK_TABS[0]?.name || '');
   const [search, setSearch] = useState('');
@@ -67,22 +86,12 @@ export default function AdminPage() {
     setConferences,
   } = useAdminConfigEditor(authed, password);
 
-  // Check session on mount
-  useEffect(() => {
-    const saved = sessionStorage.getItem(SESSION_KEY);
-    if (saved && saved !== 'true') {
-      setAuthed(true);
-      setPassword(saved);
-    }
-  }, []);
-
   // Fetch events when authed
   useEffect(() => {
     if (!authed) return;
-    setLoading(true);
     fetchEvents()
       .then(setEvents)
-      .finally(() => setLoading(false));
+      .finally(() => setEventsSettled(true));
   }, [authed]);
 
   // Merged conference tabs: FALLBACK_TABS + dynamic conferences from DB
@@ -170,9 +179,9 @@ export default function AdminPage() {
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <a href="/" className="text-stone-400 hover:text-white transition-colors">
+              <Link href="/" className="text-stone-400 hover:text-white transition-colors">
                 <ArrowLeft className="w-5 h-5" />
-              </a>
+              </Link>
               <h1 className="text-lg font-bold">Admin</h1>
               {activeTab === 'featured' && (
                 <span className="text-xs text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">

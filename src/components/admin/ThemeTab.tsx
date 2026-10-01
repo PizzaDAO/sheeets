@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { FALLBACK_TABS } from '@/lib/constants';
 import { THEME_OPTIONS, type ThemeId } from '@/lib/themes';
@@ -21,9 +21,11 @@ export default function ThemeTab({ adminConfig, allConferenceTabs, saving, saveM
   const [themeConference, setThemeConference] = useState(FALLBACK_TABS[0]?.name || '');
   const [selectedTheme, setSelectedTheme] = useState<ThemeId>('dark');
 
-  // Load per-conference theme when themeConference changes
-  useEffect(() => {
-    if (!adminConfig) return;
+  // Load per-conference theme when themeConference / adminConfig change
+  // (adjusted during render instead of in an effect).
+  const [loadedFor, setLoadedFor] = useState<{ conference: string; config: AdminConfig } | null>(null);
+  if (adminConfig && (loadedFor?.conference !== themeConference || loadedFor.config !== adminConfig)) {
+    setLoadedFor({ conference: themeConference, config: adminConfig });
     const t = adminConfig[`theme:${themeConference}`] as string | undefined;
     const validIds = THEME_OPTIONS.map(o => o.id) as string[];
     if (t && validIds.includes(t)) {
@@ -31,7 +33,7 @@ export default function ThemeTab({ adminConfig, allConferenceTabs, saving, saveM
     } else {
       setSelectedTheme('dark');
     }
-  }, [themeConference, adminConfig]);
+  }
 
   return (
     <div className="space-y-6">
