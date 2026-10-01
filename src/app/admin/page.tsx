@@ -19,11 +19,12 @@ import ThemeTab from '@/components/admin/ThemeTab';
 import AbTestsTab from '@/components/admin/AbTestsTab';
 import AdReportsTab from '@/components/admin/AdReportsTab';
 import EventAnalyticsTab from '@/components/admin/EventAnalyticsTab';
+import ErrorsTab from '@/components/admin/ErrorsTab';
 import { useAdminConfigEditor } from '@/components/admin/hooks/useAdminConfigEditor';
 
 const SESSION_KEY = 'sheeets-admin-auth';
 
-type AdminTab = 'submissions' | 'featured' | 'conferences' | 'sponsors' | 'nativeAds' | 'upsell' | 'adInventory' | 'theme' | 'abTests' | 'adReports' | 'eventAnalytics' | 'sponsorData';
+type AdminTab = 'submissions' | 'featured' | 'conferences' | 'sponsors' | 'nativeAds' | 'upsell' | 'adInventory' | 'theme' | 'abTests' | 'adReports' | 'eventAnalytics' | 'sponsorData' | 'errors';
 
 const TAB_LABELS: { key: AdminTab; label: string }[] = [
   { key: 'submissions', label: 'Submissions' },
@@ -38,6 +39,7 @@ const TAB_LABELS: { key: AdminTab; label: string }[] = [
   { key: 'adReports', label: 'Ad Reports' },
   { key: 'eventAnalytics', label: 'Event Analytics' },
   { key: 'sponsorData', label: 'Sponsor Data' },
+  { key: 'errors', label: 'Errors' },
 ];
 
 export default function AdminPage() {
@@ -328,6 +330,8 @@ export default function AdminPage() {
         {keepAlive('eventAnalytics', (
           <EventAnalyticsTab password={password} allConferenceTabs={allConferenceTabs} />
         ))}
+
+        {keepAlive('errors', <ErrorsTab password={password} />)}
 
         {activeTab === 'sponsorData' && (
           <SponsorDataTab allConferenceTabs={allConferenceTabs} password={password} />
