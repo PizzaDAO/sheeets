@@ -16,7 +16,6 @@ import { TagBadge } from './TagBadge';
 import { OGImage } from './OGImage';
 import { EmojiReactions } from './EmojiReactions';
 import UserAvatar from './UserAvatar';
-import { CommentSection } from './CommentSection';
 import { FriendAvatarStack } from './FriendAvatarStack';
 import { RsvpButton } from './RsvpButton';
 
@@ -67,7 +66,6 @@ function FriendsGoingModal({
 
   const avatarBg = accentColor === 'green' ? 'bg-green-500/20' : '';
   const avatarBgStyle = accentColor === 'green' ? undefined : { backgroundColor: 'color-mix(in srgb, var(--friend-blue) 20%, transparent)' };
-  const avatarText = accentColor === 'green' ? 'text-green-400' : '';
 
   return createPortal(
     <div
@@ -128,13 +126,11 @@ export const EventCard = memo(function EventCard({
   event,
   isInItinerary = false,
   onItineraryToggle,
-  friendsCount,
   friendsGoing,
   checkedInFriends,
   checkInCount,
   reactions,
   onToggleReaction,
-  commentCount,
   conference,
   onCheckIn,
   checkInLoading,

@@ -247,7 +247,6 @@ async function fetchAudiences(accessToken) {
 // ---------- HTML generation ----------
 
 function formatDate(yyyymmdd) {
-  const y = yyyymmdd.slice(0, 4);
   const m = yyyymmdd.slice(4, 6);
   const d = yyyymmdd.slice(6, 8);
   return `${m}/${d}`;

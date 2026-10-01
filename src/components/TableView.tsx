@@ -141,7 +141,6 @@ const COLUMN_COUNT = 7; // star, friends, time, organizer, event, location, tags
 
 export const TableView = memo(function TableView({
   events,
-  totalCount,
   itinerary,
   onItineraryToggle,
   onScrolledChange,
@@ -957,13 +956,11 @@ function DateGroup({
   itinerary,
   onItineraryToggle,
   setSeparatorRef,
-  friendsCountByEvent,
   friendsByEvent,
   checkInCounts,
   onSelectEvent,
   conference,
   featuredEvents,
-  selectedEventId,
   isSignedIn,
   onSignIn,
   liveEventIds,

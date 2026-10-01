@@ -225,13 +225,9 @@ function GalleryCard({
 
 export function GalleryView({
   events,
-  totalCount,
   itinerary,
   onItineraryToggle,
-  friendsCountByEvent,
   friendsByEvent,
-  scrollContainerRef,
-  conference,
   liveEventIds,
 }: GalleryViewProps) {
   /* ---- date-group the events ---- */

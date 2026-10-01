@@ -1,9 +1,6 @@
 import Image from 'next/image';
 import { getConferenceTabs, getUpcomingConferences } from '@/lib/get-conferences';
 import { fetchEventsCached } from '@/lib/fetch-events-cached';
-import { conferenceToTab } from '@/lib/conferences';
-import type { TabConfig } from '@/lib/conferences';
-import type { ConferenceConfig } from '@/lib/types';
 import { NotifyForm } from '@/components/NotifyForm';
 
 // Revalidate every 60s so new conferences appear without a redeploy
@@ -299,7 +296,6 @@ export default async function Home() {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {upcoming.map((conf) => {
-              const tab = conferenceToTab(conf);
               const city = getCity(conf.center, conf.timezone);
               const dateRange = formatConfDateRange(conf.startDate, conf.endDate);
               const daysLabel = getDaysAwayLabel(conf.startDate, conf.endDate);

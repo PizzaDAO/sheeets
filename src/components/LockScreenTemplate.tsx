@@ -15,13 +15,6 @@ interface LockScreenTemplateProps {
   logoDataUrl?: string;
 }
 
-const PLATFORM_LABELS: Record<string, string> = {
-  x: 'X / Twitter',
-  telegram: 'Telegram',
-  linkedin: 'LinkedIn',
-  friend: 'plan.wtf',
-};
-
 const PLATFORM_LOGOS: Record<string, string> = {
   x: `data:image/svg+xml,${encodeURIComponent('<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="#fafaf9"/><path d="M17.176 4h2.645l-5.78 6.606 6.8 8.994h-4.676l-4.17-5.453-4.77 5.453H4.58l6.18-7.066L4.2 4h4.795l3.77 4.984zm-.928 14.016h1.466L8.005 5.506H6.44z" fill="#0c0a09"/></svg>')}`,
   telegram: `data:image/svg+xml,${encodeURIComponent('<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="#fafaf9"/><path d="M11.944 3A9 9 0 0 0 3 12a9 9 0 0 0 9 9 9 9 0 0 0 9-9 9 9 0 0 0-9-9zm3.722 5.418c.075-.001.241.017.349.105a.38.38 0 0 1 .128.244c.012.07.027.23.015.354-.135 1.424-.721 4.877-1.02 6.47-.126.675-.374.901-.615.923-.522.049-.919-.345-1.425-.677-.792-.52-1.24-.843-2.009-1.35-.889-.585-.313-.908.194-1.433.133-.138 2.435-2.233 2.48-2.423.006-.024.011-.113-.042-.159s-.13-.031-.187-.018c-.08.018-1.345.856-3.796 2.51-.36.247-.685.367-.977.36-.321-.006-.939-.181-1.399-.33-.564-.184-1.012-.281-.973-.592.02-.162.244-.328.67-.498 2.624-1.143 4.372-1.897 5.249-2.261 2.499-1.04 3.019-1.221 3.357-1.226z" fill="#0c0a09"/></svg>')}`,

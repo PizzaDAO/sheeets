@@ -35,7 +35,6 @@ const FORMAT_TAGS = TYPE_TAGS.filter((t) => !EXCLUDED_TAGS.includes(t));
 const TOPIC_TAGS = Object.keys(VIBE_COLORS).filter(
   (t) => !TYPE_TAGS.includes(t) && t !== 'default' && !EXCLUDED_TAGS.includes(t)
 );
-const ALL_TAGS = [...FORMAT_TAGS, ...TOPIC_TAGS];
 
 export function SubmitEventModal({ isOpen, onClose, upsellCopy, initialConference, conferenceTabs = [] }: SubmitEventModalProps) {
   const [step, setStep] = useState<Step>('input');
