@@ -28,9 +28,7 @@ jobs:
       - name: Test
         run: npm test
 
-      # TODO: remove continue-on-error once the ~50 pre-existing lint errors are fixed.
       - name: Lint
         run: npm run lint
-        continue-on-error: true
 
       # `next build` is intentionally not run here: it needs Supabase/Mapbox secrets.
