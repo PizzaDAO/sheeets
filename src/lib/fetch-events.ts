@@ -89,7 +89,7 @@ export async function fetchEvents(runtimeAddresses?: GeoAddressMap, tabs?: TabCo
     // Find header row, events start right after.
     // If no header row found in data, check if Google Sheets already consumed it
     // as column labels (happens when the sheet has no promo rows above the header).
-    let headerIdx = findHeaderIndex(allRows);
+    const headerIdx = findHeaderIndex(allRows);
     if (headerIdx === -1) {
       // If Google Sheets already consumed the header as column labels
       // (sheet has no promo rows above the header), all rows are data.
