@@ -226,6 +226,30 @@ export const AdTrackSchema = z.object({
   metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
+/**
+ * Schema for one item of POST /api/errors. Over-long strings are truncated
+ * (not rejected) so a huge stack never loses the whole report.
+ */
+const truncStr = (max: number) =>
+  z.string().transform((s) => (s.length > max ? s.slice(0, max) : s));
+
+export const ClientErrorSchema = z.object({
+  message: z.string().min(1, 'message is required').transform((s) => s.slice(0, 500)),
+  stack: truncStr(4000).nullish(),
+  url: truncStr(500).nullish(),
+  route: truncStr(300).nullish(),
+  userAgent: truncStr(300).nullish(),
+  kind: z.enum(['error', 'unhandledrejection', 'boundary']).optional(),
+  digest: truncStr(100).optional(),
+});
+
+/** Schema for POST /api/admin/errors */
+export const AdminErrorActionSchema = z.object({
+  password: z.string(),
+  ids: z.array(z.string().uuid()).min(1).max(200),
+  resolved: z.boolean().default(true),
+});
+
 /** Schema for POST /api/admin/submissions */
 export const SubmissionActionSchema = z.object({
   password: z.string(),
