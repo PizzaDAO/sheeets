@@ -10,6 +10,7 @@ import { shortenAddress, isSafeHttpUrl } from '@/lib/utils';
 import { AddressLink } from './AddressLink';
 import { TagBadge } from './TagBadge';
 import { EventCard } from './EventCard';
+import { ClaimEventLink } from './ClaimEventLink';
 import { CalendarIcon } from './icons/CalendarIcon';
 import { FriendAvatarStack } from './FriendAvatarStack';
 import UserAvatar from './UserAvatar';
@@ -614,6 +615,9 @@ function EventDetailModal({
             onRsvp={onRsvp}
             onOpenLightbox={onOpenLightbox ? () => onOpenLightbox() : undefined}
           />
+          <div className="mt-1.5 text-right">
+            <ClaimEventLink event={event} className="!text-white/70 hover:!text-white" />
+          </div>
         </div>
       </div>
     </>
