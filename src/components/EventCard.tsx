@@ -178,7 +178,7 @@ export const EventCard = memo(function EventCard({
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [event.id, event.name, event.isFeatured, conference]);
+  }, [event.id, event.name, event.isFeatured, conference, compact]);
 
   // Track event impressions via IntersectionObserver (all events in list view)
   useEffect(() => {
@@ -205,7 +205,7 @@ export const EventCard = memo(function EventCard({
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [event.id, event.name, conference]);
+  }, [event.id, event.name, conference, compact]);
 
   const handleCopyLink = (e: React.MouseEvent) => {
     e.stopPropagation();
