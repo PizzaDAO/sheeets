@@ -6,6 +6,7 @@ import { ChevronUp, ChevronDown, MapPinOff } from 'lucide-react';
 import type { ETHDenverEvent, POI, POICategory, ReactionEmoji, FriendLocation, FriendInfo } from '@/lib/types';
 import type { TabConfig } from '@/lib/conferences';
 import { EventCard } from './EventCard';
+import type { VenuePin } from '@/lib/venue-pins';
 
 const MapView = dynamic(
   () => import('./MapView').then((mod) => ({ default: mod.MapView })),
@@ -33,6 +34,8 @@ interface MapViewWrapperProps {
   onToggleReaction?: (eventId: string, emoji: ReactionEmoji) => void;
   commentCounts?: Map<string, number>;
   friendLocations?: FriendLocation[];
+  /** Friends checked in at events, pinned at the venue (preferred over raw GPS). */
+  venuePins?: VenuePin[];
   conference?: string;
   pois?: POI[];
   onAddPOI?: (poi: { name: string; lat: number; lng: number; address?: string | null; category: POICategory; note?: string | null }) => Promise<unknown>;
@@ -62,6 +65,7 @@ export const MapViewWrapper = memo(function MapViewWrapper({
   onToggleReaction,
   commentCounts,
   friendLocations,
+  venuePins,
   conference,
   pois,
   onAddPOI,
@@ -101,6 +105,7 @@ export const MapViewWrapper = memo(function MapViewWrapper({
         onToggleReaction={onToggleReaction}
         commentCounts={commentCounts}
         friendLocations={friendLocations}
+        venuePins={venuePins}
         conference={conference}
         pois={pois}
         onAddPOI={onAddPOI}
