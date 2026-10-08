@@ -6,7 +6,6 @@ import type { ETHDenverEvent, ReactionEmoji, NativeAd, FriendInfo } from '@/lib/
 import { formatDateLabel } from '@/lib/utils';
 import { sortByStartTime } from '@/lib/time-parse';
 import { EventCard } from './EventCard';
-import { FeaturedSection } from './FeaturedSection';
 import NativeAdCard from './NativeAdCard';
 import { imageCache, FlyerLightbox } from './OGImage';
 
@@ -122,7 +121,6 @@ function buildFlatList(
 
 export const ListView = memo(function ListView({
   events,
-  totalCount,
   itinerary,
   onItineraryToggle,
   friendsCountByEvent,
@@ -187,6 +185,7 @@ export const ListView = memo(function ListView({
       return 180; // event card estimate
     },
     overscan: 4,
+    initialOffset: 0,
     measureElement: (el) => {
       // Include the item's actual height (padding is part of the element)
       return el.getBoundingClientRect().height;
@@ -197,9 +196,10 @@ export const ListView = memo(function ListView({
   useEffect(() => {
     if (containerRef.current) {
       containerRef.current.scrollTop = 0;
+      virtualizer.scrollToOffset(0);
       virtualizer.measure();
     }
-  }, [virtualizer, containerRef]);
+  }, [virtualizer, containerRef, flatItems]);
 
   /* ---- flyer lightbox navigation ---- */
   const [lightboxEventIndex, setLightboxEventIndex] = useState<number | null>(null);

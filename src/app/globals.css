@@ -1,4 +1,3 @@
-@import 'mapbox-gl/dist/mapbox-gl.css';
 @import "tailwindcss";
 
 /* Safe area insets for notched devices */
@@ -624,48 +623,6 @@ input, select, textarea {
   background-color: #262220;
 }
 
-/* Ensure popup stays within map bounds */
-.mapboxgl-popup {
-  max-width: calc(100vw - 1rem) !important;
-}
-
-/* Mapbox popup overrides — theme-aware */
-.map-popup .mapboxgl-popup-content {
-  background-color: var(--theme-popup-bg);
-  border: 1px solid var(--theme-popup-border);
-  border-radius: 8px;
-  padding: 12px;
-  box-shadow: 0 4px 24px var(--theme-popup-shadow);
-  max-width: calc(100vw - 2rem);
-  color: var(--theme-text-primary);
-}
-
-.map-popup .mapboxgl-popup-tip {
-  border-top-color: var(--theme-popup-bg);
-}
-
-.map-popup-featured .mapboxgl-popup-content {
-  border: 2px solid var(--theme-popup-featured-border);
-}
-
-.map-popup .mapboxgl-popup-close-btn {
-  display: none;
-}
-
-/* Scrollbar styling for multi-event popup */
-.map-popup .mapboxgl-popup-content ::-webkit-scrollbar {
-  width: 4px;
-}
-
-.map-popup .mapboxgl-popup-content ::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.map-popup .mapboxgl-popup-content ::-webkit-scrollbar-thumb {
-  background-color: var(--theme-border-primary);
-  border-radius: 2px;
-}
-
 /* Hide scrollbar for filter rows while keeping scroll functionality */
 .scrollbar-hide {
   -ms-overflow-style: none;
@@ -687,16 +644,4 @@ input, select, textarea {
 @keyframes sponsors-scroll-left {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
-}
-
-/* Shrink Mapbox logo */
-.mapboxgl-ctrl-logo {
-  transform: scale(0.65);
-  transform-origin: bottom left;
-}
-
-/* Shrink Mapbox attribution button to match logo */
-.mapboxgl-ctrl-attrib.mapboxgl-compact {
-  transform: scale(0.65);
-  transform-origin: bottom right;
 }

@@ -35,7 +35,7 @@ function buildDefaultFilters(conference: string, tabs?: TabConfig[]): FilterStat
     selectedFriends: [],
     itineraryOnly: false,
     searchQuery: '',
-    nowMode: false,
+    timeMode: 'off',
     selectedOrgs: [],
   };
 }
@@ -63,7 +63,7 @@ export function useFilters(initialConference?: string, conferenceTabs?: TabConfi
   }, [conferenceTabs]);
 
   const setDateTimeRange = useCallback((start: string, end: string) => {
-    setFilters((prev) => ({ ...prev, startDateTime: start, endDateTime: end }));
+    setFilters((prev) => ({ ...prev, startDateTime: start, endDateTime: end, timeMode: 'off' }));
   }, []);
 
   const toggleVibe = useCallback((vibe: string) => {
@@ -91,8 +91,13 @@ export function useFilters(initialConference?: string, conferenceTabs?: TabConfi
     []
   );
 
-  const toggleNowMode = useCallback(() => {
-    setFilters((prev) => ({ ...prev, nowMode: !prev.nowMode }));
+  const cycleTimeMode = useCallback(() => {
+    setFilters((prev) => {
+      const order: FilterState['timeMode'][] = ['off', 'now', 'today', 'tomorrow'];
+      const idx = order.indexOf(prev.timeMode);
+      const next = order[(idx + 1) % order.length];
+      return { ...prev, timeMode: next };
+    });
   }, []);
 
   const toggleTagMatchAll = useCallback(() => {
@@ -129,7 +134,7 @@ export function useFilters(initialConference?: string, conferenceTabs?: TabConfi
     toggleVibe,
     toggleFriend,
     toggleBool,
-    toggleNowMode,
+    cycleTimeMode,
     toggleTagMatchAll,
     clearFilters,
     activeFilterCount,

@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { getDisplayName } from '@/lib/user-display';
 import UserAvatar from './UserAvatar';
+import { isSafeHttpUrl } from '@/lib/utils';
 
 interface ProfileCardModalProps {
   isOpen: boolean;
@@ -36,7 +37,17 @@ export default function ProfileCardModal({
   telegramHandle,
 }: ProfileCardModalProps) {
   const { user } = useAuth();
-  const [friendStatus, setFriendStatus] = useState<FriendStatus>('loading');
+  // Friend status fetched from Supabase, tagged with the viewer/profile pair it
+  // belongs to. 'not-logged-in' / 'self' / 'loading' are derived during render.
+  const fetchKey = isOpen && user && user.id !== userId ? `${user.id}:${userId}` : null;
+  const [fetchedStatus, setFetchedStatus] = useState<{ key: string; status: FriendStatus } | null>(null);
+  const friendStatus: FriendStatus = !user
+    ? 'not-logged-in'
+    : user.id === userId
+      ? 'self'
+      : fetchedStatus && fetchedStatus.key === fetchKey
+        ? fetchedStatus.status
+        : 'loading';
   const [incomingRequestId, setIncomingRequestId] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -60,20 +71,11 @@ export default function ProfileCardModal({
 
   // Fetch friend status
   useEffect(() => {
-    if (!isOpen) return;
-
-    if (!user) {
-      setFriendStatus('not-logged-in');
-      return;
-    }
-
-    if (user.id === userId) {
-      setFriendStatus('self');
-      return;
-    }
+    if (!fetchKey || !user) return;
+    const key = fetchKey;
+    const setFriendStatus = (status: FriendStatus) => setFetchedStatus({ key, status });
 
     async function checkFriendStatus() {
-      setFriendStatus('loading');
       const currentUserId = user!.id;
 
       // Check if already friends
@@ -128,7 +130,11 @@ export default function ProfileCardModal({
     }
 
     checkFriendStatus();
-  }, [isOpen, user, userId]);
+  }, [fetchKey, user, userId]);
+
+  const setFriendStatus = (status: FriendStatus) => {
+    if (fetchKey) setFetchedStatus({ key: fetchKey, status });
+  };
 
   const handleSendRequest = async () => {
     setActionLoading(true);
@@ -277,7 +283,7 @@ export default function ProfileCardModal({
                   <ExternalLink className="w-3 h-3" />
                 </a>
               )}
-              {linkedinUrl && (
+              {isSafeHttpUrl(linkedinUrl) && (
                 <a
                   href={linkedinUrl}
                   target="_blank"

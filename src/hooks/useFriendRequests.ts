@@ -25,6 +25,18 @@ export function useFriendRequests({ refreshFriends }: UseFriendRequestsOptions) 
   const [searchLoading, setSearchLoading] = useState(false);
   const initialFetchDone = useRef(false);
 
+  // Clear request lists on sign-out (adjusted during render, not in an effect).
+  const signedOut = !authLoading && !user;
+  const [prevSignedOut, setPrevSignedOut] = useState(signedOut);
+  if (signedOut !== prevSignedOut) {
+    setPrevSignedOut(signedOut);
+    if (signedOut) {
+      setIncomingRequests([]);
+      setOutgoingRequests([]);
+      setPendingIncomingCount(0);
+    }
+  }
+
   const fetchRequests = useCallback(async () => {
     if (!user) return;
 
@@ -77,15 +89,13 @@ export function useFriendRequests({ refreshFriends }: UseFriendRequestsOptions) 
     if (authLoading) return;
 
     if (!user) {
-      setIncomingRequests([]);
-      setOutgoingRequests([]);
-      setPendingIncomingCount(0);
       initialFetchDone.current = false;
       return;
     }
 
     if (initialFetchDone.current) return;
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- async: its setState calls all run after an await, not synchronously in the effect
     fetchRequests().then(() => {
       initialFetchDone.current = true;
     });
@@ -178,7 +188,7 @@ export function useFriendRequests({ refreshFriends }: UseFriendRequestsOptions) 
     // Then refresh from server in the background
     fetchRequests();
     refreshFriends();
-  }, [user, fetchRequests, refreshFriends]);
+  }, [user, searchResults, fetchRequests, refreshFriends]);
 
   const respondToRequest = useCallback(async (requestId: string, accept: boolean) => {
     if (!user) return;

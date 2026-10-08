@@ -1,7 +1,28 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { isAdminPassword } from '@/lib/admin-auth';
 
-const ADMIN_PASSWORD = 'trusttheplan';
+interface AdReportRpcRow {
+  ad_id: string;
+  ad_name: string | null;
+  placement: string;
+  impressions: number | string;
+  unique_impressions: number | string;
+  clicks: number | string;
+  unique_clicks: number | string;
+  ctr: number | string;
+  first_seen: string;
+  last_seen: string;
+}
+
+interface AdEventRow {
+  ad_id: string;
+  ad_name: string | null;
+  placement: string;
+  event_type: string;
+  visitor_id: string | null;
+  created_at: string;
+}
 
 function getSupabase() {
   return createClient(
@@ -13,7 +34,7 @@ function getSupabase() {
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const password = searchParams.get('password');
-  if (password !== ADMIN_PASSWORD) {
+  if (!isAdminPassword(password)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -36,7 +57,7 @@ export async function GET(req: NextRequest) {
   });
 
   if (!rpcError && rpcData) {
-    const ads = (rpcData as any[]).map(a => ({
+    const ads = (rpcData as AdReportRpcRow[]).map(a => ({
       ad_id: a.ad_id,
       ad_name: a.ad_name || a.ad_id,
       placement: a.placement,
@@ -64,7 +85,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Fallback: client-side aggregation with pagination if RPC not available
-  let allEvents: any[] = [];
+  let allEvents: AdEventRow[] = [];
   let offset = 0;
   const pageSize = 1000;
 

@@ -232,6 +232,38 @@ export interface EventRow {
 }
 
 /**
+ * Neutralize spreadsheet formula injection in user-supplied text.
+ *
+ * Event rows are written with valueInputOption=USER_ENTERED (not RAW) on
+ * purpose: the sheet relies on Sheets parsing "Mar 21" / "6:00 PM" into real
+ * date/time values (gviz reads typed columns) and "TRUE"/"FALSE" into checkbox
+ * booleans for Food/Bar. RAW would store those as plain strings and break
+ * parsing, so instead any value that would be interpreted as a formula is
+ * prefixed with an apostrophe, which Sheets treats as "literal text" and hides.
+ */
+export function escapeSheetValue(value: string): string {
+  return /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
+}
+
+/** Build the A:L cell values for an event row (user text escaped). */
+function eventRowValues(event: EventRow): string[] {
+  return [
+    escapeSheetValue(event.date),
+    escapeSheetValue(event.startTime),
+    escapeSheetValue(event.endTime),
+    escapeSheetValue(event.organizer),
+    escapeSheetValue(event.name),
+    escapeSheetValue(event.address),
+    escapeSheetValue(event.cost),
+    escapeSheetValue(event.tags),
+    escapeSheetValue(event.link),
+    event.food ? 'TRUE' : 'FALSE',
+    event.bar ? 'TRUE' : 'FALSE',
+    escapeSheetValue(event.note),
+  ];
+}
+
+/**
  * Write an event row to the sheet.
  * Columns A:L map to: Date, Start Time, End Time, Organizer, Event Name, Address, Cost, Tags, Link, Food, Bar, Note
  * Returns the row number written.
@@ -243,22 +275,7 @@ export async function appendEventRow(sheetName: string, event: EventRow): Promis
   const range = encodeURIComponent(`'${sheetName}'!A${row}:L${row}`);
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=USER_ENTERED`;
 
-  const values = [
-    [
-      event.date,
-      event.startTime,
-      event.endTime,
-      event.organizer,
-      event.name,
-      event.address,
-      event.cost,
-      event.tags,
-      event.link,
-      event.food ? 'TRUE' : 'FALSE',
-      event.bar ? 'TRUE' : 'FALSE',
-      event.note,
-    ],
-  ];
+  const values = [eventRowValues(event)];
 
   const res = await fetch(url, {
     method: 'PUT',
@@ -418,22 +435,7 @@ export async function insertEventRowSorted(sheetName: string, gid: number, event
   const writeRange = encodeURIComponent(`'${sheetName}'!A${insertRow}:L${insertRow}`);
   const writeUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${writeRange}?valueInputOption=USER_ENTERED`;
 
-  const values = [
-    [
-      event.date,
-      event.startTime,
-      event.endTime,
-      event.organizer,
-      event.name,
-      event.address,
-      event.cost,
-      event.tags,
-      event.link,
-      event.food ? 'TRUE' : 'FALSE',
-      event.bar ? 'TRUE' : 'FALSE',
-      event.note,
-    ],
-  ];
+  const values = [eventRowValues(event)];
 
   const writeRes = await fetch(writeUrl, {
     method: 'PUT',

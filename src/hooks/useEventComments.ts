@@ -14,13 +14,17 @@ export function useEventComments(eventId: string | null) {
   const [comments, setComments] = useState<EventComment[]>([]);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (!eventId) {
-      setComments([]);
-      return;
-    }
+  // Reset when the event (or viewer) changes — adjusted during render rather
+  // than with a synchronous setState in the fetch effect.
+  const [prevKey, setPrevKey] = useState<{ eventId: string | null; user: typeof user } | null>(null);
+  if (prevKey?.eventId !== eventId || prevKey.user !== user) {
+    setPrevKey({ eventId, user });
+    if (!eventId) setComments([]);
+    else setLoading(true);
+  }
 
-    setLoading(true);
+  useEffect(() => {
+    if (!eventId) return;
 
     async function fetchComments() {
       const { data, error } = await supabase

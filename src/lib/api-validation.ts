@@ -37,6 +37,90 @@ export async function parseBody<T>(
   return { data: result.data };
 }
 
+/* ------------------------------------------------------------------ */
+/* Batch parsing (tracking beacons)                                    */
+/* ------------------------------------------------------------------ */
+
+/** Max items accepted per tracking request. Keep in sync with tracking-queue. */
+export const MAX_BATCH_ITEMS = 50;
+
+export type BatchParseResult<T> =
+  | { items: T[]; dropped: number; error?: never }
+  | { items?: never; dropped?: never; error: { status: number; message: string } };
+
+/**
+ * Parse a tracking payload that is EITHER a single object (legacy) OR
+ * `{ events: [...] }` (batched, up to MAX_BATCH_ITEMS).
+ *
+ * - Single object: must be valid, else 400 (backwards compatible).
+ * - Batch: invalid items are dropped; valid ones are returned.
+ * - Batch larger than `max`: 413.
+ */
+export function parseBatch<T>(
+  raw: unknown,
+  schema: ZodSchema<T>,
+  max: number = MAX_BATCH_ITEMS
+): BatchParseResult<T> {
+  const isBatch =
+    typeof raw === 'object' &&
+    raw !== null &&
+    !Array.isArray(raw) &&
+    Array.isArray((raw as { events?: unknown }).events);
+
+  if (!isBatch) {
+    const result = schema.safeParse(raw);
+    if (!result.success) {
+      const messages = result.error.issues.map(
+        (i) => `${i.path.join('.')}: ${i.message}`
+      );
+      return { error: { status: 400, message: messages.join('; ') } };
+    }
+    return { items: [result.data], dropped: 0 };
+  }
+
+  const events = (raw as { events: unknown[] }).events;
+  if (events.length > max) {
+    return { error: { status: 413, message: `Too many events (max ${max})` } };
+  }
+
+  const items: T[] = [];
+  for (const e of events) {
+    const result = schema.safeParse(e);
+    if (result.success) items.push(result.data);
+  }
+  return { items, dropped: events.length - items.length };
+}
+
+/**
+ * Read the request body (works for sendBeacon Blobs too — req.json() ignores
+ * the content-type) and run parseBatch. Returns { items } or { error }.
+ */
+export async function parseBatchBody<T>(
+  req: NextRequest,
+  schema: ZodSchema<T>,
+  max: number = MAX_BATCH_ITEMS
+): Promise<{ items: T[]; dropped: number; error?: never } | { items?: never; error: NextResponse }> {
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    return {
+      error: NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 }),
+    };
+  }
+
+  const result = parseBatch(raw, schema, max);
+  if (result.error) {
+    return {
+      error: NextResponse.json(
+        { error: result.error.message },
+        { status: result.error.status }
+      ),
+    };
+  }
+  return { items: result.items, dropped: result.dropped };
+}
+
 // ---------------------------------------------------------------------------
 // Shared Zod schemas for API routes
 // ---------------------------------------------------------------------------
@@ -118,6 +202,54 @@ export const ABTrackEventSchema = z.object({
   metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
+/** Schema for one item of POST /api/events/track */
+export const EventTrackSchema = z.object({
+  event_id: z.string().min(1, 'event_id is required'),
+  event_name: z.string().optional(),
+  event_type: z.enum(['click', 'impression', 'pin-click']),
+  conference: z.string().optional(),
+  visitor_id: z.string().optional(),
+  url: z.string().optional(),
+  source: z.string().optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+});
+
+/** Schema for one item of POST /api/ads/track */
+export const AdTrackSchema = z.object({
+  ad_id: z.string().min(1, 'ad_id is required'),
+  ad_name: z.string().optional(),
+  placement: z.string().min(1, 'placement is required'),
+  event_type: z.enum(['impression', 'click']),
+  conference: z.string().optional(),
+  visitor_id: z.string().optional(),
+  url: z.string().optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+});
+
+/**
+ * Schema for one item of POST /api/errors. Over-long strings are truncated
+ * (not rejected) so a huge stack never loses the whole report.
+ */
+const truncStr = (max: number) =>
+  z.string().transform((s) => (s.length > max ? s.slice(0, max) : s));
+
+export const ClientErrorSchema = z.object({
+  message: z.string().min(1, 'message is required').transform((s) => s.slice(0, 500)),
+  stack: truncStr(4000).nullish(),
+  url: truncStr(500).nullish(),
+  route: truncStr(300).nullish(),
+  userAgent: truncStr(300).nullish(),
+  kind: z.enum(['error', 'unhandledrejection', 'boundary']).optional(),
+  digest: truncStr(100).optional(),
+});
+
+/** Schema for POST /api/admin/errors */
+export const AdminErrorActionSchema = z.object({
+  password: z.string(),
+  ids: z.array(z.string().uuid()).min(1).max(200),
+  resolved: z.boolean().default(true),
+});
+
 /** Schema for POST /api/admin/submissions */
 export const SubmissionActionSchema = z.object({
   password: z.string(),
@@ -139,3 +271,46 @@ export const SubmissionActionSchema = z.object({
     note: z.string().optional(),
   }).optional(),
 });
+
+// ---------------------------------------------------------------------------
+// Host claims (plans/host-analytics.md)
+// ---------------------------------------------------------------------------
+
+/** Sheet event id: `evt-{base36 hash}` with an optional `-N` duplicate suffix. */
+export const EventIdSchema = z
+  .string()
+  .regex(/^evt-[a-z0-9]{1,20}(-\d{1,4})?$/, 'Invalid event id');
+
+export const ClaimIdSchema = z.string().uuid('Invalid claim id');
+
+const claimNote = z
+  .string()
+  .trim()
+  .min(1, 'Please add a short note')
+  .max(1000, 'Note must be 1000 characters or fewer');
+
+/** Schema for POST /api/host/claims */
+export const ClaimCreateSchema = z.object({
+  eventId: EventIdSchema,
+  /** Request manual review straight away (required for non-Luma events). */
+  manual: z.boolean().optional().default(false),
+  note: claimNote.optional(),
+});
+
+/** Schema for POST /api/host/claims/[id]/manual */
+export const ClaimManualSchema = z.object({
+  note: claimNote,
+});
+
+/** Schema for POST /api/admin/claims/[id] */
+export const AdminClaimActionSchema = z
+  .object({
+    password: z.string(),
+    action: z.enum(['approve', 'reject', 'revoke', 'relink']),
+    note: z.string().trim().max(1000).optional(),
+    eventId: EventIdSchema.optional(),
+  })
+  .refine((d) => d.action !== 'relink' || !!d.eventId, {
+    message: 'eventId is required for relink',
+    path: ['eventId'],
+  });

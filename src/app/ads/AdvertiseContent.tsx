@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useRef, useMemo } from 'react';
+import Link from 'next/link';
 import { useAdminConfig } from '@/hooks/useAdminConfig';
 import { useABTest } from '@/hooks/useABTest';
 import { EVENT_TABS } from '@/lib/constants';
+import { isSafeLinkUrl } from '@/lib/utils';
 import type { ABTest, AdInventoryItem, AdvertisePageConfig, SponsorshipTier } from '@/lib/types';
 import { Check, ArrowRight, Loader2, MapPin, ChevronDown } from 'lucide-react';
 
@@ -339,7 +341,7 @@ export function AdvertiseContent() {
           </p>
         )}
         <div className="flex flex-wrap gap-3">
-          {pageConfig.ctaUrl && (
+          {isSafeLinkUrl(pageConfig.ctaUrl) && (
             <a
               href={pageConfig.ctaUrl}
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-stone-900 text-sm font-medium rounded-lg transition-colors"
@@ -349,7 +351,7 @@ export function AdvertiseContent() {
               <ArrowRight className="w-4 h-4" />
             </a>
           )}
-          {pageConfig.ctaSecondaryUrl && (
+          {isSafeLinkUrl(pageConfig.ctaSecondaryUrl) && (
             <a
               href={pageConfig.ctaSecondaryUrl}
               target="_blank"
@@ -455,7 +457,7 @@ export function AdvertiseContent() {
           {pageConfig.footerText ||
             'Get in touch to discuss sponsorship opportunities and custom packages.'}
         </p>
-        {pageConfig.ctaUrl && (
+        {isSafeLinkUrl(pageConfig.ctaUrl) && (
           <a
             href={pageConfig.ctaUrl}
             className="inline-flex items-center gap-2 px-6 py-3 bg-amber-500 hover:bg-amber-600 text-stone-900 font-medium rounded-lg transition-colors"
@@ -481,18 +483,18 @@ export function AdvertiseContent() {
             </a>
           </p>
           <div className="flex gap-4">
-            <a
+            <Link
               href="/api"
               className="text-sm text-stone-400 hover:text-amber-400 transition-colors"
             >
               API Docs
-            </a>
-            <a
+            </Link>
+            <Link
               href="/"
               className="text-sm text-stone-400 hover:text-amber-400 transition-colors"
             >
               Back to App
-            </a>
+            </Link>
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { useEvents } from '@/hooks/useEvents';
 import { useFilters } from '@/hooks/useFilters';
 import { useItinerary } from '@/hooks/useItinerary';
@@ -19,23 +20,22 @@ import { useConferenceTabs } from '@/hooks/useConferenceTabs';
 import { useABTest } from '@/hooks/useABTest';
 import { useEventCheckIn } from '@/hooks/useEventCheckIn';
 import { useFriendCode } from '@/hooks/useFriendCode';
+import { useHasOpened } from '@/hooks/useHasOpened';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ThemeId, DEFAULT_THEME, THEME_OPTIONS } from '@/lib/themes';
 import type { ABTest, ETHDenverEvent } from '@/lib/types';
 import { resolveItemVariants, getVisitorId } from '@/lib/ab-testing';
 import { Header } from './Header';
 import { FilterBar } from './FilterBar';
+import { ViewToolbar } from './ViewToolbar';
 import { ListView } from './ListView';
 import { GalleryView } from './GalleryView';
 import { TableView } from './TableView';
 import { MapViewWrapper } from './MapViewWrapper';
 import { Loading } from './Loading';
 import { AuthModal } from './AuthModal';
-import { SubmitEventModal } from './SubmitEventModal';
-import { FriendsPanel } from './FriendsPanel';
 import { SponsorsTicker } from './SponsorsTicker';
 import { CheckInFAB } from './CheckInFAB';
-import { OnboardingWizard } from './OnboardingWizard';
 import { STORAGE_KEYS } from '@/lib/storage-keys';
 import { trackAuthPrompt, trackRsvpOpen, trackRsvpConfirm, setConferenceProperty } from '@/lib/analytics';
 import { getTabConfig } from '@/lib/conferences';
@@ -46,12 +46,30 @@ import { distanceMeters } from '@/lib/geo';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRsvp } from '@/hooks/useRsvp';
 import { useProfile } from '@/hooks/useProfile';
-import { RsvpOverlay } from './RsvpOverlay';
+
+// Conditionally-shown modals are code-split and only mounted on first open
+// (see useHasOpened) so their chunks aren't fetched on initial load.
+// AuthModal stays static: its module also exports UserMenu, which Header imports.
+const SubmitEventModal = dynamic(
+  () => import('./SubmitEventModal').then((mod) => ({ default: mod.SubmitEventModal })),
+  { ssr: false }
+);
+const FriendsPanel = dynamic(
+  () => import('./FriendsPanel').then((mod) => ({ default: mod.FriendsPanel })),
+  { ssr: false }
+);
+const OnboardingWizard = dynamic(
+  () => import('./OnboardingWizard').then((mod) => ({ default: mod.OnboardingWizard })),
+  { ssr: false }
+);
+const RsvpOverlay = dynamic(
+  () => import('./RsvpOverlay').then((mod) => ({ default: mod.RsvpOverlay })),
+  { ssr: false }
+);
 
 export function EventApp({ initialConference, initialEvents }: { initialConference?: string; initialEvents?: ETHDenverEvent[] }) {
   const { config } = useAdminConfig();
   const { tabs: conferenceTabs } = useConferenceTabs();
-  const { events, loading, error } = useEvents(initialEvents);
   const {
     filters,
     setFilter,
@@ -60,12 +78,13 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
     toggleVibe,
     toggleFriend,
     toggleBool,
-    toggleNowMode,
+    cycleTimeMode,
     toggleTagMatchAll,
     clearFilters,
     activeFilterCount,
     toggleOrg,
   } = useFilters(initialConference, conferenceTabs);
+  const { events, loading, error, loadAll: loadAllEvents } = useEvents(initialEvents, filters.conference);
 
   // Re-apply conference date range once dynamic tabs load
   // (fixes dates for conferences not in FALLBACK_TABS, e.g. Toronto Tech Week)
@@ -88,10 +107,7 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
   const {
     itinerary,
     toggle: toggleItinerary,
-    count: itineraryCount,
     ready: itineraryReady,
-    hiddenEvents,
-    toggleHidden,
   } = useItinerary();
 
   const [filtersExpanded, setFiltersExpanded] = useState(false);
@@ -121,7 +137,6 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
     availableTypes,
     availableVibes,
     conferenceEventCount,
-    conferenceItineraryCount,
     friendsForFilter,
     selectedFriendEventIds,
     friendsCountByEvent,
@@ -140,6 +155,22 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
   const { orgMapping } = useOrgs(filters.conference);
 
   const orgNames = useMemo(() => orgMapping.orgs.map(o => o.name), [orgMapping]);
+
+  const orgEventCounts = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const org of orgMapping.orgs) m.set(org.name, org.eventIds.length);
+    return m;
+  }, [orgMapping]);
+
+  const friendEventCount = friendsCountByEvent.size;
+
+  const orgEventCount = useMemo(() => {
+    const ids = new Set<string>();
+    for (const org of orgMapping.orgs) {
+      for (const id of org.eventIds) ids.add(id);
+    }
+    return ids.size;
+  }, [orgMapping]);
 
   const orgEventIds = useMemo(() => {
     if (filters.selectedOrgs.length === 0) return undefined;
@@ -180,8 +211,7 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
 
   // Events filtered by everything EXCEPT vibes — used to compute tag counts
   const baseFilteredEvents = useMemo(
-    () => applyFilters(events, filters, itinerary, filters.nowMode ? getConferenceNow(filters.conference).getTime() : undefined, selectedFriendEventIds, { skipVibes: true, orgEventIds, eventIdToOrgs }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    () => applyFilters(events, filters, itinerary, filters.timeMode !== 'off' ? getConferenceNow(filters.conference).getTime() : undefined, selectedFriendEventIds, { skipVibes: true, orgEventIds, eventIdToOrgs }),
     [events, filters, itinerary, selectedFriendEventIds, orgEventIds, eventIdToOrgs]
   );
 
@@ -197,7 +227,6 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
     checkInToNearbyEvents,
     loading: checkInLoading,
     result: checkInResult,
-    clearResult: clearCheckInResult,
   } = useEventCheckIn();
 
   const { getRsvpStatus, openRsvp, confirmRsvp, closeRsvp, activeRsvp } = useRsvp();
@@ -356,13 +385,11 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
   } = useABTest({ test: adFrequencyTest });
 
   const {
-    config: sponsorConfig,
     trackClick: trackSponsorClick,
     isActive: sponsorTestActive,
   } = useABTest({ test: sponsorCopyTest });
 
   const {
-    config: nativeAdConfig,
     trackClick: trackNativeAdClick,
     isActive: nativeAdTestActive,
   } = useABTest({ test: nativeAdContentTest });
@@ -374,7 +401,7 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
 
 
   // Ad impression/click tracking for A/B tests
-  const handleAdImpression = useCallback((_adId: string) => {
+  const handleAdImpression = useCallback(() => {
     // Impressions are tracked via the useABTest hook automatically
   }, []);
 
@@ -423,6 +450,10 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
   const handleCloseAuth = useCallback(() => { dismissAuth(); setShowSignIn(false); }, [dismissAuth]);
   const handleCloseSubmitEvent = useCallback(() => setShowSubmitEvent(false), []);
   const handleCloseFriends = useCallback(() => setShowFriends(false), []);
+
+  // Lazy-loaded modals mount on first open, then stay mounted
+  const submitEventMounted = useHasOpened(showSubmitEvent);
+  const friendsMounted = useHasOpened(showFriends);
   const handleOnboardingAuth = useCallback(() => { setShowOnboarding(false); setShowSignIn(true); }, []);
 
   // Memoized derived value
@@ -433,11 +464,16 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
 
   // Onboarding wizard for first-time users
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const onboardingMounted = useHasOpened(showOnboarding);
   useEffect(() => {
     if (!localStorage.getItem(STORAGE_KEYS.ONBOARDING_COMPLETED)) {
       setShowOnboarding(true);
     }
   }, []);
+  // Onboarding lets the user pick any conference, so it needs every event.
+  useEffect(() => {
+    if (showOnboarding) loadAllEvents();
+  }, [showOnboarding, loadAllEvents]);
 
   const handleOnboardingComplete = useCallback(
     (config: { conference: string; selectedTags: string[] }) => {
@@ -472,8 +508,6 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
     return (
       <div className="min-h-screen bg-[var(--theme-bg-primary)]">
         <Header
-          viewMode={viewMode}
-          onViewChange={setViewMode}
           events={events}
           itinerary={itinerary}
           onOpenFriends={handleOpenFriends}
@@ -488,8 +522,6 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
     return (
       <div className="min-h-screen bg-[var(--theme-bg-primary)]">
         <Header
-          viewMode={viewMode}
-          onViewChange={setViewMode}
           events={events}
           itinerary={itinerary}
           onOpenFriends={handleOpenFriends}
@@ -512,8 +544,6 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
   return (
     <div className="h-dvh flex flex-col bg-[var(--theme-bg-primary)] overflow-hidden">
       <Header
-        viewMode={viewMode}
-        onViewChange={setViewMode}
         events={events}
         itinerary={itinerary}
         onOpenFriends={handleOpenFriends}
@@ -542,7 +572,7 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
           onSetConference={setConference}
           onSetDateTimeRange={setDateTimeRange}
           onToggleVibe={toggleVibe}
-          onToggleNowMode={toggleNowMode}
+          onCycleTimeMode={cycleTimeMode}
           onToggleTagMatchAll={toggleTagMatchAll}
           onClearFilters={clearFilters}
           activeFilterCount={activeFilterCount}
@@ -555,10 +585,10 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
           onToggleFriend={toggleFriend}
           searchQuery={filters.searchQuery}
           onSearchChange={handleSearchChange}
-          eventCount={filteredEvents.length}
           onSubmitEvent={handleOpenSubmitEvent}
           onSignIn={handleOpenSignIn}
           orgNames={orgNames}
+          orgEventCounts={orgEventCounts}
           selectedOrgs={filters.selectedOrgs}
           onToggleOrg={toggleOrg}
           conferenceTabs={conferenceTabs}
@@ -566,12 +596,15 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
           onItineraryToggle={handleItineraryFilterToggle}
           isItineraryActive={filters.itineraryOnly}
           onExpandedChange={setFiltersExpanded}
+          friendEventCount={friendEventCount}
+          orgEventCount={orgEventCount}
         />
+        <ViewToolbar viewMode={viewMode} onViewChange={setViewMode} eventCount={filteredEvents.length} />
       </div>
 
       {/* Main content area */}
       {viewMode === 'map' ? (
-        <main className="flex-1 min-h-0">
+        <main key="map" className="flex-1 min-h-0">
           <MapViewWrapper
             events={filteredEvents}
             itinerary={itinerary}
@@ -601,7 +634,7 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
           />
         </main>
       ) : viewMode === 'table' ? (
-        <main className="flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden bg-[var(--theme-bg-list)]">
+        <main key="table" className="flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden bg-[var(--theme-bg-list)]">
           <TableView
             events={filteredEvents}
             totalCount={conferenceEventCount}
@@ -626,7 +659,7 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
           />
         </main>
       ) : viewMode === 'gallery' ? (
-        <main ref={listMainRef} onScroll={handleListScroll} className="flex-1 min-h-0 overflow-y-auto bg-[var(--theme-bg-list)]">
+        <main key="gallery" ref={listMainRef} onScroll={handleListScroll} className="flex-1 min-h-0 overflow-y-auto bg-[var(--theme-bg-list)]">
           <GalleryView
             events={filteredEvents}
             totalCount={conferenceEventCount}
@@ -645,7 +678,7 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
           />
         </main>
       ) : (
-        <main ref={listMainRef} onScroll={handleListScroll} className="flex-1 min-h-0 overflow-y-auto bg-[var(--theme-bg-list)]">
+        <main key="list" ref={listMainRef} onScroll={handleListScroll} className="flex-1 min-h-0 overflow-y-auto bg-[var(--theme-bg-list)]">
           <ListView
             events={filteredEvents}
             totalCount={conferenceEventCount}
@@ -685,23 +718,29 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
       )}
 
       <AuthModal isOpen={showAuthForStar || showSignIn} onClose={handleCloseAuth} />
-      <SubmitEventModal isOpen={showSubmitEvent} onClose={handleCloseSubmitEvent} upsellCopy={config?.upsell_copy} initialConference={filters.conference} conferenceTabs={conferenceTabs} />
-      <FriendsPanel
-        isOpen={showFriends}
-        onClose={handleCloseFriends}
-        friends={friends}
-        onRemoveFriend={removeFriend}
-      />
-      <OnboardingWizard
-        isOpen={showOnboarding}
-        onComplete={handleOnboardingComplete}
-        onDismiss={handleOnboardingDismiss}
-        availableConferences={availableConferences}
-        conferenceEventCounts={conferenceEventCounts}
-        events={events}
-        onOpenAuth={handleOnboardingAuth}
-        conferenceTabs={conferenceTabs}
-      />
+      {submitEventMounted && (
+        <SubmitEventModal isOpen={showSubmitEvent} onClose={handleCloseSubmitEvent} upsellCopy={config?.upsell_copy} initialConference={filters.conference} conferenceTabs={conferenceTabs} />
+      )}
+      {friendsMounted && (
+        <FriendsPanel
+          isOpen={showFriends}
+          onClose={handleCloseFriends}
+          friends={friends}
+          onRemoveFriend={removeFriend}
+        />
+      )}
+      {onboardingMounted && (
+        <OnboardingWizard
+          isOpen={showOnboarding}
+          onComplete={handleOnboardingComplete}
+          onDismiss={handleOnboardingDismiss}
+          availableConferences={availableConferences}
+          conferenceEventCounts={conferenceEventCounts}
+          events={events}
+          onOpenAuth={handleOnboardingAuth}
+          conferenceTabs={conferenceTabs}
+        />
+      )}
       {activeRsvp && (
         <RsvpOverlay
           eventName={activeRsvp.eventName}

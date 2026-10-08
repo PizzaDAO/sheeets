@@ -27,11 +27,6 @@ export function EmojiReactions({
 }: EmojiReactionsProps) {
   const [showPicker, setShowPicker] = useState(false);
 
-  // Emojis that already have reactions
-  const activeEmojis = new Set(reactions.map((r) => r.emoji));
-  // Emojis available to add
-  const availableEmojis = REACTION_EMOJIS.filter((e) => !activeEmojis.has(e));
-
   const gap = compact ? 'gap-1' : 'gap-1.5';
 
   return (

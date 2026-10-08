@@ -3,6 +3,8 @@
 import { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import MapGL, { NavigationControl, Marker } from 'react-map-gl/mapbox';
 import type { MapRef } from 'react-map-gl/mapbox';
+import 'mapbox-gl/dist/mapbox-gl.css';
+import './MapView.css';
 import { LocateFixed } from 'lucide-react';
 import type { ETHDenverEvent, POI, POICategory, ReactionEmoji, FriendLocation, FriendInfo } from '@/lib/types';
 import { getTabConfig } from '@/lib/constants';
@@ -58,7 +60,6 @@ function coordKey(lat: number, lng: number): string {
 
 export function MapView({
   events,
-  onEventSelect,
   itinerary,
   onItineraryToggle,
   isItineraryView = false,
@@ -91,7 +92,6 @@ export function MapView({
     ? 'mapbox://styles/mapbox/streets-v12'
     : 'mapbox://styles/mapbox/dark-v11';
   const mapRef = useRef<MapRef>(null);
-  const hasFittedRef = useRef(false);
 
   // Compute center from events with coordinates, excluding outliers
   // Returns null when no located events (e.g. "Now" filters everything out)

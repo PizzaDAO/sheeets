@@ -9,6 +9,7 @@ import { trackSubmitEventOpen, trackSubmitEventSuccess, trackSubmitEventFetch, t
 import type { UpsellCopy } from '@/lib/types';
 import { Dropdown, TIME_OPTIONS, format12Hour } from './DateTimePicker';
 import { AddressAutocomplete } from './AddressAutocomplete';
+import { isSafeHttpUrl } from '@/lib/utils';
 
 interface SubmitEventModalProps {
   isOpen: boolean;
@@ -34,7 +35,6 @@ const FORMAT_TAGS = TYPE_TAGS.filter((t) => !EXCLUDED_TAGS.includes(t));
 const TOPIC_TAGS = Object.keys(VIBE_COLORS).filter(
   (t) => !TYPE_TAGS.includes(t) && t !== 'default' && !EXCLUDED_TAGS.includes(t)
 );
-const ALL_TAGS = [...FORMAT_TAGS, ...TOPIC_TAGS];
 
 export function SubmitEventModal({ isOpen, onClose, upsellCopy, initialConference, conferenceTabs = [] }: SubmitEventModalProps) {
   const [step, setStep] = useState<Step>('input');
@@ -60,12 +60,17 @@ export function SubmitEventModal({ isOpen, onClose, upsellCopy, initialConferenc
   const [hasBar, setHasBar] = useState(false);
   const [addressCoords, setAddressCoords] = useState<{ lat: number; lng: number } | null>(null);
 
-  // Sync conference when modal opens
+  // Sync conference when modal opens (adjust state during render on prop
+  // change instead of in an effect — https://react.dev/learn/you-might-not-need-an-effect)
+  const [prevOpenKey, setPrevOpenKey] = useState<string | null>(null);
+  const openKey = isOpen ? `open:${initialConference ?? ''}` : null;
+  if (openKey !== prevOpenKey) {
+    setPrevOpenKey(openKey);
+    if (isOpen && initialConference) setConference(initialConference);
+  }
+
   useEffect(() => {
-    if (isOpen) {
-      trackSubmitEventOpen();
-      if (initialConference) setConference(initialConference);
-    }
+    if (isOpen) trackSubmitEventOpen();
   }, [isOpen, initialConference]);
 
   function resetForm() {
@@ -554,7 +559,7 @@ export function SubmitEventModal({ isOpen, onClose, upsellCopy, initialConferenc
                   <div className="mt-4 p-4 rounded-xl bg-gradient-to-br from-[var(--theme-accent-muted)] to-[var(--theme-accent-muted)] border border-[var(--theme-accent)]/30 text-left">
                     <h4 className="text-sm font-semibold text-[var(--theme-accent-link)] mb-1">{upsellCopy.heading}</h4>
                     <p className="text-xs text-[var(--theme-text-secondary)] mb-3">{upsellCopy.body}</p>
-                    <a href={upsellCopy.cta_url} target="_blank" rel="noopener noreferrer"
+                    <a href={isSafeHttpUrl(upsellCopy.cta_url) ? upsellCopy.cta_url : undefined} target="_blank" rel="noopener noreferrer"
                        className="inline-block px-4 py-2 text-xs font-semibold bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-[var(--theme-accent-text)] rounded-lg transition-colors">
                       {upsellCopy.cta_text}
                     </a>

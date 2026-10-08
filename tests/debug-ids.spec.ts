@@ -18,7 +18,7 @@ test('check for duplicate event IDs in the DOM', async ({ page }) => {
       // Try to get the React key from the fiber
       const fiberKey = Object.keys(row).find(k => k.startsWith('__reactFiber'));
       if (fiberKey) {
-        const fiber = (row as any)[fiberKey];
+        const fiber = (row as unknown as Record<string, { key?: string } | undefined>)[fiberKey];
         reactKeys.push(fiber?.key || 'no-key');
       } else {
         reactKeys.push('no-fiber');
@@ -43,7 +43,7 @@ test('check for duplicate event IDs in the DOM', async ({ page }) => {
     rows.forEach((row) => {
       const fiberKey = Object.keys(row).find(k => k.startsWith('__reactFiber'));
       if (fiberKey) {
-        const fiber = (row as any)[fiberKey];
+        const fiber = (row as unknown as Record<string, { key?: string } | undefined>)[fiberKey];
         reactKeys.push(fiber?.key || 'no-key');
       } else {
         reactKeys.push('no-fiber');
@@ -66,7 +66,7 @@ test('check for duplicate event IDs in the DOM', async ({ page }) => {
         const fiberKey = Object.keys(row).find(k => k.startsWith('__reactFiber'));
         let key = 'no-fiber';
         if (fiberKey) {
-          const fiber = (row as any)[fiberKey];
+          const fiber = (row as unknown as Record<string, { key?: string } | undefined>)[fiberKey];
           key = fiber?.key || 'no-key';
         }
         results.push({ index: i, key, text: row.textContent?.substring(0, 100) || '' });

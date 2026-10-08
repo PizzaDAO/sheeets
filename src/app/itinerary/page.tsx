@@ -11,7 +11,7 @@ import { useItinerary } from '@/hooks/useItinerary';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { VIBE_COLORS } from '@/lib/tags';
-import { formatDateLabel } from '@/lib/utils';
+import { formatDateLabel, isSafeHttpUrl } from '@/lib/utils';
 import { sortByStartTime, detectConflicts } from '@/lib/time-parse';
 import { trackItineraryClear, trackItineraryConferenceTab, trackItineraryShareLink, trackItineraryReorder, trackItineraryView } from '@/lib/analytics';
 import type { ETHDenverEvent } from '@/lib/types';
@@ -91,14 +91,10 @@ export default function ItineraryPage() {
     () => [...new Set(allItineraryEvents.map((e) => e.conference).filter(Boolean))],
     [allItineraryEvents]
   );
-  const [activeConference, setActiveConference] = useState('');
-
-  // Auto-select first conference when data loads
-  useMemo(() => {
-    if (conferences.length > 0 && !activeConference) {
-      setActiveConference(conferences[0]);
-    }
-  }, [conferences, activeConference]);
+  // Conference the user explicitly picked; until then, default to the first one
+  // that has itinerary events (derived during render, no state sync needed).
+  const [selectedConference, setActiveConference] = useState('');
+  const activeConference = selectedConference || conferences[0] || '';
 
   const itineraryEvents = useMemo(
     () => allItineraryEvents.filter((e) => !activeConference || e.conference === activeConference),
@@ -424,7 +420,7 @@ export default function ItineraryPage() {
                                   )}
                                 </button>
                               )}
-                              {event.link && (
+                              {isSafeHttpUrl(event.link) && (
                                 <a
                                   href={event.link}
                                   target="_blank"

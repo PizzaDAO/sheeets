@@ -5,6 +5,7 @@ import type { FriendLocation } from '@/lib/types';
 import { timeAgo } from '@/lib/time-parse';
 import { getDisplayName } from '@/lib/user-display';
 import UserAvatar from './UserAvatar';
+import { useNow } from '@/hooks/useNow';
 
 interface FriendMarkerProps {
   location: FriendLocation;
@@ -16,7 +17,8 @@ export function FriendMarker({ location, zoom = 12 }: FriendMarkerProps) {
   const showLabel = zoom >= 13;
 
   // Stale if >1h old
-  const ageMs = Date.now() - new Date(location.updated_at).getTime();
+  const now = useNow();
+  const ageMs = now - new Date(location.updated_at).getTime();
   const isStale = ageMs > 60 * 60 * 1000;
   const isRecent = ageMs < 5 * 60 * 1000;
 

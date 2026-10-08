@@ -45,7 +45,7 @@ export interface FilterState {
   selectedFriends: string[];
   itineraryOnly: boolean;
   searchQuery: string;
-  nowMode: boolean;
+  timeMode: 'off' | 'now' | 'today' | 'tomorrow';
   selectedOrgs: string[];
 }
 

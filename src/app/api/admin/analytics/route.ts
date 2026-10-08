@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isAdminPassword } from '@/lib/admin-auth';
 
 const PROPERTY_ID = '524531628';
 const DATA_API = `https://analyticsdata.googleapis.com/v1beta/properties/${PROPERTY_ID}`;
@@ -70,7 +71,7 @@ const dateRange = {
 
 export async function GET(req: NextRequest) {
   const password = req.nextUrl.searchParams.get('password');
-  if (password !== 'trusttheplan') {
+  if (!isAdminPassword(password)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

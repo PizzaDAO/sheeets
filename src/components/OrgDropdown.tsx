@@ -6,11 +6,13 @@ import clsx from 'clsx';
 
 interface OrgDropdownProps {
   orgNames: string[];
+  orgEventCounts: Map<string, number>;
   selectedOrgs: string[];
   onToggleOrg: (name: string) => void;
+  orgEventCount?: number;
 }
 
-export function OrgDropdown({ orgNames, selectedOrgs, onToggleOrg }: OrgDropdownProps) {
+export function OrgDropdown({ orgNames, orgEventCounts, selectedOrgs, onToggleOrg, orgEventCount }: OrgDropdownProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -39,7 +41,7 @@ export function OrgDropdown({ orgNames, selectedOrgs, onToggleOrg }: OrgDropdown
 
   return (
     <div ref={containerRef}>
-      <div className="text-xs uppercase tracking-wider text-[var(--theme-filter-text)] mb-1">Organizations</div>
+      <div className="text-xs uppercase tracking-wider text-[var(--theme-filter-text)] mb-1">Organizations{orgEventCount != null && orgEventCount > 0 && <span className="normal-case tracking-normal opacity-60"> ({orgEventCount})</span>}</div>
 
       {/* Selected chips */}
       {selectedOrgs.length > 0 && (
@@ -119,6 +121,9 @@ export function OrgDropdown({ orgNames, selectedOrgs, onToggleOrg }: OrgDropdown
                       {isSelected && <span className="text-[10px] text-[var(--theme-accent-text)] font-bold">&#10003;</span>}
                     </div>
                     <span className="truncate">{name}</span>
+                    {(orgEventCounts.get(name) ?? 0) > 0 && (
+                      <span className="shrink-0 text-xs opacity-50">({orgEventCounts.get(name)})</span>
+                    )}
                   </button>
                 );
               })

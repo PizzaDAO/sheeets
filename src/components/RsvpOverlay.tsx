@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Copy, Check, User, Mail, Send, Building2, Briefcase, Linkedin, ExternalLink } from 'lucide-react';
+import { isSafeHttpUrl } from '@/lib/utils';
 
 interface RsvpOverlayProps {
   eventName: string;
@@ -134,7 +135,7 @@ export function RsvpOverlay({
                 RSVP
               </h2>
               <a
-                href={lumaUrl}
+                href={isSafeHttpUrl(lumaUrl) ? lumaUrl : undefined}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-xs text-[var(--theme-text-secondary)] hover:underline truncate max-w-full"
@@ -187,7 +188,7 @@ export function RsvpOverlay({
               onClick={onConfirm}
               className="flex-1 px-4 py-2.5 rounded-lg bg-green-600 hover:bg-green-500 text-white text-sm font-semibold transition-colors cursor-pointer"
             >
-              Done — I RSVP'd
+              Done — I RSVP&apos;d
             </button>
           </div>
         </div>

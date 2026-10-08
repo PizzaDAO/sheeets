@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { FriendInfo } from '@/lib/types';
 import { StarButton } from './StarButton';
+import { isSafeHttpUrl } from '@/lib/utils';
 
 interface OGImageProps {
   url: string;
@@ -21,20 +22,18 @@ interface OGImageProps {
 export const imageCache = new Map<string, string | null>();
 
 export function OGImage({ url, eventId, rsvpUrl, onOpenLightbox, isInItinerary, onItineraryToggle, friendsGoing }: OGImageProps) {
-  const [imageUrl, setImageUrl] = useState<string | null>(
-    imageCache.get(url) ?? null
-  );
-  const [loaded, setLoaded] = useState(imageCache.has(url));
+  // Result of the last /api/og fetch, tagged with the url it was for so a url
+  // change falls back to the shared cache (or "loading") without an effect.
+  const [fetched, setFetched] = useState<{ url: string; imageUrl: string | null } | null>(null);
+  const fetchedForUrl = fetched?.url === url;
+  const imageUrl = fetchedForUrl ? fetched.imageUrl : imageCache.get(url) ?? null;
+  const loaded = fetchedForUrl || imageCache.has(url);
   const [error, setError] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (imageCache.has(url)) {
-      setImageUrl(imageCache.get(url) ?? null);
-      setLoaded(true);
-      return;
-    }
+    if (imageCache.has(url)) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -48,12 +47,11 @@ export function OGImage({ url, eventId, rsvpUrl, onOpenLightbox, isInItinerary, 
           .then((res) => res.json())
           .then((data) => {
             imageCache.set(url, data.imageUrl);
-            setImageUrl(data.imageUrl);
-            setLoaded(true);
+            setFetched({ url, imageUrl: data.imageUrl });
           })
           .catch(() => {
             imageCache.set(url, null);
-            setLoaded(true);
+            setFetched({ url, imageUrl: null });
           });
       },
       { rootMargin: '200px' }
@@ -106,6 +104,7 @@ export function OGImage({ url, eventId, rsvpUrl, onOpenLightbox, isInItinerary, 
             alt=""
             className="w-full h-auto rounded-lg"
             loading="lazy"
+            decoding="async"
             onError={() => setError(true)}
           />
         )}
@@ -141,7 +140,7 @@ export function OGImage({ url, eventId, rsvpUrl, onOpenLightbox, isInItinerary, 
                   onToggle={onItineraryToggle}
                 />
               )}
-              {rsvpUrl && (
+              {isSafeHttpUrl(rsvpUrl) && (
                 <a
                   href={rsvpUrl}
                   target="_blank"
@@ -161,7 +160,7 @@ export function OGImage({ url, eventId, rsvpUrl, onOpenLightbox, isInItinerary, 
                       title={friend.displayName}
                     >
                       {friend.avatarUrl ? (
-                        <img src={friend.avatarUrl} alt="" className="w-full h-full object-cover" />
+                        <img src={friend.avatarUrl} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                       ) : (
                         <div
                           className="w-full h-full flex items-center justify-center text-[9px] font-bold text-white"
@@ -259,7 +258,7 @@ export function FlyerLightbox({ imageUrl, rsvpUrl, onClose, onPrev, onNext, even
               onToggle={onItineraryToggle}
             />
           )}
-          {rsvpUrl && (
+          {isSafeHttpUrl(rsvpUrl) && (
             <a
               href={rsvpUrl}
               target="_blank"
@@ -279,7 +278,7 @@ export function FlyerLightbox({ imageUrl, rsvpUrl, onClose, onPrev, onNext, even
                   title={friend.displayName}
                 >
                   {friend.avatarUrl ? (
-                    <img src={friend.avatarUrl} alt="" className="w-full h-full object-cover" />
+                    <img src={friend.avatarUrl} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                   ) : (
                     <div
                       className="w-full h-full flex items-center justify-center text-[9px] font-bold text-white"

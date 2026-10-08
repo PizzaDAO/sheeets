@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
-
-const ADMIN_PASSWORD = 'trusttheplan';
+import { isAdminPassword } from '@/lib/admin-auth';
 
 function getSupabase() {
   return createClient(
@@ -13,7 +12,7 @@ function getSupabase() {
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const password = searchParams.get('password');
-  if (password !== ADMIN_PASSWORD) {
+  if (!isAdminPassword(password)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -171,7 +170,7 @@ export async function POST(req: NextRequest) {
 
   const { password, action } = body as { password?: string; action?: string };
 
-  if (password !== ADMIN_PASSWORD) {
+  if (!isAdminPassword(password)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

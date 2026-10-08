@@ -3,8 +3,8 @@ import { readRange, writeCell, getSheetTitle } from '@/lib/google-sheets';
 import { FALLBACK_TABS } from '@/lib/conferences';
 import { getConferenceTabs } from '@/lib/get-conferences';
 import { parseBody, ToggleFeaturedSchema } from '@/lib/api-validation';
-
-const ADMIN_PASSWORD = 'trusttheplan';
+import { isAdminPassword } from '@/lib/admin-auth';
+import { invalidateEventsCache } from '@/lib/fetch-events-cached';
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
 
     const { password, conference, eventName, featured } = data;
 
-    if (password !== ADMIN_PASSWORD) {
+    if (!isAdminPassword(password)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -64,6 +64,9 @@ export async function POST(request: NextRequest) {
 
     // Write to column M of the matched row
     await writeCell(sheetName, `M${matchedRow}`, featured ? 'TRUE' : 'FALSE');
+
+    // Sheet changed: drop the cached events so the change shows immediately
+    invalidateEventsCache();
 
     return NextResponse.json({ success: true, row: matchedRow, featured });
   } catch (err) {

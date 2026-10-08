@@ -30,7 +30,11 @@ export const trackTagToggle = (tag: string, active: boolean) =>
 export const trackDateTimeRange = (start: string, end: string) =>
   track('datetime_range', { start_datetime: start, end_datetime: end });
 
-// Now mode toggle
+// Time mode cycle (now / today / tomorrow / week / off)
+export const trackTimeMode = (mode: string) =>
+  track('time_mode', { mode });
+
+// Now mode toggle (legacy alias)
 export const trackNowMode = (active: boolean) =>
   track('now_mode', { active });
 

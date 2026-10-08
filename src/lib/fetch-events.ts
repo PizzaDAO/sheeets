@@ -62,7 +62,7 @@ function isEmptyRow(row: GVizRow): boolean {
 async function fetchPage(gid: number, offset: number): Promise<string> {
   const tq = encodeURIComponent(`select * limit 500 offset ${offset}`);
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${gid}&headers=1&tq=${tq}`;
-  const response = await fetch(url);
+  const response = await fetch(url, { signal: AbortSignal.timeout(10_000) });
   return response.text();
 }
 
@@ -89,7 +89,7 @@ export async function fetchEvents(runtimeAddresses?: GeoAddressMap, tabs?: TabCo
     // Find header row, events start right after.
     // If no header row found in data, check if Google Sheets already consumed it
     // as column labels (happens when the sheet has no promo rows above the header).
-    let headerIdx = findHeaderIndex(allRows);
+    const headerIdx = findHeaderIndex(allRows);
     if (headerIdx === -1) {
       // If Google Sheets already consumed the header as column labels
       // (sheet has no promo rows above the header), all rows are data.

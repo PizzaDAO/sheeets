@@ -14,7 +14,8 @@ function makeFilters(overrides: Partial<FilterState> = {}): FilterState {
     selectedFriends: [],
     itineraryOnly: false,
     searchQuery: '',
-    nowMode: false,
+    timeMode: 'off',
+    selectedOrgs: [],
     ...overrides,
   };
 }
@@ -123,7 +124,7 @@ describe('applyFilters', () => {
     });
   });
 
-  describe('tag filter (AND logic)', () => {
+  describe('tag filter (Any/All)', () => {
     it('filters by a single tag', () => {
       const result = applyFilters(
         sampleEvents,
@@ -136,7 +137,7 @@ describe('applyFilters', () => {
     it('filters by multiple tags with AND logic', () => {
       const result = applyFilters(
         sampleEvents,
-        makeFilters({ vibes: ['Conference', 'ETH'] }),
+        makeFilters({ vibes: ['Conference', 'ETH'], tagMatchAll: true }),
       );
       expect(result.every((e) => e.tags.includes('Conference') && e.tags.includes('ETH'))).toBe(true);
     });
@@ -144,9 +145,18 @@ describe('applyFilters', () => {
     it('returns empty when no event has all required tags', () => {
       const result = applyFilters(
         sampleEvents,
-        makeFilters({ vibes: ['DeFi', 'Hackathon'] }),
+        makeFilters({ vibes: ['DeFi', 'Hackathon'], tagMatchAll: true }),
       );
       expect(result.length).toBe(0);
+    });
+
+    it('defaults to OR logic (any selected tag matches)', () => {
+      const result = applyFilters(
+        sampleEvents,
+        makeFilters({ vibes: ['DeFi', 'Hackathon'] }),
+      );
+      expect(result.length).toBeGreaterThan(0);
+      expect(result.every((e) => e.tags.includes('DeFi') || e.tags.includes('Hackathon'))).toBe(true);
     });
 
     it('empty vibes array returns all events', () => {

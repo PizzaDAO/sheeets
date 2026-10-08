@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { MapPin } from 'lucide-react';
 
 interface AddressAutocompleteProps {
@@ -17,7 +17,6 @@ export function AddressAutocomplete({
   placeholder = '1234 Market St, Denver',
 }: AddressAutocompleteProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
   const onChangeRef = useRef(onChange);
   const onCoordsChangeRef = useRef(onCoordsChange);
 
@@ -31,10 +30,7 @@ export function AddressAutocomplete({
 
   useEffect(() => {
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-    if (!apiKey) {
-      setIsLoaded(true);
-      return;
-    }
+    if (!apiKey) return;
 
     const initAutocomplete = () => {
       if (!inputRef.current || !window.google?.maps?.places) return;
@@ -61,8 +57,6 @@ export function AddressAutocomplete({
           });
         }
       });
-
-      setIsLoaded(true);
     };
 
     // Already loaded
@@ -90,7 +84,6 @@ export function AddressAutocomplete({
     script.async = true;
     script.defer = true;
     script.onload = () => initAutocomplete();
-    script.onerror = () => setIsLoaded(true);
     document.head.appendChild(script);
   }, []);
 

@@ -86,10 +86,10 @@ export interface TagGroup {
 }
 
 export const TAG_GROUPS: TagGroup[] = [
-  { label: 'Topics', tags: ['BTC', 'ETH', 'SOL', 'AI', 'DeFi', 'DAOs', 'NFTs', 'DePIN', 'RWA', 'Memecoins', 'Gaming'] },
   { label: 'Vibe', tags: ['Party', 'Networking', 'Conference', 'Panel/Talk', 'Hackathon', 'Workshop', 'Wellness', 'Art', 'Performance'] },
-  { label: 'Audience', tags: ['Devs', 'VCs', 'Founders', 'Jobs'] },
   { label: 'Details', tags: ['Food', 'Drinks', 'Free', '$$'] },
+  { label: 'Audience', tags: ['Devs', 'VCs', 'Founders', 'Jobs'] },
+  { label: 'Topics', tags: ['BTC', 'ETH', 'SOL', 'AI', 'DeFi', 'DAOs', 'NFTs', 'DePIN', 'RWA', 'Memecoins', 'Gaming'] },
 ];
 
 export const GROUPED_TAGS = new Set(TAG_GROUPS.flatMap(g => g.tags));

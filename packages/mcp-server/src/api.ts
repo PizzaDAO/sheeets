@@ -44,7 +44,7 @@ export interface DateCount {
   count: number;
 }
 
-export interface ItineraryEvent extends SheeetsEvent {}
+export type ItineraryEvent = SheeetsEvent;
 
 export interface Friend {
   user_id: string;

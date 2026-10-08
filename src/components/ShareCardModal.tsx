@@ -148,7 +148,7 @@ export function ShareCardModal({
       setPreviewUrl(null);
       setCopyStatus('idle');
     }
-  }, [isOpen, hiddenEventIds]);
+  }, [isOpen, hiddenEventIds, displayName, conferenceName]);
 
   const handleCopy = useCallback(async () => {
     if (!cardRef.current || selectedEvents.length === 0) return;
@@ -198,7 +198,7 @@ export function ShareCardModal({
     } catch (err) {
       console.error('Download failed:', err);
     }
-  }, [selectedEvents.length, conferenceName]);
+  }, [selectedEvents.length, cardTitle, conferenceName]);
 
   if (!isOpen) return null;
 

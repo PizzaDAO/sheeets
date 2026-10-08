@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { Search, ExternalLink, ChevronDown, ChevronUp, Building2, Users, Presentation } from 'lucide-react';
+import { isSafeHttpUrl } from '@/lib/utils';
 
 interface AggregatedSponsor {
   name: string;
@@ -136,7 +137,7 @@ export function OrgsContent({ sponsors, conferences, totalEvents }: Props) {
                     <span className="font-medium text-sm text-[var(--theme-text-primary)] truncate">
                       {sponsor.name}
                     </span>
-                    {sponsor.sponsorUrl && (
+                    {isSafeHttpUrl(sponsor.sponsorUrl) && (
                       <a
                         href={sponsor.sponsorUrl}
                         target="_blank"
@@ -174,7 +175,7 @@ export function OrgsContent({ sponsors, conferences, totalEvents }: Props) {
                     {sponsor.events.map((event, i) => (
                       <a
                         key={i}
-                        href={event.url}
+                        href={isSafeHttpUrl(event.url) ? event.url : undefined}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 py-1.5 px-2 rounded text-xs hover:bg-[var(--theme-bg-secondary)] transition-colors"

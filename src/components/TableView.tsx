@@ -6,10 +6,11 @@ import { AlertTriangle, Download, ExternalLink, Plus, Check, X, Users } from 'lu
 import type { ETHDenverEvent, ReactionEmoji, FriendInfo } from '@/lib/types';
 import { trackEventClick, trackTableExport, trackOutboundClick } from '@/lib/analytics';
 import { trackEvent } from '@/lib/event-tracking';
-import { shortenAddress } from '@/lib/utils';
+import { shortenAddress, isSafeHttpUrl } from '@/lib/utils';
 import { AddressLink } from './AddressLink';
 import { TagBadge } from './TagBadge';
 import { EventCard } from './EventCard';
+import { ClaimEventLink } from './ClaimEventLink';
 import { CalendarIcon } from './icons/CalendarIcon';
 import { FriendAvatarStack } from './FriendAvatarStack';
 import UserAvatar from './UserAvatar';
@@ -141,7 +142,6 @@ const COLUMN_COUNT = 7; // star, friends, time, organizer, event, location, tags
 
 export const TableView = memo(function TableView({
   events,
-  totalCount,
   itinerary,
   onItineraryToggle,
   onScrolledChange,
@@ -253,10 +253,13 @@ export const TableView = memo(function TableView({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [selectedEvent]);
 
-  // Reset to "Time" when groups change (e.g. filter change)
-  useEffect(() => {
+  // Reset to "Time" when groups change (e.g. filter change). Adjusted during
+  // render rather than in an effect to avoid an extra commit.
+  const [prevGroups, setPrevGroups] = useState(groups);
+  if (groups !== prevGroups) {
+    setPrevGroups(groups);
     setCurrentDateLabel('Time');
-  }, [groups]);
+  }
 
   // Track which date separator is at/near the top using IntersectionObserver
   useEffect(() => {
@@ -612,6 +615,9 @@ function EventDetailModal({
             onRsvp={onRsvp}
             onOpenLightbox={onOpenLightbox ? () => onOpenLightbox() : undefined}
           />
+          <div className="mt-1.5 text-right">
+            <ClaimEventLink event={event} className="!text-white/70 hover:!text-white" />
+          </div>
         </div>
       </div>
     </>
@@ -743,7 +749,7 @@ function FeaturedTableRow({
       <td className="px-3 py-2 font-medium text-[var(--theme-text-primary)] overflow-hidden truncate max-w-[25ch] sm:max-w-none" title={event.name}>
         <span className="inline-flex items-center gap-1.5 max-w-full truncate">
           <span className="shrink-0 text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ color: 'var(--theme-popup-featured-border)', background: 'var(--theme-accent-muted)' }}>Featured</span>
-          {event.link ? (
+          {isSafeHttpUrl(event.link) ? (
             <a href={event.link} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--theme-accent)] transition-colors truncate"
               onClick={() => { trackEventClick(event.name, event.link!); trackEvent({ event_id: event.id, event_name: event.name, event_type: 'click', conference, url: event.link!, source: 'table' }); }}>
               {event.name}
@@ -894,7 +900,7 @@ function TableRow({
           {event.isDuplicate && (
             <span title="Duplicate entry in sheet"><AlertTriangle className="w-3.5 h-3.5 text-red-400 shrink-0" /></span>
           )}
-          {event.link ? (
+          {isSafeHttpUrl(event.link) ? (
             <a
               href={event.link}
               target="_blank"
@@ -954,13 +960,11 @@ function DateGroup({
   itinerary,
   onItineraryToggle,
   setSeparatorRef,
-  friendsCountByEvent,
   friendsByEvent,
   checkInCounts,
   onSelectEvent,
   conference,
   featuredEvents,
-  selectedEventId,
   isSignedIn,
   onSignIn,
   liveEventIds,

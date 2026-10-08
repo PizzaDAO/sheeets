@@ -5,6 +5,7 @@ import { Popup } from 'react-map-gl/mapbox';
 import { X } from 'lucide-react';
 import type { ETHDenverEvent, ReactionEmoji, FriendInfo } from '@/lib/types';
 import { EventCard } from './EventCard';
+import { ClaimEventLink } from './ClaimEventLink';
 
 interface EventPopupProps {
   event: ETHDenverEvent;
@@ -96,6 +97,9 @@ export const EventPopup = memo(function EventPopup({
           onRsvp={onRsvp}
           compact
         />
+        <div className="text-right -mt-0.5">
+          <ClaimEventLink event={event} />
+        </div>
       </div>
     </Popup>
   );

@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { trackError } from '@/lib/analytics';
+import { reportClientError } from '@/lib/error-reporter';
 
 export default function Error({
   error,
@@ -12,6 +13,7 @@ export default function Error({
 }) {
   useEffect(() => {
     trackError(error.message, 'error-boundary');
+    reportClientError(error, { kind: 'boundary', digest: error.digest });
   }, [error]);
 
   return (

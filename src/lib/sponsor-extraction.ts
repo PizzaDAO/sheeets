@@ -183,8 +183,8 @@ export async function fetchLumaApi(slug: string): Promise<any> {
 // Layer 1: Luma API extraction
 // ---------------------------------------------------------------------------
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function extractSponsorsFromLuma(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped Luma API JSON, probed defensively below
   apiData: any,
   openaiClient?: OpenAI,
 ): Promise<ExtractedSponsor[]> {

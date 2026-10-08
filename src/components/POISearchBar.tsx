@@ -70,15 +70,6 @@ export function POISearchBar({ onAddPOI, mapRef, onSignIn }: POISearchBarProps) 
     if (expanded) inputRef.current?.focus();
   }, [expanded]);
 
-  // Close on Escape
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') handleClose();
-    };
-    if (expanded) window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [expanded]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const handleClose = useCallback(() => {
     setExpanded(false);
     setSelectedResult(null);
@@ -87,6 +78,16 @@ export function POISearchBar({ onAddPOI, mapRef, onSignIn }: POISearchBarProps) 
     setIsPublic(false);
     clear();
   }, [clear]);
+
+  // Close on Escape
+  useEffect(() => {
+    if (!expanded) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleClose();
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [expanded, handleClose]);
 
   const handleSelectResult = useCallback(
     async (result: GeocoderResult) => {
