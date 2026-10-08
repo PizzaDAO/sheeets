@@ -1,0 +1,264 @@
+{
+  "_note": "Recorded from GET https://api.lu.ma/url?url=espresso-hh on 2026-10-01; trimmed (no guest_data, payment, tracking or personal fields).",
+  "kind": "event",
+  "data": {
+    "api_id": "evt-G9AqnOFI4wwbkKT",
+    "event": {
+      "api_id": "evt-G9AqnOFI4wwbkKT",
+      "calendar_api_id": "cal-tjfuSlBcVzbEVCP",
+      "name": "Celo & Espresso Brews Happy Hour 🍸 에스프레소 해피 아워",
+      "start_at": "2026-09-27T07:00:00.000Z",
+      "end_at": "2026-09-27T09:00:00.000Z",
+      "timezone": "Asia/Seoul",
+      "url": "espresso-hh",
+      "user_api_id": "usr-cAqsoa41hhkQxPs",
+      "visibility": "public"
+    },
+    "calendar": {
+      "api_id": "cal-tjfuSlBcVzbEVCP",
+      "name": "Espresso",
+      "slug": "espressosys",
+      "is_verified": false
+    },
+    "hosts": [
+      {
+        "api_id": "usr-cAqsoa41hhkQxPs",
+        "name": "Espresso Systems",
+        "username": null,
+        "bio_short": "Real-time settlement and sub-second finality for custom, sovereign chains.",
+        "twitter_handle": "espressosys",
+        "website": null,
+        "is_verified": false
+      },
+      {
+        "api_id": "usr-QJkvU5EML2BJeYc",
+        "name": "Celo Core Co.",
+        "username": null,
+        "bio_short": "Celo is the Ethereum Layer 2 built for the real world with the leading programmable rails for global finance.",
+        "twitter_handle": "celo",
+        "website": "https://celo.org/",
+        "is_verified": false
+      }
+    ],
+    "guest_count": 634,
+    "ticket_types": [
+      {
+        "name": "Standard",
+        "num_guests": 634
+      }
+    ],
+    "description_mirror": {
+      "type": "doc",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "text": "Espresso Systems and Celo invite you to come enjoy an Espresso martini while discovering what we’re brewing in the Blockchain space.",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "text": "Join us for a laid back happy hour to:",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "type": "bullet_list",
+          "content": [
+            {
+              "type": "list_item",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "text": "Chat with our co-founders 🍸",
+                      "type": "text"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "list_item",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "text": "Hear the latest on Espresso and Celo's vision",
+                      "type": "text"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "list_item",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "text": "Enjoy drinks (on us!) 🥂",
+                      "type": "text"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "text": "We’ll also have fresh new swag that will be released especially in Seoul 🤫 🇰🇷",
+              "type": "text"
+            },
+            {
+              "type": "hard_break"
+            },
+            {
+              "type": "hard_break"
+            },
+            {
+              "text": "See you there!",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "text": "*Note, capacity is limited for this event. Being approved on Luma does not guarantee entry.",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "text": "Espresso Systems와 Celo가 함께 준비한 해피아워에 여러분을 초대합니다! ☕️🍸",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "text": "Espresso Martini 한 잔과 함께, 두 프로젝트가 블록체인 생태계에서 어떤 미래를 만들어가고 있는지 편하게 이야기 나눠보세요.",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "text": "이번 해피아워에서는:",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "type": "bullet_list",
+          "content": [
+            {
+              "type": "list_item",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "text": "Espresso와 Celo 팀, 그리고 공동창업자들과 자유롭게 대화하고 🍸",
+                      "type": "text"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "list_item",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "text": "두 프로젝트가 그리고 있는 최신 비전과 방향성을 들어보고",
+                      "type": "text"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "list_item",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "text": "무료로 제공되는 다양한 음료도 즐길 수 있습니다 🥂",
+                      "type": "text"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "text": "서울에서 특별히 처음 공개되는 새로운 굿즈도 준비되어 있습니다 🤫🇰🇷",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "text": "편하게 들러 함께 즐겨주세요. 현장에서 만나요!",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "text": "*참고로, 이 이벤트의 수용 인원은 제한되어 있습니다. Luma에서 승인을 받았더라도 입장이 보장되지 않습니다.",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "type": "image",
+          "attrs": {
+            "alt": null,
+            "src": "https://images.lumacdn.com/uploads/b8/4ce03ef7-65be-487c-b8f5-e00092c8016f.png",
+            "width": 1145,
+            "height": 1374,
+            "image_id": "local-upload-blob:https://spark.luma.com/72be8fb2-1781-4e48-b9ed-5e991be0fb20",
+            "mime_type": null,
+            "uploaded_at": "2026-09-13T07:52:24.733-04:00",
+            "is_uploading": false,
+            "resize_width": null
+          }
+        }
+      ]
+    }
+  }
+}

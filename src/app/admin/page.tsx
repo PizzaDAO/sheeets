@@ -21,6 +21,7 @@ import AbTestsTab from '@/components/admin/AbTestsTab';
 import AdReportsTab from '@/components/admin/AdReportsTab';
 import EventAnalyticsTab from '@/components/admin/EventAnalyticsTab';
 import ErrorsTab from '@/components/admin/ErrorsTab';
+import ClaimsTab from '@/components/admin/ClaimsTab';
 import { useAdminConfigEditor } from '@/components/admin/hooks/useAdminConfigEditor';
 
 const SESSION_KEY = 'sheeets-admin-auth';
@@ -37,7 +38,7 @@ function useSessionPassword(): string | null {
   return saved && saved !== 'true' ? saved : null;
 }
 
-type AdminTab = 'submissions' | 'featured' | 'conferences' | 'sponsors' | 'nativeAds' | 'upsell' | 'adInventory' | 'theme' | 'abTests' | 'adReports' | 'eventAnalytics' | 'sponsorData' | 'errors';
+type AdminTab = 'submissions' | 'featured' | 'conferences' | 'sponsors' | 'nativeAds' | 'upsell' | 'adInventory' | 'theme' | 'abTests' | 'adReports' | 'eventAnalytics' | 'sponsorData' | 'errors' | 'claims';
 
 const TAB_LABELS: { key: AdminTab; label: string }[] = [
   { key: 'submissions', label: 'Submissions' },
@@ -53,6 +54,7 @@ const TAB_LABELS: { key: AdminTab; label: string }[] = [
   { key: 'eventAnalytics', label: 'Event Analytics' },
   { key: 'sponsorData', label: 'Sponsor Data' },
   { key: 'errors', label: 'Errors' },
+  { key: 'claims', label: 'Claims' },
 ];
 
 export default function AdminPage() {
@@ -341,6 +343,10 @@ export default function AdminPage() {
         ))}
 
         {keepAlive('errors', <ErrorsTab password={password} />)}
+
+        {keepAlive('claims', (
+          <ClaimsTab password={password} allConferenceTabs={allConferenceTabs} />
+        ))}
 
         {activeTab === 'sponsorData' && (
           <SponsorDataTab allConferenceTabs={allConferenceTabs} password={password} />

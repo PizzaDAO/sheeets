@@ -271,3 +271,46 @@ export const SubmissionActionSchema = z.object({
     note: z.string().optional(),
   }).optional(),
 });
+
+// ---------------------------------------------------------------------------
+// Host claims (plans/host-analytics.md)
+// ---------------------------------------------------------------------------
+
+/** Sheet event id: `evt-{base36 hash}` with an optional `-N` duplicate suffix. */
+export const EventIdSchema = z
+  .string()
+  .regex(/^evt-[a-z0-9]{1,20}(-\d{1,4})?$/, 'Invalid event id');
+
+export const ClaimIdSchema = z.string().uuid('Invalid claim id');
+
+const claimNote = z
+  .string()
+  .trim()
+  .min(1, 'Please add a short note')
+  .max(1000, 'Note must be 1000 characters or fewer');
+
+/** Schema for POST /api/host/claims */
+export const ClaimCreateSchema = z.object({
+  eventId: EventIdSchema,
+  /** Request manual review straight away (required for non-Luma events). */
+  manual: z.boolean().optional().default(false),
+  note: claimNote.optional(),
+});
+
+/** Schema for POST /api/host/claims/[id]/manual */
+export const ClaimManualSchema = z.object({
+  note: claimNote,
+});
+
+/** Schema for POST /api/admin/claims/[id] */
+export const AdminClaimActionSchema = z
+  .object({
+    password: z.string(),
+    action: z.enum(['approve', 'reject', 'revoke', 'relink']),
+    note: z.string().trim().max(1000).optional(),
+    eventId: EventIdSchema.optional(),
+  })
+  .refine((d) => d.action !== 'relink' || !!d.eventId, {
+    message: 'eventId is required for relink',
+    path: ['eventId'],
+  });
