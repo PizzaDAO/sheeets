@@ -4,10 +4,9 @@
 -- 1. profiles.share_live_location (default false) and
 --    profiles.auto_check_in (default false) — both opt-in.
 --
--- 2. ONE-TIME CLEANUP: deletes every user_locations row for users who have
---    not opted in to live location sharing. Because the new column defaults
---    to false, this deletes ALL existing user_locations rows (they were
---    written on app open without consent).
+-- 2. (Removed) No mass delete of existing user_locations rows. They stay
+--    private: RLS only lets a user read their own row, and
+--    get_friends_locations() only returns opted-in, fresh (<2h) rows.
 --
 -- 3. user_locations RLS: users may only insert/update their own row while
 --    share_live_location is on, and may delete their own row. A trigger also
@@ -31,16 +30,6 @@ alter table public.profiles
   add column if not exists share_live_location boolean not null default false;
 alter table public.profiles
   add column if not exists auto_check_in boolean not null default false;
-
--- ------------------------------------------------------------
--- 2. One-time cleanup of non-consented locations
--- ------------------------------------------------------------
-delete from public.user_locations ul
-where not exists (
-  select 1 from public.profiles p
-  where p.user_id = ul.user_id
-    and p.share_live_location
-);
 
 -- ------------------------------------------------------------
 -- 3. user_locations RLS + trigger
