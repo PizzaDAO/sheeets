@@ -18,6 +18,7 @@ import { EmojiReactions } from './EmojiReactions';
 import UserAvatar from './UserAvatar';
 import { FriendAvatarStack } from './FriendAvatarStack';
 import { RsvpButton } from './RsvpButton';
+import { CommentSection } from './CommentSection';
 
 interface EventCardProps {
   event: ETHDenverEvent;
@@ -131,6 +132,7 @@ export const EventCard = memo(function EventCard({
   checkInCount,
   reactions,
   onToggleReaction,
+  commentCount,
   conference,
   onCheckIn,
   checkInLoading,

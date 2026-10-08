@@ -12,14 +12,14 @@ export function useXVerification() {
 
   // Fetch verification status from profile
   useEffect(() => {
-    if (!user) {
-      setIsXVerified(false);
-      setXHandle(null);
-      setLoading(false);
-      return;
-    }
-
     async function checkVerification() {
+      if (!user) {
+        setIsXVerified(false);
+        setXHandle(null);
+        setLoading(false);
+        return;
+      }
+
       const { data } = await supabase
         .from('profiles')
         .select('x_verified, x_handle, x_oauth_id')

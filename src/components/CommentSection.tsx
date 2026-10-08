@@ -405,7 +405,6 @@ export function CommentSection({ eventId, commentCount = 0, eventName }: Comment
           telegramHandle={selectedProfile.telegramHandle}
         />
       )}
-      <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} />
     </div>
   );
 }
