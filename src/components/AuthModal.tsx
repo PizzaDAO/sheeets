@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { X, Mail, LogOut, User, Check, Loader2, Users, Search, UserPlus, Clock, XCircle, CircleUser, Link2, ArrowRight, Send, Building2, Briefcase, Linkedin, Smartphone, Moon, Sun } from 'lucide-react';
 import { ShareCardModal } from './ShareCardModal';
 import { LockScreenModal } from './LockScreenModal';
+import { LocationSettings } from './LocationSettings';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { trackAuthSuccess, trackSignOut, trackFriendCodeGenerate, trackFriendCodeCopy, trackModalDismiss } from '@/lib/analytics';
@@ -961,6 +962,9 @@ export function UserMenu({ events, itinerary, onOpenFriends, pendingIncomingCoun
                     </p>
                   )}
                 </div>
+
+                {/* Opt-in location sharing + auto check-in */}
+                <LocationSettings />
 
                 {/* Sign Out + Dark Mode Toggle */}
                 <div className="border-t border-[var(--theme-border-primary)] pt-4 flex items-center gap-2">

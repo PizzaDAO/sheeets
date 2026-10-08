@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import type { Friend, FriendLocation } from '@/lib/types';
 import { getDisplayName } from '@/lib/user-display';
+import type { FriendCheckIn } from '@/lib/venue-pins';
 
 interface FriendItinerary {
   userId: string;
@@ -19,6 +20,10 @@ interface FriendsDependentData {
   checkInCounts: Map<string, number>;
   checkInUsersByEvent: Map<string, string[]>;
   friendLocations: FriendLocation[];
+  /** Friends' active check-ins (last 12h, not checked out), refreshed every 2 min while visible. */
+  friendCheckIns: FriendCheckIn[];
+  /** When friendCheckIns was last fetched (ms) — the "now" for deriving venue pins. */
+  friendCheckInsFetchedAt: number;
 }
 
 export function useFriendsDependentData(friends: Friend[]): FriendsDependentData {
@@ -30,6 +35,8 @@ export function useFriendsDependentData(friends: Friend[]): FriendsDependentData
   const [checkInCounts, setCheckInCounts] = useState<Map<string, number>>(new Map());
   const [checkInUsersByEvent, setCheckInUsersByEvent] = useState<Map<string, string[]>>(new Map());
   const [friendLocations, setFriendLocations] = useState<FriendLocation[]>([]);
+  const [friendCheckIns, setFriendCheckIns] = useState<FriendCheckIn[]>([]);
+  const [friendCheckInsFetchedAt, setFriendCheckInsFetchedAt] = useState(0);
 
   const initialFetchDone = useRef(false);
 
@@ -185,34 +192,60 @@ export function useFriendsDependentData(friends: Friend[]): FriendsDependentData
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, authLoading, friendIds]);
 
-  // ---- Geolocation upsert (from useFriendLocations) ----
+  // ---- Friends' active check-ins (venue pins), every 2 min while visible ----
   useEffect(() => {
-    if (authLoading || !user) return;
-    if (!navigator.geolocation) return;
+    if (authLoading || !user || friends.length === 0) {
+      setFriendCheckIns([]);
+      return;
+    }
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        supabase
-          .from('user_locations')
-          .upsert(
-            {
-              user_id: user.id,
-              lat: pos.coords.latitude,
-              lng: pos.coords.longitude,
-              updated_at: new Date().toISOString(),
-            },
-            { onConflict: 'user_id' }
-          )
-          .then(({ error }) => {
-            if (error) console.error('Failed to upsert location:', error);
-          });
-      },
-      (err) => {
-        console.warn('Geolocation unavailable:', err.message);
-      },
-      { enableHighAccuracy: false, timeout: 10000 }
-    );
-  }, [user, authLoading]);
+    let cancelled = false;
+    let lastFetchAt = 0;
+    const friendIdList = friends.map((f) => f.user_id);
+
+    async function fetchCheckIns() {
+      if (document.visibilityState !== 'visible') return;
+      if (Date.now() - lastFetchAt < 30_000) return;
+      lastFetchAt = Date.now();
+
+      const { data, error } = await supabase.rpc('get_friends_active_check_ins');
+      if (cancelled) return;
+      if (!error) {
+        setFriendCheckIns((data ?? []) as FriendCheckIn[]);
+        setFriendCheckInsFetchedAt(Date.now());
+        return;
+      }
+
+      // Fallback while the RPC isn't deployed: read check_ins directly (RLS-scoped).
+      if (error.code !== '42883' && error.code !== 'PGRST202') {
+        console.error('Failed to fetch friends check-ins:', error);
+      }
+      const since = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString();
+      const { data: rows, error: fbError } = await supabase
+        .from('check_ins')
+        .select('user_id, event_id, created_at')
+        .in('user_id', friendIdList)
+        .is('checked_out_at', null)
+        .gte('created_at', since);
+      if (cancelled) return;
+      if (fbError) {
+        console.error('Failed to fetch friends check-ins (fallback):', fbError);
+        return;
+      }
+      setFriendCheckIns((rows ?? []) as FriendCheckIn[]);
+      setFriendCheckInsFetchedAt(Date.now());
+    }
+
+    fetchCheckIns();
+    const interval = setInterval(fetchCheckIns, 2 * 60 * 1000);
+    document.addEventListener('visibilitychange', fetchCheckIns);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', fetchCheckIns);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, authLoading, friendIds]);
 
   // ---- Merge display names from friends array ----
   const friendItineraries: FriendItinerary[] = useMemo(() => {
@@ -234,5 +267,7 @@ export function useFriendsDependentData(friends: Friend[]): FriendsDependentData
     checkInCounts,
     checkInUsersByEvent,
     friendLocations,
+    friendCheckIns,
+    friendCheckInsFetchedAt,
   };
 }

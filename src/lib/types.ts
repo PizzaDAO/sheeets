@@ -69,7 +69,13 @@ export interface UserProfile {
   x_verified: boolean;
   x_oauth_id: string | null;
   x_avatar_url: string | null;
+  /** Opt-in: share raw GPS with friends (default false). */
+  share_live_location?: boolean;
+  /** Opt-in: auto check in at live plan events while the app is open (default false). */
+  auto_check_in?: boolean;
 }
+
+export type LocationSettings = Pick<UserProfile, 'share_live_location' | 'auto_check_in'>;
 
 export interface Friend {
   user_id: string;

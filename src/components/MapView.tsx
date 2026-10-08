@@ -20,6 +20,8 @@ import { POIMarker } from './POIMarker';
 import { POIPopup } from './POIPopup';
 import { POISearchBar } from './POISearchBar';
 import { FriendMarker } from './FriendMarker';
+import { VenueFriendMarker } from './VenueFriendMarker';
+import type { VenuePin } from '@/lib/venue-pins';
 
 interface MapViewProps {
   events: ETHDenverEvent[];
@@ -35,6 +37,8 @@ interface MapViewProps {
   onToggleReaction?: (eventId: string, emoji: ReactionEmoji) => void;
   commentCounts?: Map<string, number>;
   friendLocations?: FriendLocation[];
+  /** Friends checked in at events, pinned at the venue (preferred over raw GPS). */
+  venuePins?: VenuePin[];
   conference?: string;
   pois?: POI[];
   onAddPOI?: (poi: { name: string; lat: number; lng: number; address?: string | null; category: POICategory; note?: string | null }) => Promise<unknown>;
@@ -71,6 +75,7 @@ export function MapView({
   onToggleReaction,
   commentCounts,
   friendLocations,
+  venuePins,
   conference,
   pois,
   onAddPOI,
@@ -511,6 +516,16 @@ export function MapView({
       {/* Friend location markers (rendered first, below POIs and events) */}
       {friendLocations?.map((loc) => (
         <FriendMarker key={loc.user_id} location={loc} zoom={viewState.zoom} />
+      ))}
+
+      {/* Friends checked in at events, pinned at the venue */}
+      {venuePins?.map((pin, i) => (
+        <VenueFriendMarker
+          key={`venue-${pin.eventId}`}
+          pin={pin}
+          zoom={viewState.zoom}
+          stackIndex={venuePins.slice(0, i).filter((p) => coordKey(p.lat, p.lng) === coordKey(pin.lat, pin.lng)).length}
+        />
       ))}
 
       {/* POI Markers (rendered before events so events layer on top) */}
