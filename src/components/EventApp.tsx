@@ -19,6 +19,9 @@ import { useAdminConfig } from '@/hooks/useAdminConfig';
 import { useConferenceTabs } from '@/hooks/useConferenceTabs';
 import { useABTest } from '@/hooks/useABTest';
 import { useEventCheckIn } from '@/hooks/useEventCheckIn';
+import { useAutoCheckIn } from '@/hooks/useAutoCheckIn';
+import { useLocationSharing } from '@/hooks/useLocationSharing';
+import { deriveVenuePins, excludeFriendsAtVenues } from '@/lib/venue-pins';
 import { useFriendCode } from '@/hooks/useFriendCode';
 import { useHasOpened } from '@/hooks/useHasOpened';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -36,6 +39,7 @@ import { Loading } from './Loading';
 import { AuthModal } from './AuthModal';
 import { SponsorsTicker } from './SponsorsTicker';
 import { CheckInFAB } from './CheckInFAB';
+import { AutoCheckInToast } from './AutoCheckInToast';
 import { STORAGE_KEYS } from '@/lib/storage-keys';
 import { trackAuthPrompt, trackRsvpOpen, trackRsvpConfirm, setConferenceProperty } from '@/lib/analytics';
 import { getTabConfig } from '@/lib/conferences';
@@ -114,7 +118,7 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
   const { pois, addPOI, removePOI, updatePOI, ownerNames } = usePOIs();
 
   const { friends, removeFriend, refreshFriends } = useFriends();
-  const { friendItineraries, checkInCounts, checkInUsersByEvent, friendLocations } = useFriendsDependentData(friends);
+  const { friendItineraries, checkInCounts, checkInUsersByEvent, friendLocations, friendCheckIns, friendCheckInsFetchedAt } = useFriendsDependentData(friends);
   const { reactionsByEvent, toggleReaction } = useEventReactions();
   const commentCounts = useEventCommentCounts();
 
@@ -269,12 +273,34 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
 
   // Proximity watcher: detect when user is within 150m of a live RSVP'd event
+  const liveItineraryEvents = useMemo(
+    () => events.filter((e) => itinerary.has(e.id) && liveEventIds.has(e.id) && e.lat && e.lng),
+    [events, itinerary, liveEventIds]
+  );
   const liveItineraryEventsRef = useRef<typeof events>([]);
   useEffect(() => {
-    liveItineraryEventsRef.current = events.filter(
-      (e) => itinerary.has(e.id) && liveEventIds.has(e.id) && e.lat && e.lng
+    liveItineraryEventsRef.current = liveItineraryEvents;
+  }, [liveItineraryEvents]);
+
+  // Opt-in (profile settings): live GPS sharing + auto check-in on dwell
+  useLocationSharing(!!profile?.share_live_location);
+  const autoCheckIn = useAutoCheckIn({ enabled: !!profile?.auto_check_in, liveItineraryEvents });
+  const handleAutoCheckInPosition = autoCheckIn.handlePosition;
+
+  // Friends checked in at events are pinned at the venue, in place of raw GPS
+  const venuePins = useMemo(() => {
+    if (friendCheckIns.length === 0) return [];
+    return deriveVenuePins(
+      friendCheckIns,
+      new Map(events.map((e) => [e.id, e])),
+      new Map(friends.map((f) => [f.user_id, f])),
+      { nowMs: friendCheckInsFetchedAt, isLive: (id) => liveEventIds.has(id) }
     );
-  }, [events, itinerary, liveEventIds]);
+  }, [friendCheckIns, friendCheckInsFetchedAt, events, friends, liveEventIds]);
+  const gpsFriendLocations = useMemo(
+    () => excludeFriendsAtVenues(friendLocations, venuePins),
+    [friendLocations, venuePins]
+  );
 
   useEffect(() => {
     if (liveItineraryCount <= 0 || !authUser) {
@@ -288,6 +314,7 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
       (pos) => {
         const { latitude: uLat, longitude: uLng } = pos.coords;
         setUserLocation({ lat: uLat, lng: uLng });
+        handleAutoCheckInPosition(pos);
         const nearby = liveItineraryEventsRef.current.some(
           (e) => distanceMeters(uLat, uLng, e.lat!, e.lng!) <= 150
         );
@@ -298,7 +325,7 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
     );
 
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [liveItineraryCount, authUser]);
+  }, [liveItineraryCount, authUser, handleAutoCheckInPosition]);
 
   const handleBulkCheckIn = useCallback(() => {
     checkInToNearbyEvents(events, itinerary, filters.conference);
@@ -617,7 +644,8 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
             reactionsByEvent={reactionsByEvent}
             onToggleReaction={handleToggleReaction}
             commentCounts={commentCounts}
-            friendLocations={friendLocations}
+            friendLocations={gpsFriendLocations}
+            venuePins={venuePins}
             conference={filters.conference}
             pois={pois}
             onAddPOI={addPOI}
@@ -754,6 +782,13 @@ export function EventApp({ initialConference, initialEvents }: { initialConferen
           userJobTitle={profile?.job_title}
           onConfirm={handleRsvpConfirm}
           onClose={closeRsvp}
+        />
+      )}
+      {autoCheckIn.toast && (
+        <AutoCheckInToast
+          eventName={autoCheckIn.toast.eventName}
+          onUndo={autoCheckIn.undo}
+          onDismiss={autoCheckIn.dismiss}
         />
       )}
       {friendCodeToast && (

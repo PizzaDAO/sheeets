@@ -3,8 +3,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
-import type { UserProfile } from '@/lib/types';
+import type { LocationSettings, UserProfile } from '@/lib/types';
 import { trackProfileUpdate } from '@/lib/analytics';
+
+// `*` so the opt-in location columns (share_live_location, auto_check_in) are
+// picked up when present without breaking the fetch if that migration hasn't
+// been applied yet (missing columns just read as undefined → off).
+const PROFILE_COLUMNS = '*';
 
 // ── Module-level shared state ──────────────────────────────────────────
 // All useProfile() instances share a single profile value and coordinate
@@ -91,7 +96,7 @@ export function useProfile() {
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('user_id, email, display_name, x_handle, rsvp_name, avatar_url, telegram_handle, company, linkedin_url, job_title')
+          .select(PROFILE_COLUMNS)
           .eq('user_id', user!.id)
           .maybeSingle();
 
@@ -126,7 +131,7 @@ export function useProfile() {
             // Could be a race condition — try fetching again
             const { data: retryData } = await supabase
               .from('profiles')
-              .select('user_id, email, display_name, x_handle, rsvp_name, avatar_url, telegram_handle, company, linkedin_url, job_title')
+              .select(PROFILE_COLUMNS)
               .eq('user_id', user!.id)
               .maybeSingle();
 
@@ -198,5 +203,39 @@ export function useProfile() {
     setSharedProfile(sharedProfile ? { ...sharedProfile, avatar_url: avatarUrl } : sharedProfile);
   }, [user]);
 
-  return { profile, loading, updateProfile, uploadAvatar };
+  /**
+   * Update the opt-in location settings. Optimistic; reverts on error.
+   * Turning live location sharing off also deletes the user's stored location
+   * (a DB trigger does the same server-side). Returns true on success.
+   */
+  const updateLocationSettings = useCallback(
+    async (fields: LocationSettings): Promise<boolean> => {
+      if (!user) return false;
+      const before = sharedProfile;
+      setSharedProfile(sharedProfile ? { ...sharedProfile, ...fields } : sharedProfile);
+
+      const { error } = await supabase
+        .from('profiles')
+        .update(fields)
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Failed to update location settings:', error);
+        setSharedProfile(before);
+        return false;
+      }
+
+      if (fields.share_live_location === false) {
+        const { error: delError } = await supabase
+          .from('user_locations')
+          .delete()
+          .eq('user_id', user.id);
+        if (delError) console.error('Failed to delete stored location:', delError);
+      }
+      return true;
+    },
+    [user]
+  );
+
+  return { profile, loading, updateProfile, updateLocationSettings, uploadAvatar };
 }
