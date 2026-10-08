@@ -18,6 +18,7 @@ import { EmojiReactions } from './EmojiReactions';
 import UserAvatar from './UserAvatar';
 import { FriendAvatarStack } from './FriendAvatarStack';
 import { RsvpButton } from './RsvpButton';
+import { CommentSection } from './CommentSection';
 
 interface EventCardProps {
   event: ETHDenverEvent;
@@ -131,6 +132,7 @@ export const EventCard = memo(function EventCard({
   checkInCount,
   reactions,
   onToggleReaction,
+  commentCount,
   conference,
   onCheckIn,
   checkInLoading,
@@ -400,8 +402,7 @@ export const EventCard = memo(function EventCard({
               compact={compact}
             />
           )}
-          {/* Comments disabled until social verification is in place */}
-          {/* <CommentSection eventId={event.id} commentCount={commentCount} eventName={event.name} /> */}
+          <CommentSection eventId={event.id} commentCount={commentCount} eventName={event.name} />
           {checkedInFriends && checkedInFriends.length > 0 && (
             <button
               onClick={(e) => {

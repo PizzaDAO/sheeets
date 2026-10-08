@@ -15,6 +15,7 @@ import { getSocialLinks } from '@/lib/social-urls';
 
 import { supabase } from '@/lib/supabase';
 import { useProfile } from '@/hooks/useProfile';
+import { useXVerification } from '@/hooks/useXVerification';
 import { useFriends } from '@/hooks/useFriends';
 import { useFriendRequests } from '@/hooks/useFriendRequests';
 import type { ETHDenverEvent, NativeAd, UserSearchResult, FriendRequest } from '@/lib/types';
@@ -378,6 +379,7 @@ export function UserMenu({ events, itinerary, onOpenFriends, pendingIncomingCoun
   const { friendCount, refreshFriends: localRefreshFriends } = useFriends();
   const { config } = useAdminConfig();
   const { theme, setTheme } = useTheme();
+  const { isXVerified, linkX, unlinkX } = useXVerification();
 
   const refreshFriends = useCallback(async () => {
     await localRefreshFriends();
@@ -763,18 +765,32 @@ export function UserMenu({ events, itinerary, onOpenFriends, pendingIncomingCoun
                     </div>
                   </div>
 
-                  <div>
-                    <div className="flex items-center bg-[var(--theme-bg-primary)] border border-[var(--theme-border-primary)] rounded-lg focus-within:border-[var(--theme-accent)]">
-                      <span className="text-[var(--theme-text-muted)] text-sm ml-3 shrink-0 select-none font-bold leading-none" style={{ fontFamily: 'serif' }}>{'\u{1D54F}'}</span>
-                      <input
-                        type="text"
-                        value={xHandle}
-                        onChange={(e) => setXHandle(e.target.value.replace(/^@/, ''))}
-                        placeholder="X handle"
-                        className="flex-1 bg-transparent text-[var(--theme-text-primary)] text-sm px-2 py-2 focus:outline-none placeholder:text-[var(--theme-text-muted)]"
-                      />
+                  {/* X Account */}
+                  {profile?.x_verified ? (
+                    <div className="flex items-center gap-2 bg-[var(--theme-bg-primary)] border border-green-500/30 rounded-lg px-3 py-2">
+                      <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-[var(--theme-text-secondary)]" aria-hidden="true">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                      </svg>
+                      <span className="text-sm text-[var(--theme-text-primary)]">@{profile.x_handle}</span>
+                      <Check className="w-3.5 h-3.5 text-green-400" />
+                      <button
+                        onClick={unlinkX}
+                        className="ml-auto text-xs text-red-400 hover:text-red-300 transition-colors cursor-pointer"
+                      >
+                        Disconnect
+                      </button>
                     </div>
-                  </div>
+                  ) : (
+                    <button
+                      onClick={linkX}
+                      className="flex items-center gap-2 w-full bg-[var(--theme-bg-primary)] border border-[var(--theme-border-primary)] hover:border-[var(--theme-accent)] rounded-lg px-3 py-2 text-sm text-[var(--theme-text-secondary)] hover:text-[var(--theme-text-primary)] transition-colors cursor-pointer"
+                    >
+                      <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current" aria-hidden="true">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                      </svg>
+                      Connect X Account
+                    </button>
+                  )}
 
                   <div>
                     <div className="flex items-center bg-[var(--theme-bg-primary)] border border-[var(--theme-border-primary)] rounded-lg focus-within:border-[var(--theme-accent)]">

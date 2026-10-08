@@ -239,3 +239,8 @@ export const trackItineraryView = () =>
 // Error tracking
 export const trackError = (message: string, source?: string) =>
   track('error', { message: message.slice(0, 100), ...(source ? { source } : {}) });
+
+// X (Twitter) verification
+export const trackXConnectStart = () => track('x_connect_start');
+export const trackXConnectSuccess = () => track('x_connect_success');
+export const trackXDisconnect = () => track('x_disconnect');

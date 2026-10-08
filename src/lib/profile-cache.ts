@@ -7,6 +7,7 @@ export interface CachedProfile {
   x_handle: string | null;
   rsvp_name: string | null;
   avatar_url: string | null;
+  x_verified: boolean;
 }
 
 const cache = new Map<string, CachedProfile>();
@@ -30,7 +31,7 @@ export async function fetchProfiles(
   if (uncached.length > 0) {
     const { data } = await client
       .from('profiles')
-      .select('user_id, email, display_name, x_handle, rsvp_name, avatar_url')
+      .select('user_id, email, display_name, x_handle, rsvp_name, avatar_url, x_verified')
       .in('user_id', uncached);
 
     for (const p of data ?? []) {
@@ -41,6 +42,7 @@ export async function fetchProfiles(
         x_handle: p.x_handle ?? null,
         rsvp_name: p.rsvp_name ?? null,
         avatar_url: p.avatar_url ?? null,
+        x_verified: p.x_verified ?? false,
       };
       cache.set(p.user_id, profile);
       result.set(p.user_id, profile);

@@ -121,6 +121,9 @@ export function useProfile() {
             company: null,
             linkedin_url: null,
             job_title: null,
+            x_verified: false,
+            x_oauth_id: null,
+            x_avatar_url: null,
           };
 
           const { error: insertError } = await supabase

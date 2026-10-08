@@ -66,6 +66,9 @@ export interface UserProfile {
   company: string | null;
   linkedin_url: string | null;
   job_title: string | null;
+  x_verified: boolean;
+  x_oauth_id: string | null;
+  x_avatar_url: string | null;
   /** Opt-in: share raw GPS with friends (default false). */
   share_live_location?: boolean;
   /** Opt-in: auto check in at live plan events while the app is open (default false). */
@@ -136,6 +139,7 @@ export interface EventComment {
   company?: string;
   linkedin_url?: string;
   telegram_handle?: string;
+  x_verified?: boolean;
 }
 
 export interface FriendLocation {

@@ -6,11 +6,13 @@ import { createPortal } from 'react-dom';
 import { Send, Trash2, MessageCircle, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEventComments } from '@/hooks/useEventComments';
+import { supabase } from '@/lib/supabase';
 import { timeAgo } from '@/lib/time-parse';
 import { getDisplayName } from '@/lib/user-display';
 import UserAvatar from './UserAvatar';
 import ProfileCardModal from './ProfileCardModal';
 import { trackCommentExpand, trackCommentAdd, trackCommentDelete, trackCommentVisibilityToggle } from '@/lib/analytics';
+import { useXVerification } from '@/hooks/useXVerification';
 
 interface CommentSectionProps {
   eventId: string;
@@ -20,6 +22,7 @@ interface CommentSectionProps {
 
 export function CommentSection({ eventId, commentCount = 0, eventName }: CommentSectionProps) {
   const { user } = useAuth();
+  const { isXVerified, linkX } = useXVerification();
   const [expanded, setExpanded] = useState(false);
   const isMobile = useMediaQuery('(max-width: 639px)');
   const { comments, loading, addComment, deleteComment } = useEventComments(
@@ -27,6 +30,10 @@ export function CommentSection({ eventId, commentCount = 0, eventName }: Comment
   );
   const [text, setText] = useState('');
   const [visibility, setVisibility] = useState<'public' | 'friends'>('public');
+  const [showEmailPrompt, setShowEmailPrompt] = useState(false);
+  const [email, setEmail] = useState('');
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [selectedProfile, setSelectedProfile] = useState<{
     userId: string;
     displayName?: string | null;
@@ -155,8 +162,37 @@ export function CommentSection({ eventId, commentCount = 0, eventName }: Comment
     </>
   );
 
+  // Handle email sign-up then X OAuth link
+  const handleEmailThenLinkX = async () => {
+    if (!email.trim()) return;
+    setEmailLoading(true);
+    setEmailError(null);
+
+    // Sign up with a random password — auto-confirms since enable_confirmations = false
+    // Next login they'll use OTP
+    const { error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password: crypto.randomUUID(),
+    });
+
+    if (error) {
+      // If account exists, they need to sign in properly
+      if (error.message?.includes('already registered') || error.status === 422) {
+        setEmailError('Account exists — sign in from the menu first');
+      } else {
+        setEmailError(error.message);
+      }
+      setEmailLoading(false);
+      return;
+    }
+
+    // Account created + session active, now start X OAuth
+    setEmailLoading(false);
+    linkX();
+  };
+
   // Shared input content
-  const inputContent = user && (
+  const inputContent = user && isXVerified ? (
     <div className="flex items-center gap-2">
       <div className="flex-1 flex items-center gap-1 bg-[var(--theme-bg-tertiary)]/50 border border-[var(--theme-border-primary)] rounded-lg px-2 py-1.5">
         <input
@@ -194,6 +230,64 @@ export function CommentSection({ eventId, commentCount = 0, eventName }: Comment
         <Send className="w-3.5 h-3.5" />
       </button>
     </div>
+  ) : user && !isXVerified ? (
+    // Logged in but X not verified — go straight to X OAuth
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        linkX();
+      }}
+      className="flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-lg border border-[var(--theme-border-primary)] bg-[var(--theme-bg-tertiary)]/50 text-sm text-[var(--theme-text-secondary)] hover:text-[var(--theme-text-primary)] hover:border-[var(--theme-accent)] transition-colors cursor-pointer"
+    >
+      <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current" aria-hidden="true">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+      </svg>
+      Connect X to comment
+    </button>
+  ) : showEmailPrompt ? (
+    // Not logged in — email prompt before X OAuth
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleEmailThenLinkX();
+            }
+          }}
+          placeholder="Enter your email..."
+          className="flex-1 bg-[var(--theme-bg-tertiary)]/50 border border-[var(--theme-border-primary)] rounded-lg px-3 py-2 text-sm text-[var(--theme-text-primary)] placeholder-slate-500 outline-none min-w-0"
+          autoFocus
+        />
+        <button
+          onClick={handleEmailThenLinkX}
+          disabled={!email.trim() || emailLoading}
+          className="px-3 py-2 rounded-lg bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] disabled:bg-[var(--theme-bg-tertiary)] disabled:text-[var(--theme-text-muted)] text-[var(--theme-accent-text)] text-sm transition-colors cursor-pointer disabled:cursor-not-allowed"
+        >
+          {emailLoading ? '...' : 'Go'}
+        </button>
+      </div>
+      {emailError && (
+        <p className="text-xs text-red-400">{emailError}</p>
+      )}
+    </div>
+  ) : (
+    // Not logged in — show connect CTA
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        setShowEmailPrompt(true);
+      }}
+      className="flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-lg border border-[var(--theme-border-primary)] bg-[var(--theme-bg-tertiary)]/50 text-sm text-[var(--theme-text-secondary)] hover:text-[var(--theme-text-primary)] hover:border-[var(--theme-accent)] transition-colors cursor-pointer"
+    >
+      <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current" aria-hidden="true">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+      </svg>
+      Connect X to comment
+    </button>
   );
 
   // Mobile: render bottom-sheet modal via portal
@@ -249,11 +343,9 @@ export function CommentSection({ eventId, commentCount = 0, eventName }: Comment
               </div>
 
               {/* Sticky input at bottom */}
-              {user && (
-                <div className="border-t border-[var(--theme-border-primary)] px-4 py-3" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
-                  {inputContent}
-                </div>
-              )}
+              <div className="border-t border-[var(--theme-border-primary)] px-4 py-3" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
+                {inputContent}
+              </div>
             </div>
           </div>,
           document.body
