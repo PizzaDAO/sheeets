@@ -1,0 +1,901 @@
+[
+  {
+    "id": "hneg-110uee3",
+    "conference": "Paris Blockchain Week 2026",
+    "themeKey": "crypto",
+    "label": "off_theme",
+    "source": "hard_negative",
+    "event": {
+      "name": "Open Mic Comedy Night",
+      "organizer": "Laugh Lounge",
+      "venue": "Laugh Lounge",
+      "cost": "$10",
+      "platform": "generic",
+      "descriptionText": "Weekly open mic comedy night. Sign up at the door, 5 minute sets. Two drink minimum."
+    }
+  },
+  {
+    "id": "hneg-11hcxdg",
+    "conference": "Bitcoin Vegas",
+    "themeKey": "crypto",
+    "label": "off_theme",
+    "source": "hard_negative",
+    "event": {
+      "name": "Rooftop Salsa Social",
+      "organizer": "Latin Dance Co",
+      "venue": "Rooftop Lounge",
+      "cost": "$15",
+      "platform": "posh",
+      "descriptionText": "Weekly salsa social with a short beginner lesson followed by open dancing. No partner necessary."
+    }
+  },
+  {
+    "id": "hneg-17qlbe1",
+    "conference": "Paris Blockchain Week 2026",
+    "themeKey": "crypto",
+    "label": "off_theme",
+    "source": "hard_negative",
+    "event": {
+      "name": "Board Game Night",
+      "organizer": "Tabletop Social Club",
+      "venue": "The Game Room",
+      "cost": "Free",
+      "platform": "meetup",
+      "descriptionText": "Weekly board game night, bring a game or play one of ours. Snacks and drinks available for purchase."
+    }
+  },
+  {
+    "id": "hneg-1bidloe",
+    "conference": "Consensus Miami",
+    "themeKey": "crypto",
+    "label": "off_theme",
+    "source": "hard_negative",
+    "event": {
+      "name": "Farmers Market Volunteer Morning",
+      "organizer": "Community Garden Alliance",
+      "venue": "Central Farmers Market",
+      "cost": "Free",
+      "platform": "generic",
+      "descriptionText": "Volunteer shift helping set up and run the weekly farmers market. Coffee provided for volunteers."
+    }
+  },
+  {
+    "id": "hneg-1dmrga8",
+    "conference": "Paris Blockchain Week 2026",
+    "themeKey": "crypto",
+    "label": "off_theme",
+    "source": "hard_negative",
+    "event": {
+      "name": "Photography Walk: Golden Hour Downtown",
+      "organizer": "Shutter Collective",
+      "venue": "Downtown Plaza",
+      "cost": "Free",
+      "platform": "meetup",
+      "descriptionText": "Casual photo walk around downtown during golden hour. Bring any camera, phones welcome. Beginners encouraged."
+    }
+  },
+  {
+    "id": "hneg-1icruaz",
+    "conference": "Paris Blockchain Week 2026",
+    "themeKey": "crypto",
+    "label": "off_theme",
+    "source": "hard_negative",
+    "event": {
+      "name": "Intro to Pottery Wheel Workshop",
+      "organizer": "Clay Studio Co-op",
+      "venue": "Clay Studio Co-op",
+      "cost": "$45",
+      "platform": "eventbrite",
+      "descriptionText": "Hands-on beginner pottery wheel workshop. All materials included, no experience necessary. Limited to 10 seats."
+    }
+  },
+  {
+    "id": "hneg-1kck0yt",
+    "conference": "Paris Blockchain Week 2026",
+    "themeKey": "crypto",
+    "label": "off_theme",
+    "source": "hard_negative",
+    "event": {
+      "name": "Rooftop Salsa Social",
+      "organizer": "Latin Dance Co",
+      "venue": "Rooftop Lounge",
+      "cost": "$15",
+      "platform": "posh",
+      "descriptionText": "Weekly salsa social with a short beginner lesson followed by open dancing. No partner necessary."
+    }
+  },
+  {
+    "id": "hneg-1olctj8",
+    "conference": "Consensus Miami",
+    "themeKey": "crypto",
+    "label": "off_theme",
+    "source": "hard_negative",
+    "event": {
+      "name": "Rooftop Salsa Social",
+      "organizer": "Latin Dance Co",
+      "venue": "Rooftop Lounge",
+      "cost": "$15",
+      "platform": "posh",
+      "descriptionText": "Weekly salsa social with a short beginner lesson followed by open dancing. No partner necessary."
+    }
+  },
+  {
+    "id": "hneg-1qhdf6i",
+    "conference": "Consensus Miami",
+    "themeKey": "crypto",
+    "label": "off_theme",
+    "source": "hard_negative",
+    "event": {
+      "name": "Downtown Food Truck Friday",
+      "organizer": "Downtown Business Association",
+      "venue": "Main Street Plaza",
+      "cost": "Free",
+      "platform": "generic",
+      "descriptionText": "Weekly food truck gathering in the plaza with live acoustic music. Family friendly, free admission."
+    }
+  },
+  {
+    "id": "hneg-1r5e9vj",
+    "conference": "Bitcoin Vegas",
+    "themeKey": "crypto",
+    "label": "off_theme",
+    "source": "hard_negative",
+    "event": {
+      "name": "Photography Walk: Golden Hour Downtown",
+      "organizer": "Shutter Collective",
+      "venue": "Downtown Plaza",
+      "cost": "Free",
+      "platform": "meetup",
+      "descriptionText": "Casual photo walk around downtown during golden hour. Bring any camera, phones welcome. Beginners encouraged."
+    }
+  },
+  {
+    "id": "hneg-1ur1hob",
+    "conference": "Paris Blockchain Week 2026",
+    "themeKey": "crypto",
+    "label": "off_theme",
+    "source": "hard_negative",
+    "event": {
+      "name": "Downtown Food Truck Friday",
+      "organizer": "Downtown Business Association",
+      "venue": "Main Street Plaza",
+      "cost": "Free",
+      "platform": "generic",
+      "descriptionText": "Weekly food truck gathering in the plaza with live acoustic music. Family friendly, free admission."
+    }
+  },
+  {
+    "id": "hneg-3wyunw",
+    "conference": "Bitcoin Vegas",
+    "themeKey": "crypto",
+    "label": "off_theme",
+    "source": "hard_negative",
+    "event": {
+      "name": "Intro to Pottery Wheel Workshop",
+      "organizer": "Clay Studio Co-op",
+      "venue": "Clay Studio Co-op",
+      "cost": "$45",
+      "platform": "eventbrite",
+      "descriptionText": "Hands-on beginner pottery wheel workshop. All materials included, no experience necessary. Limited to 10 seats."
+    }
+  },
+  {
+    "id": "hneg-57ldlb",
+    "conference": "Consensus Miami",
+    "themeKey": "crypto",
+    "label": "off_theme",
+    "source": "hard_negative",
+    "event": {
+      "name": "Photography Walk: Golden Hour Downtown",
+      "organizer": "Shutter Collective",
+      "venue": "Downtown Plaza",
+      "cost": "Free",
+      "platform": "meetup",
+      "descriptionText": "Casual photo walk around downtown during golden hour. Bring any camera, phones welcome. Beginners encouraged."
+    }
+  },
+  {
+    "id": "hneg-5qtae9",
+    "conference": "Paris Blockchain Week 2026",
+    "themeKey": "crypto",
+    "label": "off_theme",
+    "source": "hard_negative",
+    "event": {
+      "name": "Tuesday Night Run Club — 5K Social Run",
+      "organizer": "City Run Crew",
+      "venue": "Riverfront Trail",
+      "cost": "Free",
+      "platform": "meetup",
+      "descriptionText": "Easy-paced 5K social run followed by drinks at the trailhead bar. New runners always welcome, no watch required."
+    }
+  },
+  {
+    "id": "hneg-6q9ixb",
+    "conference": "Paris Blockchain Week 2026",
+    "themeKey": "crypto",
+    "label": "off_theme",
+    "source": "hard_negative",
+    "event": {
+      "name": "Sunrise Vinyasa Flow — All Levels Welcome",
+      "organizer": "Flow Yoga Collective",
+      "venue": "Lincoln Park",
+      "cost": "Free",
+      "platform": "meetup",
+      "descriptionText": "Join us for a free sunrise vinyasa class in the park. Bring your own mat. All levels welcome, no experience necessary. Coffee and tea after class."
+    }
+  },
+  {
+    "id": "hneg-8g8tca",
+    "conference": "Bitcoin Vegas",
+    "themeKey": "crypto",
+    "label": "off_theme",
+    "source": "hard_negative",
+    "event": {
+      "name": "Downtown Food Truck Friday",
+      "organizer": "Downtown Business Association",
+      "venue": "Main Street Plaza",
+      "cost": "Free",
+      "platform": "generic",
+      "descriptionText": "Weekly food truck gathering in the plaza with live acoustic music. Family friendly, free admission."
+    }
+  },
+  {
+    "id": "hneg-b76f85",
+    "conference": "Paris Blockchain Week 2026",
+    "themeKey": "crypto",
+    "label": "off_theme",
+    "source": "hard_negative",
+    "event": {
+      "name": "Neighborhood Book Club: Fiction Pick of the Month",
+      "organizer": "Elm Street Library",
+      "venue": "Elm Street Library",
+      "cost": "Free",
+      "platform": "meetup",
+      "descriptionText": "Monthly book club discussion. This month's pick is a contemporary fiction novel. New members welcome."
+    }
+  },
+  {
+    "id": "hneg-bqgl64",
+    "conference": "Consensus Miami",
+    "themeKey": "crypto",
+    "label": "off_theme",
+    "source": "hard_negative",
+    "event": {
+      "name": "Intro to Pottery Wheel Workshop",
+      "organizer": "Clay Studio Co-op",
+      "venue": "Clay Studio Co-op",
+      "cost": "$45",
+      "platform": "eventbrite",
+      "descriptionText": "Hands-on beginner pottery wheel workshop. All materials included, no experience necessary. Limited to 10 seats."
+    }
+  },
+  {
+    "id": "hneg-eq6mpx",
+    "conference": "Bitcoin Vegas",
+    "themeKey": "crypto",
+    "label": "off_theme",
+    "source": "hard_negative",
+    "event": {
+      "name": "Gallery Opening: New Works on Paper",
+      "organizer": "Riverside Gallery",
+      "venue": "Riverside Gallery",
+      "cost": "Free",
+      "platform": "eventbrite",
+      "descriptionText": "Opening reception for our new exhibition of works on paper by local artists. Wine and light bites provided."
+    }
+  },
+  {
+    "id": "hneg-frolb6",
+    "conference": "Bitcoin Vegas",
+    "themeKey": "crypto",
+    "label": "off_theme",
+    "source": "hard_negative",
+    "event": {
+      "name": "Startup Founders Happy Hour (Local Chapter)",
+      "organizer": "City Founders Network",
+      "venue": "The Tap Room",
+      "cost": "Free",
+      "platform": "meetup",
+      "descriptionText": "Monthly happy hour for local startup founders across all industries — not conference-affiliated, just our regular neighborhood meetup."
+    }
+  },
+  {
+    "id": "hneg-i7fxwu",
+    "conference": "Bitcoin Vegas",
+    "themeKey": "crypto",
+    "label": "off_theme",
+    "source": "hard_negative",
+    "event": {
+      "name": "Farmers Market Volunteer Morning",
+      "organizer": "Community Garden Alliance",
+      "venue": "Central Farmers Market",
+      "cost": "Free",
+      "platform": "generic",
+      "descriptionText": "Volunteer shift helping set up and run the weekly farmers market. Coffee provided for volunteers."
+    }
+  },
+  {
+    "id": "hneg-ih5byp",
+    "conference": "Paris Blockchain Week 2026",
+    "themeKey": "crypto",
+    "label": "off_theme",
+    "source": "hard_negative",
+    "event": {
+      "name": "Startup Founders Happy Hour (Local Chapter)",
+      "organizer": "City Founders Network",
+      "venue": "The Tap Room",
+      "cost": "Free",
+      "platform": "meetup",
+      "descriptionText": "Monthly happy hour for local startup founders across all industries — not conference-affiliated, just our regular neighborhood meetup."
+    }
+  },
+  {
+    "id": "hneg-j4xfbz",
+    "conference": "Paris Blockchain Week 2026",
+    "themeKey": "crypto",
+    "label": "off_theme",
+    "source": "hard_negative",
+    "event": {
+      "name": "Farmers Market Volunteer Morning",
+      "organizer": "Community Garden Alliance",
+      "venue": "Central Farmers Market",
+      "cost": "Free",
+      "platform": "generic",
+      "descriptionText": "Volunteer shift helping set up and run the weekly farmers market. Coffee provided for volunteers."
+    }
+  },
+  {
+    "id": "hneg-j9g3zk",
+    "conference": "Bitcoin Vegas",
+    "themeKey": "crypto",
+    "label": "off_theme",
+    "source": "hard_negative",
+    "event": {
+      "name": "Tuesday Night Run Club — 5K Social Run",
+      "organizer": "City Run Crew",
+      "venue": "Riverfront Trail",
+      "cost": "Free",
+      "platform": "meetup",
+      "descriptionText": "Easy-paced 5K social run followed by drinks at the trailhead bar. New runners always welcome, no watch required."
+    }
+  },
+  {
+    "id": "hneg-kemqss",
+    "conference": "Bitcoin Vegas",
+    "themeKey": "crypto",
+    "label": "off_theme",
+    "source": "hard_negative",
+    "event": {
+      "name": "Open Mic Comedy Night",
+      "organizer": "Laugh Lounge",
+      "venue": "Laugh Lounge",
+      "cost": "$10",
+      "platform": "generic",
+      "descriptionText": "Weekly open mic comedy night. Sign up at the door, 5 minute sets. Two drink minimum."
+    }
+  },
+  {
+    "id": "pos-10c3h59",
+    "conference": "Paris Blockchain Week 2026",
+    "themeKey": "crypto",
+    "label": "on_theme",
+    "source": "sheet_own_tab",
+    "event": {
+      "name": "SATOSHI DINNER CLUB PARIS powered by WEEX & TRAVLS",
+      "hosts": [
+        "Gilles",
+        "Inna S",
+        "Gavin Vanderlooven"
+      ],
+      "organizer": "Gilles",
+      "venue": null,
+      "dateISO": "2026-04-15",
+      "startTime": "7:30p",
+      "cost": "Free",
+      "platform": "luma",
+      "descriptionText": "You are cordially invited to join an exclusive evening in Paris on April 15th powered by WEEX, TRAVLS, and CRYPTIC.\nSatoshi Dinner Club is an intimate, invite-only dinner bringing together a carefully selected group of high-level founders, leading VCs, traditional finance investors, and key figures from the crypto ecosystem.\n⚜️ 21 seats.\n⚜️ Personally curated.\n⚜️ Discreet and elegant atmosphere.\nThe purpose is simple: Bridging traditional finance and crypto in a setting designed for meaningful dialogue and long-term alignment.\nYour invitation is strictly personal and non-transferable.\nPlease treat your RSVP with the same seriousness as the evening itself. Given the extremely limited number of seats, we kindly ask you to confirm your attendance only if you are certain you can join.\nThe exact venue will be revealed exclusively to confirmed guests, closer to the date. We hold the privacy and discretion of our attendees in the highest regard.\n⚜️ SPONSORS ⚜️\nWEEX is a global crypto exchange built for spot and futures trading; fast, reliable, and accessible for both retail and professional traders.\nTRAVLS is a Web3 travel platform that lets you book flights, hotels and experiences and pay directly with crypto; no banks, no hidden fees, no borders. With a native loyalty token and physical card, TRAVLS bridges the gap between crypto and everyday life.\nCRYPTIC is a Web3 marketing agency that helps blockchain projects grow through community building, KOL marketing, GTM campaigns and media outreach; trusted by 200+ projects across the globe.\nhttps://www.weex.com/\nhttps://travls.io/\nhttps://crypticweb3.com/\nhttps://satoshidinnerclub.com/"
+    }
+  },
+  {
+    "id": "pos-10tq62h",
+    "conference": "Consensus Miami",
+    "themeKey": "crypto",
+    "label": "on_theme",
+    "source": "sheet_own_tab",
+    "event": {
+      "name": "Build Dapps in Denver with Web3 Alliance (Hackathon)",
+      "hosts": [
+        "Umar",
+        "Web3 Alliance Pakistan",
+        "CryptoHawkibg"
+      ],
+      "organizer": "Umar, Web3 Alliance Pakistan & CryptoHawkibg",
+      "venue": null,
+      "dateISO": "2026-02-27",
+      "startTime": "All Day",
+      "cost": "Free",
+      "platform": "luma",
+      "descriptionText": "Level up your #EthDenver experience! Join the Web3 Alliance Pak's Web3 & AI Hackerhouse in #Denver, February 23rd to March 3rd. If you're building cutting-edge Blockchain products with AI agents, this is your chance to connect with researchers, developers, and builders like you.\nHere's what awaits you:\n🏡Free Accommodation: Stay with us from February 23rd to March 3rd.\n⚡ 1-1 Mentorship, \n💰$10,000 in Prizes: Compete for a share of the cash rewards.\n⛓️‍💥Top Chain Collaborations: Forge promising partnerships with leading EVM and Non-EVM chains.\n🥐 🥗Exclusive Perks: Enjoy complimentary dinners, breakfasts, and access to 50+ side events.\n💻 Ready to hack? Apply today!"
+    }
+  },
+  {
+    "id": "pos-11419ab",
+    "conference": "Paris Blockchain Week 2026",
+    "themeKey": "crypto",
+    "label": "on_theme",
+    "source": "sheet_own_tab",
+    "event": {
+      "name": "Agentic AI & Web3: Engagement on X",
+      "hosts": [
+        "YAT SU LLC"
+      ],
+      "organizer": "YAT SU LLC",
+      "venue": null,
+      "dateISO": "2026-04-17",
+      "startTime": "5:30p",
+      "cost": "Free",
+      "platform": "luma",
+      "descriptionText": "What if your AI agents worked for you—not Big Tech?\nAs AI becomes increasingly autonomous, a critical question emerges: who owns and controls these intelligent systems? Join Amazon Web Services and Yat Siu for an exclusive evening exploring how Web3 infrastructure enables a fundamentally different future—one where users own their agents, their data, and their digital destinies.\n🔥 30-Minute Fireside with Yat Siu\nPanel - Monetizing Your AI: Agents as Digital Assets\n​Event Schedule (3.5 Hours)\n5:30 PM - 6:00 PM | Registration & Networking\nGuest check-in and welcome\nEarly networking opportunity\n6:00 PM - 6:15 PM | Opening Remarks\nEvent overview and housekeeping\nIntroduction to the evening's theme\n6:15 PM - 6:45 PM | 🔥 Fireside Chat with Yat Siu (30 minutes)\n6:45 PM - 7:30 PM | Panel Discussion: Monetizing Your AI - Agents as Digital Assets\nTopics:\n✨ True Ownership: Agents working for users, not platforms\n🔐 Data Sovereignty: User control over agent learning and data sharing\n💰 Value Capture: Agents transacting on behalf of users\n🌐 Interoperability: Cross-platform agent functionality\n🔍 Transparency: Verifiable AI behavior on blockchain\n7:30 PM - 9:00 PM | Networking\nRefreshments\nConnect with builders and founders\nInformal discussions\nWho Should Attend?\nThis intimate gathering is designed for builders, founders, and visionaries shaping the next generation of intelligent systems:\nExplore the intersection of agentic intelligence and digital ownership:\n✨ True Ownership: Your agents work for you, not platform shareholders\n🔐 Data Sovereignty: You control what your agents learn and share\n💰 Value Capture: Agents can transact on your behalf with your assets\n🌐 Interoperability: Agents that work across platforms, not locked in silos\n🔍 Transparency: Verifiable AI behavior on immutable ledgers"
+    }
+  },
+  {
+    "id": "pos-11ibblr",
+    "conference": "Paris Blockchain Week 2026",
+    "themeKey": "crypto",
+    "label": "on_theme",
+    "source": "sheet_own_tab",
+    "event": {
+      "name": "INDIGO x $NRG x RASA - Paris Eiffel Tower Edition: Music by BLOND:ISH",
+      "hosts": [
+        "INDIGO Fund",
+        "SIGNAL WEEK"
+      ],
+      "organizer": "INDIGO Fund",
+      "venue": "Eiffel Tower, Av. Gustave Eiffel, 75007 Paris, France",
+      "dateISO": "2026-04-17",
+      "startTime": "7:00p",
+      "cost": "Free",
+      "platform": "luma",
+      "descriptionText": "→ Request access here https://indigofund.rasa.fyi/event/eiffeltowerblondish/$NRG\nOfficial closing party of Paris Blockchain Week.\nPrivate event at the Gustave Eiffel Room (1st floor of Eiffel Tower), bringing together 300 curated founders, $NRG holders & operators.\nDJ set (7:00 PM – 12:00 AM) with BLOND:ISH.\nRSVP only.\nLast sponsor packages available: team@everythingisnrg.xyz\nhttps://indigofund.rasa.fyi/event/eiffeltowerblondish/$NRG"
+    }
+  },
+  {
+    "id": "pos-11ukfnu",
+    "conference": "Consensus Miami",
+    "themeKey": "crypto",
+    "label": "on_theme",
+    "source": "sheet_own_tab",
+    "event": {
+      "name": "Upgrade the Internet: Presented by Succinct, Celestia, and Conduit",
+      "hosts": [
+        "Kshitij Kulkarni",
+        "Eli Yang",
+        "Natnet",
+        "Henry (Conduit)",
+        "Steph"
+      ],
+      "organizer": "Succinct",
+      "venue": null,
+      "dateISO": "2026-02-27",
+      "startTime": "All Day",
+      "cost": "Free",
+      "platform": "luma",
+      "descriptionText": "Upgrade the Internet: A Three-Day Building Experience with Succinct, Celestia, and Conduit\nApply to be a builder: https://forms.gle/FTJTtxBKu8FafUtV8 \nThe Internet is rapidly changing. Blockchains and ZK are becoming performant and developer friendly, and it's time to create user-verifiable applications.\nWe're bringing together builders who want to use frontier ZK and the emerging modular and rollup stacks to upgrade the Internet, from crypto to beyond. This isn't just another hackathon—it's three days of focused building, learning, and collaborating with some of the most innovative teams in crypto.\nCome build applications such as attested media, verifiable hardware, proof of reserves, and more. We'll have a party on the last day. \nThe Experience\nYou can join as a builder (in one of two tracks: the open track or the Mammothon track) or attend talks and evening discussions. Bring your own project ideas or find inspiration in conversations with builders.\nFor Builders\nYou'll have direct access to engineers and researchers from Succinct, Celestia, and Conduit. We've created room for both structured guidance and independent exploration. Fill out the builder form here: https://forms.gle/FTJTtxBKu8FafUtV8. You can participate in one of two tracks: \nOpen track: In the open track, you can work on your own ideas or any of our request for projects (https://succinctlabs.notion.site/rfps). To participate in the open track, the only requirement is that you make use of one of Succinct's, Celestia's or Conduit's stacks. \nMammothon track: Celestia is hosting a monthlong Mammothon for builders with up to $250,000 in prizes (https://mammothon.celestia.org/). Apply to this track if you're already working on a Mammothon project. \nPrizes and Judging\nThere'll be $10K in additional prizes available for the best projects at Upgrade the Internet. \nFirst place: $5000\nSecond place: $2500\nThird place: $2500\nThe Succinct, Celestia, and Conduit teams will judge projects and disburse prizes at their discretion.  \nFor Attendees\nWe'll have talks, demos, and evening discussions on the future of verifiability in crypto and in the world. You'll learn about emerging challenges and see how teams are approaching their projects. We'll also have a party on the last day. \nSchedule\nFebruary 26\n10am: Talks from the Succinct, Celestia, and Conduit teams\n11am: Hacking begins\n6pm: Dinner and ZK in Crypto Session (https://lu.ma/ele4qkfz)\nFebruary 27\n9am: Hacking continues\n1pm: Kosuke July Hata (Roc Camera) and Lasha Andatze (Rarimo Protocol) \n3pm: zkTLS Special Session (https://lu.ma/xvumlnkq)\n4pm: Sid Gandhi (Payy)\n5:30pm: Aayush Gupta (ZK Email)\nFebruary 28\n9am: Hacking continues\n4pm: Demos and prizes\n6pm: House Party (https://lu.ma/3vxc2fzn)\n-----------------------------------------\nAbout Succinct\nSuccinct's mission is to prove the world's software via SP1, the fastest production-ready ZK virtual machine for developers and a decentralized prover network. \nAbout Celestia\nCelestia is a modular blockchain that powers unstoppable applications with full-stack customizability. With over 80 chains in production, Celestia enables expressive applications at a global scale, ranging from instant private payments to fully on-chain mobile gameplay.\nAbout Conduit\nConduit is the end-to-end rollup platform. As the market leader by TVL, TPS, Mgas/s, and number of mainnets deployed, we power everything from games to DEXs to DeFi ecosystems. The best onchain teams customize, deploy, and scale their rollups on Conduit.\nhttps://forms.gle/FTJTtxBKu8FafUtV8\nhttps://forms.gle/FTJTtxBKu8FafUtV8\nhttps://succinctlabs.notion.site/rfps\nhttps://mammothon.celestia.org/\nhttps://lu.ma/ele4qkfz\nhttps://lu.ma/xvumlnkq\nhttps://lu.ma/3vxc2fzn"
+    }
+  },
+  {
+    "id": "pos-11zf5g6",
+    "conference": "Paris Blockchain Week 2026",
+    "themeKey": "crypto",
+    "label": "on_theme",
+    "source": "sheet_own_tab",
+    "event": {
+      "name": "Coinbase x The Big Whale present: A new era of financial infrastructure. How Coinbase is redefining markets & payments",
+      "hosts": [
+        "Coinbase"
+      ],
+      "organizer": "Coinbase",
+      "venue": null,
+      "dateISO": "2026-04-16",
+      "startTime": "8:30a",
+      "cost": "Free",
+      "platform": "generic",
+      "descriptionText": ""
+    }
+  },
+  {
+    "id": "pos-1207vbf",
+    "conference": "Consensus Miami",
+    "themeKey": "crypto",
+    "label": "on_theme",
+    "source": "sheet_own_tab",
+    "event": {
+      "name": "Carrot Castle ⚔️ Knight Nibbles-a-Lot",
+      "hosts": [
+        "Incented, Nearchos, RnDAO and Chones"
+      ],
+      "organizer": "Incented, Nearchos, RnDAO and Chones",
+      "venue": null,
+      "dateISO": "2026-02-26",
+      "startTime": "All Day",
+      "cost": "Free - 150 USDC",
+      "platform": "generic",
+      "descriptionText": ""
+    }
+  },
+  {
+    "id": "pos-123h769",
+    "conference": "Consensus Miami",
+    "themeKey": "crypto",
+    "label": "on_theme",
+    "source": "sheet_own_tab",
+    "event": {
+      "name": "Flow @ ETH Denver",
+      "hosts": [
+        "Flow.com"
+      ],
+      "organizer": "Flow Foundation",
+      "venue": null,
+      "dateISO": "2026-02-23",
+      "startTime": "11:00a",
+      "cost": "Free",
+      "platform": "luma",
+      "descriptionText": "Your Quest Awaits\n​From February 23rd to March 1st, Denver's famous Castle Marne becomes the Flow Castle. A stronghold of innovation, creativity, and competition. By day, it’s an open co-working space where ideas are forged. By night, the gates open to thrilling side quests—panels, challenges, and events—all crafted to unite the Flow kingdom.\nThis isn’t just another gathering—it’s a full-scale takeover. Each day brings chances to forge alliances, test your skills, and push boundaries. Whether you’re here to build, compete, or leave your mark, the castle is where legends rise. Check out the schedule below and prepare for an unforgettable siege.\ntheflowcastle.com\nMon-Fri \n8:30 AM - Voodoo Donuts on us!\nVoodoo Donuts\n1520 E. Colfax Ave.\nDenver, CO 80218\n9:30 AM - Co-working​ begins!\n(see below for scheduled events)\nMONDAY (FEB 24) --------------------------------\nCadence Workshop\nDive into Cadence—the resource-oriented programming language for Flow—in this hands-on workshop that takes you from writing your first “Hello World” to deploying a fully functional Flow dApp. Learn the fundamentals, best practices, and advanced techniques so you can confidently create secure, scalable applications on Flow.\n📅 Date: February 24\n​​🕘 Time: 02:00 PM - 03:00 PM\n​​🔗 Event Link (Sign up via this link)\nWEDNESDAY (FEB 26) ----------------------------\nthirdweb @ Flow Castle\n​Come meet the thirdweb team and learn how to build full-stack apps on Flow!\n​This will be a casual, interactive demo session for developers looking for better ways to build onchain with thirdweb and Flow. Plus, we'll be sharing interactive demos of new and unreleased tooling 👀\n📅 Date: February 26\n​​🕘 Time: 10:00 AM - 11:00 AM\n​​🔗 Event Link (Sign up via this link)\nConsumer Product Development: The Community-Powered Approach\n​Join us for an interactive workshop and brainstorming session focused on crafting exceptional consumer products (Web3 and beyond) and leveraging your community for success!\n📅 Date: February 26\n​​🕘 Time: 02:00 PM - 03:00 PM\n​​🔗 Event Link (Sign up via this link)\nBuild an on chain agent in 1 hour (coinbase developer platform + flow)\n​We will have an AgentKit intro and then a 1-2 hr competition to see who can launch the most useful agent after the workshop with it.\n📅 Date: February 26\n​​🕘 Time: 03:30 PM - 06:30 PM\n​​🔗 Event Link (Sign up via this link)\nTHURSDAY (FEB 27) -------------------------------\nSet It and Bet It: Self-Resolving Roulette on Flow EVM\n​We want to tell you about a really cool approach that we had to take while building roulette on FlowEVM.\nThis talk will be technical, but approachable. Newbs are welcome!\n​TL;DR, Commit reveal scheme with owenerless onchain random that creates a system where no actor is spinning the wheel, in effect it always has been spun.\n📅 Date: February 27\n​​🕘 Time: 12:00 PM - 01:00 PM\n​​🔗 Event Link (Sign up via this link)\nSudocat Gaming Session\n​🎮 SudoCat Gaming Showdown @ ETH Denver! 🚀\n​Join us for an electrifying SudoCat Gaming Session at ETH Denver, where play meets trade, and earning gets real! 🏆💰\n📅 Date: February 27\n​​🕘 Time: 01:00 PM - 02:00 PM\n​​🔗 Event Link (Sign up via this link)\nRegenerates in Defi\nExplore strategies and challenges in creating more regenerative DeFi mechanisms and primitives\n📅 Date: February 27\n​​🕘 Time: 02:00 PM - 03:00 PM\n​​🔗 Event Link (Sign up via this link)\nThe Intersection of DeFi and Consumer Applications\n​The Intersection of DeFi and Consumer Applications\n​Join Flow Blockchain, aiSports, More.Markets, and KittyPunch for an insightful panel exploring how DeFi powers consumer blockchain applications. Discover how DeFi infrastructure drives token value, enhances engagement, and fosters Web3 communities—bridging the gap between finance and real-world user experiences.\n📅 Date: February 27\n​​🕘 Time: 03:00 PM - 03:30 PM\n​​🔗 Event Link (Sign up via this link)\nCrypto U: Building the Future of Blockchain Education\n​Join us for Crypto & Academia: Bridging Education and Innovation, gathering at ETHDenver 2025, where university leaders, researchers, and blockchain pioneers will come together to explore the role of education in driving the future of crypto.\n📅 Date: February 27\n​​🕘 Time: 04:00 PM - 05:00 PM\n​​🔗 Event Link (Sign up via this link)\nFRIDAY (FEB 28) ----------------------------------\nRekt & Reflect\n​Join Flow, Olympix, and the rekt for an exclusive brunch panel at the Flow Castle (10-11 AM), where we serve coffee, pastries, and the most brutal DeFi horror stories.\n​We’re dissecting some of the biggest, most catastrophic hacks in DeFi history - the exploits that drained millions, left protocols scrambling, and even brought in Interpol, FBI agents, and private investigators (yes, even hitmen were involved).\n📅 Date: February 28\n​​🕘 Time: 10:00 AM - 11:00 AM\n​​🔗 Event Link (Sign up via this link)\nFrom 0-1, How to Kickstart Your MVP\nReady to build and launch your MVP with minimal hassle? In this hands-on workshop, hackers and startup teams will learn the essential steps to go from zero to a functional prototype—covering core features, lean validation strategies, and practical tools to get a product off the ground fast that acquires real users and is investment-ready.\n📅 Date: February 28\n​​🕘 Time: 01:00 PM - 02:00 PM\n​​🔗 Event Link (Sign up via this link)\nCryptoKitties Origins\nCryptoKitties, a household name that was first launched at a hackathon has transformed web3, ushering in the many debates we see to this day about scalability. Hear the story of CryptoKitties origins from one of the key people behind it and how to create next generation consumer applications.\n📅 Date: February 28\n🕘 Time: 02:30 PM - 03:00 PM\n🔗 Event Link (Sign up via this link)\nBuild EVM Apps with Automatically Sponsored Gas on Flow with Privy\nBrian merges learning, gaming, and programming to introduce the world to the magic of Flow Cadence and Flow EVM. A seasoned educator, he has previously built Base Learn and taught computer science at bootcamps and universities, always focusing on hands-on, practical experiences.\n📅 Date: February 28\n​​🕘 Time: 03:00 PM - 04:00 PM\n​​🔗 Event Link (Sign up via this link)\nCrypto Policy at the Castle\nJoin us for Crypto Policy at the Castle, an exclusive invitation-only dinner and fireside chat at EthDenver 2025, where 30 of the most influential leaders shaping crypto policy will gather for an evening of insightful discussion, strategic networking, and fine dining in an intimate, historic setting.\n📅 Date: February 28\n​​🕘 Time: 05:00 PM - 07:00 PM\n​​🔗 Event Link (Sign up via this link)\n​\nSATURDAY (MAR 1) -------------------------------\n​\nBUIDL Day @ ETHDenver Powered by DoraHacks\n​BUIDL DAY is a premier one-day event designed to showcase the most original and contrarian startup teams in the Web3 industry. Hosted by DoraHacks on March 1st in Denver, this flagship gathering will bring together founders, builders, investors, and ecosystem leaders to collaborate, pitch, and explore groundbreaking innovations.\n​📅 Date: March 1\n​​🕘 Time: 11:45 AM - 12:15 PM\n​​🔗 Event Link (Sign up via this link)\n​\n​\n​​​\nhttps://images.lumacdn.com/cdn-cgi/image/format=auto,fit=cover,dpr=2,quality=75,width=800,height=528.8956127080182/editor-images/m1/4a10c7a6-9a9d-415c-b5b1-00c54ebb15a2.png\nhttp://theflowcastle.com\nhttps://lu.ma/ethglobal-happy-hour-bangkok\nhttps://lu.ma/0ompijcl\nhttps://lu.ma/ethglobal-happy-hour-bangkok\nhttps://lu.ma/y46juf0g\nhttps://lu.ma/ethglobal-happy-hour-bangkok\nhttps://lu.ma/9tqlspf3\nhttps://lu.ma/ethglobal-happy-hour-bangkok\nhttps://lu.ma/gma3ezec\nhttps://lu.ma/ethglobal-happy-hour-bangkok\nhttps://lu.ma/7qrpsp4u\nhttps://lu.ma/ethglobal-happy-hour-bangkok\nhttps://lu.ma/r8lvdwdb\nhttps://lu.ma/ethglobal-happy-hour-bangkok\nhttps://lu.ma/uo7c6hdy\nhttps://lu.ma/ethglobal-happy-hour-bangkok\nhttps://lu.ma/3naowa6g\nhttps://lu.ma/8x0dxvy0\nhttps://lu.ma/ethglobal-happy-hour-bangkok\nhttps://lu.ma/beorysi4\nhttps://lu.ma/ethglobal-happy-hour-bangkok\nhttps://lu.ma/kjig43hl\nhttps://lu.ma/ethglobal-happy-hour-bangkok\nhttps://lu.ma/rlmwwb33\nhttps://lu.ma/ethglobal-happy-hour-bangkok\nhttps://lu.ma/uumbd3y4\nhttps://lu.ma/331jf6i7\nhttps://lu.ma/ethglobal-happy-hour-bangkok\nhttps://lu.ma/xfvsguap\nhttps://images.lumacdn.com/cdn-cgi/image/format=auto,fit=cover,dpr=2,quality=75,width=800,height=283.223249669749/editor-images/9g/367545af-018d-4502-bcf6-e01d1b6952a8.png\nhttps://images.lumacdn.com/cdn-cgi/image/format=auto,fit=cover,dpr=2,quality=75,width=800,height=800/editor-images/wy/8af47245-a122-40b6-a49e-c25f4a48e5fa.png"
+    }
+  },
+  {
+    "id": "pos-12b4g8",
+    "conference": "Paris Blockchain Week 2026",
+    "themeKey": "crypto",
+    "label": "on_theme",
+    "source": "sheet_own_tab",
+    "event": {
+      "name": "PBW: The Paris Prelude",
+      "hosts": [
+        "Winnie Doktor",
+        "Jock Haslam",
+        "Kristoffer Lewinsky",
+        "Fernando | Hashlock",
+        "Lewis Strawbridge",
+        "Hashlock"
+      ],
+      "organizer": "Winnie Doktor",
+      "venue": null,
+      "dateISO": "2026-04-14",
+      "startTime": "2:00p",
+      "cost": "Free",
+      "platform": "luma",
+      "descriptionText": "Kick off Paris Blockchain Week with a high quality, targeted networking experience. This is the perfect opportunity to make valuable connections right as everyone arrives, ready for a busy week.\nWe are hosting a private, exclusive event designed for a select number of Founders, VCs and builders in Web3.\nThe curated guest list ensures the best environment for unparalleled networking and meaningful conversations.\nExpect an authentic Parisian atmosphere complemented by high-end canapés and premium wine and drinks, designed to encourage genuine connections. \nThis is the essential room to be in.\nPresented by​​:\nHashlock\n​Hashlock is the industry leading blockchain cybersecurity and smart contract auditing firm. We specialise in manual analysis led security research, securing billions of dollars in digital assets, with clients ranging from innovative web3 startups to global blockchain enterprises.\n​www.hashlock.com\nhttps://www.hashlock.com\nhttps://images.lumacdn.com/editor-images/5r/341d7e05-2334-4998-b734-9874a3ff7f5c.png"
+    }
+  },
+  {
+    "id": "pos-12k1koi",
+    "conference": "Paris Blockchain Week 2026",
+    "themeKey": "crypto",
+    "label": "on_theme",
+    "source": "sheet_own_tab",
+    "event": {
+      "name": "PBW Cardano Happy Hour",
+      "hosts": [
+        "Rare Network"
+      ],
+      "organizer": "Rare Network",
+      "venue": "Frog Hop House, 10 Rue des Capucines, 75002 Paris, France",
+      "dateISO": "2026-04-15",
+      "startTime": "6:00p",
+      "cost": "Free",
+      "platform": "luma",
+      "descriptionText": "Join us for an evening of light eats, beverages, networking, and celebration at The Cardano Happy Hour proudly hosted by Rare Network, Cardano Foundation and Emurgo. \nGet ready for an exclusive gathering of blockchain enthusiasts, developers, and innovators just a 15 minute walk from Carrousel du Louvre! Enjoy a wide range of award-winning craft beers at this unique pub, brewed just north of central Paris in the town of Pierrefitte-sur-Seine!\n​​​​​​📅 Date: Wednesday - April 15, 2026\n​​​​​​🕔 Time: 6 PM - 8 PM\n​​​​​​📍 Location: First Floor of Frog Hop House \n10 rue des Capucines PARIS 75002\n(Be sure you are going to the correct Frog Pub location ^ as there are 6 throughout the city!)\n​​​​​​✨ Event Highlights: Free light eats 🍽️, Open Bar 🍹, Networking, access to outdoor terrace \n​​​​​​🎟️ Registration: To secure your spot, register now! Entry is free, but space is limited. Arrive early to avoid any capacity issues."
+    }
+  },
+  {
+    "id": "pos-12kihyl",
+    "conference": "Paris Blockchain Week 2026",
+    "themeKey": "crypto",
+    "label": "on_theme",
+    "source": "sheet_own_tab",
+    "event": {
+      "name": "Fireblocks House at the Connect Lounge",
+      "hosts": [
+        "Fireblocks"
+      ],
+      "organizer": "Fireblocks",
+      "venue": "Connect Lounge, Inside Paris Blockchain Week Conference",
+      "dateISO": "2026-04-15",
+      "startTime": "3:30p",
+      "cost": "Free w/ PBW Ticket",
+      "platform": "luma",
+      "descriptionText": "​We're taking over the PBW Connect Lounge. \nFireblocks are exclusively taking over the Connect Lounge on Wednesday 15th April from 3:30 - 5:30 pm.\nHere, we'll be focusing all about the topic of Institutional Yield, and why it matters now.\nYou can expect a expert panel on \"The Institutional Yield Imperative\", and a live demo that will give you the blueprint to enable your business to help your customers \"Trade Everything\", taking you through \"A Roadmap for Compliant Yield Products\".\nAnd, of course, our door is open for meetings and networking. You can see who from the team will be in Paris and schedule a meeting with them here. We'll also have coffee and light refreshments for your afternoon pick-me-up.\n​We look forward to seeing you and the ecosystem for an afternoon of networking with the biggest names in the blockchain and digital asset space.\nRegister your interest now to reserve your spot. See you in Paris at the Fireblocks House at the Connect Lounge!\nP.S. Don't forget, you will need your PBW pass to access the Fireblocks House!\nAgenda:\n15:30 - 15:35 | Welcome Remarks\nSpeaker: Alexandre Chessé, Head of Sales EMEA - Banking & TradFi, Fireblocks\n15:35 - 16:05 | Panel: The Institutional Yield Imperative\nThe digital asset landscape is evolving fast — tokenized assets, on-chain yield, and rising client expectations are creating major opportunities, but also mounting complexity. Navigating MiCA, DORA, and fragmented European compliance frameworks is now a prerequisite to compete. This panel unites builders, infrastructure providers, and market-makers to debate the real pressure points and what a credible product roadmap looks like for institutions and exchanges trying to win on yield.\nSpeakers:\nAdam Levine, SVP, Corporate Development & Partnerships, Fireblocks; CEO, Fireblocks Trust Company (Moderating) \nPaul Frambot, Co-Founder & CEO, Morpho\nZane Glauber, Global Head of Distribution, Galaxy Digital\nRamin Kader, Head of Markets & Institutions, Bitvavo\n16:15 - 16:45 | Live Demo: \"Trade Everything\" – Bringing Compliant Yield Products to Market\nThis practical product roadmapping session walks attendees through how financial institutions and exchanges can bring compliant, yield-bearing products to market quickly using Fireblocks and Dynamic's combined infrastructure. This session is structured around a realistic go-to-market scenario: \"You want to offer your clients yield on digital assets. What does your stack look like, and how fast can you move?\"\nSpeaker: Alice Ollivier, Sales Engineering Manager, Core, Fireblocks\n16:45 - 17:30 | Meetings & Networking with the Fireblocks team and PBW ecosystem\n17:30 | Close of Connect Lounge\n​​​​Event details:\n​​​​📆 Wednesday 15th April 2026\n​​​⏰ 3:30pm to 5:30pm CEST\n​​​📍 Connect Lounge, on the Paris Blockchain Week Conference Floor, Carrousel du Louvre\n​​​☕️ Exclusive content, networking, and refreshments with Fireblocks and other industry peers\n​About Fireblocks:\nFireblocks is the world's most trusted digital asset infrastructure company, empowering organizations of all sizes to build, manage and grow their business on the blockchain. With the industry's most scalable and secure platform, we streamline stablecoin payments, settlement, custody, tokenization, and trading operations enabling - everything from institutional finance to consumer-facing digital experiences across the largest ecosystem of banks, payment providers, stablecoin issuers, exchanges and custodians. Thousands of organizations - including Worldpay, BNY, Galaxy, and Revolut - trust Fireblocks to secure more than $10 trillion in digital asset transactions across 150+ blockchains. Learn more at fireblocks.com.\nhttps://info.fireblocks.com/fireblocks-pbw-2026\nhttps://www.linkedin.com/in/alexandrechesse/\nhttps://www.linkedin.com/in/adamlevine18/\nhttps://www.linkedin.com/in/paul-frambot/?locale=en_US\nhttps://www.linkedin.com/in/zane-glauber-cfa-58950316/\nhttps://www.linkedin.com/in/raminkader/\nhttps://www.linkedin.com/in/aliceollivier/\nhttps://www.fireblocks.com/\nhttps://fireblocks.com\nhttp://fireblocks.com"
+    }
+  },
+  {
+    "id": "pos-12lkuxt",
+    "conference": "Paris Blockchain Week 2026",
+    "themeKey": "crypto",
+    "label": "on_theme",
+    "source": "sheet_own_tab",
+    "event": {
+      "name": "CoinEx Alpha Night: Above the ARC",
+      "hosts": [
+        "Fiona Han CoinEx",
+        "CloverD",
+        "Jane Gong"
+      ],
+      "organizer": "Fiona Han CoinEx",
+      "venue": "50 Av. des Champs-Élysées, 75008 Paris, France",
+      "dateISO": "2026-04-17",
+      "startTime": "7:30p",
+      "cost": "Free",
+      "platform": "luma",
+      "descriptionText": "Where Top Minds Connect 🥂\nJoin CoinEx for an extraordinary evening of high-end networking and exclusive insights, set against the breathtaking backdrop of the Champs-Élysées.\nAs Paris Blockchain Week unfolds, we invite our most valued partners, VIPs, top KOLs, and industry pioneers to step away from the bustle and into the Alpha Night. This is more than a party; it’s a curated gathering for those who shape the future of Web3.\n✨ Event Highlights\nAlpha Talk | Deep dive into market trends with top KOLs.\nSignature Sips | Exclusive \"CoinEx Alpha\" cocktails.\nElite Circle | Connect with Web3 pioneers on a private terrace.\nPremium Gifts | Receive limited-edition CoinEx gift boxes.\n📅 Event Agenda\n19:30 | Arrival & Champagne \n20:00 | Opening Keynote  \n20:15 | 🎁 Interactive Quiz  Win exclusive prizes in our Kahoot challenge.\n20:25 | Alpha Talk: Market Panel \n20:25 | Networking & Cocktails \nLucky Draws:\n21:00 – 3rd Prize \n21:30 – 2nd Prize \n22:00 – The Grand Alpha Prize \n23:00 | Farewell & Gifts"
+    }
+  },
+  {
+    "id": "pos-139sfak",
+    "conference": "Paris Blockchain Week 2026",
+    "themeKey": "crypto",
+    "label": "on_theme",
+    "source": "sheet_own_tab",
+    "event": {
+      "name": "Hypernative x TRM Labs Soirée - PBW 2026",
+      "hosts": [
+        "Hypernative Events",
+        "TRM Labs"
+      ],
+      "organizer": "TRM Labs",
+      "venue": null,
+      "dateISO": "2026-04-16",
+      "startTime": "6:30p",
+      "cost": "Free",
+      "platform": "luma",
+      "descriptionText": "Hypernative x TRM Labs Private Reception at PBW.\nJoin Hypernative and TRM Labs for an intimate VIP reception during Paris Blockchain Week, bringing together top institutional players, compliance leaders, and onchain operators for high-signal conversation in a relaxed setting.\nThis event is private with limited capacity. RSVP required.\nMEET THE HOSTS\n📍 TRM Labs: TRM provides blockchain intelligence that helps organizations detect, investigate, and prevent crypto-related fraud and financial crime. Trusted by financial institutions, governments, and leading crypto companies worldwide.\nhttps://www.trmlabs.com/\n📍 Hypernative: Hypernative stops web3 threats before they do any damage with the most accurate real-time advanced warning system and connection to automated onchain actions.\nhttps://www.hypernative.io/\nhttps://www.trmlabs.com/\nhttps://www.hypernative.io/"
+    }
+  },
+  {
+    "id": "pos-13bcxa0",
+    "conference": "Consensus Miami",
+    "themeKey": "crypto",
+    "label": "on_theme",
+    "source": "sheet_own_tab",
+    "event": {
+      "name": "Sozu Haus Denver 2025",
+      "hosts": [
+        "Sozu Haus",
+        "doctor_gm",
+        "0xjooohn",
+        "kelly kim",
+        "VEER"
+      ],
+      "organizer": "Virtuals, Kaito, Mantle, Eliza",
+      "venue": null,
+      "dateISO": "2026-02-26",
+      "startTime": "All Day",
+      "cost": "Free",
+      "platform": "luma",
+      "descriptionText": "Sozu Haus is headed to Denver with Virtuals, Eliza, Mantle, Story, Kaito,  Cookie, Wormhole and ACT (more partners TBA!)\nWe’ll have 66 beds from Feb 22 to March 3 at the Ember hostel in Denver. Honestly, this is unacceptable... so we are bringing three more hackers to get to our magic cohort number.\nOh, there will also be 69 S-tier mentors. Your big, big hacker minds will be blown away by the roster (follow Sozu Haus Twitter for alpha and announcements)\nThe theme for this cohort is... *drum roll* ... AI! That said, any builder in any vertical is eligible to apply. Designers, creators, artists are also more than welcome (we need more of you in this industry!)\nA hackathon will be hosted at the haus. A ridiculous amount of bounties and grants valued at $500k+ (the number keeps going up and up).\nTravel stipends will be considered on a case-by-case basis.\nSchedule:\nFeb 23 // 6pm - Orientation \nFeb 24-27 // 12pm - 4x Workshops & Lunch\nFeb 28 // all day - Founder Mode (11am) & Sozu BBQ (6pm)\nMar 1 // 11am - 2pm - Demo Day\nWhenever you want - hot tub aka \"yap tub\"\nThe Sozu Haus cohort will have exclusive access to support, mentorship and programming while they build. Some of you will even have the opportunity to be a part of sub-cohorts specifically chosen by one of our partners. \nApply here and we will release the first round of approved cohort members by Friday Jan 17. \nFollow https://twitter.com/sozuhaus to stay up to date. \nDisclaimer: \nApplicants will not be accepted if they do not promise to lock the fuck in and and do their absolute best uwu <3\nhttps://x.com/virtuals_io\nhttps://x.com/ai16zdao\nhttp://mantle.xyz/\nhttps://x.com/StoryProtocol\nhttps://x.com/_kaitoai\nhttps://x.com/cookiedotfun\nhttps://wormhole.com/\nhttps://x.com/acticommunity?s=21&t=Ek82dxJvOqD0TBc6Dg9e6w\nhttps://www.emberhostels.com/\nhttp://x.com/sozuhaus\nhttps://twitter.com/sozuhaus"
+    }
+  },
+  {
+    "id": "pos-13havza",
+    "conference": "Paris Blockchain Week 2026",
+    "themeKey": "crypto",
+    "label": "on_theme",
+    "source": "sheet_own_tab",
+    "event": {
+      "name": "The Convergence of Crypto and AI",
+      "hosts": [
+        "SIGNAL WEEK"
+      ],
+      "organizer": "PARIS BLOCKCHAIN WEEK",
+      "venue": "Carrousel du Louvre, 99 Rue de Rivoli, 75001 Paris, France",
+      "dateISO": "2026-04-15",
+      "startTime": "10:00a",
+      "cost": "Free w/ PBW Ticket",
+      "platform": "luma",
+      "descriptionText": "Bittensor ecosystem and the rise of decentralized intelligence markets. How token-incentivized networks are coordinating AI development through subnets, transforming compute, data, and machine intelligence into open, on-chain economies.\nThis event is part of Paris Blockchain Week 2026 (April 15-16) at the Carrousel du Louvre, and you need a ticket to the main event to enter.\n​Grab your ticket below or at parisblockchainweek.com\n​​Purchase your PRO ticket on LUMA and get a 10% discount with code: PBWLUMA\nhttps://parisblockchainweek.com"
+    }
+  },
+  {
+    "id": "pos-14dxn6w",
+    "conference": "Paris Blockchain Week 2026",
+    "themeKey": "crypto",
+    "label": "on_theme",
+    "source": "sheet_own_tab",
+    "event": {
+      "name": "INVESTORS BREAKFAST",
+      "hosts": [
+        "SIGNAL WEEK"
+      ],
+      "organizer": "PARIS BLOCKCHAIN WEEK",
+      "venue": "Carrousel du Louvre, 99 Rue de Rivoli, 75001 Paris, France",
+      "dateISO": "2026-04-16",
+      "startTime": "8:30a",
+      "cost": "Free w/ VIP Ticket",
+      "platform": "luma",
+      "descriptionText": "An intimate, high-level breakfast exclusively for VIP Investor and VIP MAX ticket holders, hosted in the Institutional Lounge at Paris Blockchain Week 2026.\nDesigned for investors, juries, and finalists to connect in a curated, closed-door setting before the main programme begins, this is where the most meaningful introductions of the week are made before the doors even open.\nThis is also your chance to meet the 12 finalists of Start In Block, handpicked from over 1,000 applications, before they take the stage to compete for $10M+ in prizes.\nA VIP Investor or VIP MAX ticket is required to attend the breakfast. Secure yours at parisblockchainweek.com with code PBWINVESTOR for an exclusive discount.\nhttps://parisblockchainweek.com"
+    }
+  },
+  {
+    "id": "pos-14puyb2",
+    "conference": "Consensus Miami",
+    "themeKey": "crypto",
+    "label": "on_theme",
+    "source": "sheet_own_tab",
+    "event": {
+      "name": "TAC Hacker House: The Ultimate Builder Hub @ ETHDenver",
+      "hosts": [
+        "TAC"
+      ],
+      "organizer": "TAC",
+      "venue": "Catbird Hotel, 3770 Walnut St, Denver, CO 80205, USA",
+      "dateISO": "2026-02-28",
+      "startTime": "All Day",
+      "cost": "Free",
+      "platform": "luma",
+      "descriptionText": "Step into the TAC Hacker House, join the plebs’ cabal. This isn’t just a space—it’s your gateway to level up your ideas and join the TAC Wizards. Whether you’re fine-tuning your dApp or gearing up to conquer the Telegram userbase, we’ve got you covered.\nAt TAC Hacker House we redefine the meaning of gm: Go Mainstream.\n💼 The Power Table\n​Sit down with the TAC Growth Team to advise, refine, and supercharge your dApp. Strategize how to target retail mass-market leveraging the power of TON and Telegram. Come for the insights, leave more bullish than you can imagine!🔥📈\n☕ Coffee, Codes, and Cravings\nFuel your hustle with specialty brews, daily lunch breaks, and curated snacks served all day. This is your space to recharge, brainstorm, and connect with fellow builders. 🍕☕💬\nHere the ticker is TON, but the code is EVM.\n🛠️ Workshop Hour: Build & Level Up\n​Dive into daily 1-hour workshops led by experts who’ve been in the trenches. Explore more in depth the TAC tech stack with our CTO and tech team, get a view on the roadmap. ​Ensure your project is primed for success! 🚀📊\n💡 From Idea to Launch: TAC x Builders\nInspired by the community, we’re here to foster collaboration and action. Through guided discussions on tech innovation and GTM strategies, we’ll help you:\nConnect the dots\nRaise funds\nGet your project live\nSuccess takes teamwork, and we’re all about making it happen together. 🔗💪\n🗣️ Business Meetings & Networking\nStop in to take your business meetings outside of the crowded main venue, meet other builders, connect with the TAC team, grab exclusive swags, or just hang for the vibe. We’re excited to:\nLearn about your project\nHelp you take it to the next level\nSuccess takes collaboration, and we want to help you succeed, starting with providing a space like TAC Hacker House to send your idea to Valhalla. 🌟🚀\nAbout TAC\nTAC is a novel TON-Adapter enabling Ethereum developers to launch hybrid dApps to access Telegram’s 950M+ userbase.\nWebsite | X | Discord | Telegram | LinkedIn\nJoin us at TAC Hacker House—the ultimate builder hub during ETHDenver. At TAC, GM means Go Mainstream!! 🙌💥\nJoin the official Telegram Chat to speak to the team!\nhttps://t.me/+17EvDyITWAk5OWI1\nhttps://tac.build/\nhttps://x.com/TacBuild\nhttps://discord.gg/tacbuild\nhttps://t.me/TACbuild\nhttps://www.linkedin.com/company/tacbuild\nhttps://t.me/+17EvDyITWAk5OWI1"
+    }
+  },
+  {
+    "id": "pos-14xmav",
+    "conference": "Consensus Miami",
+    "themeKey": "crypto",
+    "label": "on_theme",
+    "source": "sheet_own_tab",
+    "event": {
+      "name": "Bitcoin Block Fest",
+      "hosts": [
+        "Jack Snell",
+        "Fonzi"
+      ],
+      "organizer": "Bitcoin x AI Startup Lab",
+      "venue": "River North Art District, Denver, CO, USA",
+      "dateISO": "2026-02-27",
+      "startTime": "All Day",
+      "cost": "Free",
+      "platform": "luma",
+      "descriptionText": "What is Bitcoin Block Fest?\nBitcoin Block Fest, brought to you by Bitcoin x AI Startup Lab, is a premier series of events celebrating Bitcoin x AI innovation, collaboration, and community. Running alongside ETH Denver 2025, this event takes place in Denver's vibrant RiNo District, just a short walk from the main ETH Denver venue.\nWhy Attend Bitcoin Block Fest?\nConvenience: All venues are within a 8-minute walking radius, saving time and cutting down on travel costs.\nUnmatched Networking Opportunities: Connect with Bitcoiners, entrepreneurs, investors, and innovators from around the world in a high-energy, focused environment.\nA Celebration of Bitcoin x AI Innovation: Be part of a growing movement that highlights the creativity and progress happening within the Bitcoin x AI ecosystem.\nWhether you're a startup founder, developer, investor, or Bitcoin x AI enthusiast, Bitcoin Block Fest is your opportunity to engage with the Bitcoin ecosystem like never before. Dive into a curated lineup of events, make valuable connections, and help drive the future of Bitcoin innovation.\nJoin us and be part of the action at Bitcoin Block Fest 2025!\nAlso join us at the Bitcoin Investor and Founder Mixer on Feb 28, Fri 6 - 8pm MT.\nhttps://lu.ma/EthDen_BTCAIblockFest2025"
+    }
+  },
+  {
+    "id": "pos-15jboon",
+    "conference": "Paris Blockchain Week 2026",
+    "themeKey": "crypto",
+    "label": "on_theme",
+    "source": "sheet_own_tab",
+    "event": {
+      "name": "Coinbase x The Big Whale present: A new era of financial infrastructure. How Coinbase is redefining markets & payments",
+      "hosts": [
+        "Coinbase"
+      ],
+      "organizer": "Coinbase",
+      "venue": null,
+      "dateISO": "2026-04-15",
+      "startTime": "8:30a",
+      "cost": "Free",
+      "platform": "generic",
+      "descriptionText": ""
+    }
+  },
+  {
+    "id": "pos-15m8s4w",
+    "conference": "Consensus Miami",
+    "themeKey": "crypto",
+    "label": "on_theme",
+    "source": "sheet_own_tab",
+    "event": {
+      "name": "TAC Hacker House: The Ultimate Builder Hub @ ETHDenver",
+      "hosts": [
+        "TAC"
+      ],
+      "organizer": "TAC",
+      "venue": "Catbird Hotel, 3770 Walnut St, Denver, CO 80205, USA",
+      "dateISO": "2026-02-26",
+      "startTime": "All Day",
+      "cost": "Free",
+      "platform": "luma",
+      "descriptionText": "Step into the TAC Hacker House, join the plebs’ cabal. This isn’t just a space—it’s your gateway to level up your ideas and join the TAC Wizards. Whether you’re fine-tuning your dApp or gearing up to conquer the Telegram userbase, we’ve got you covered.\nAt TAC Hacker House we redefine the meaning of gm: Go Mainstream.\n💼 The Power Table\n​Sit down with the TAC Growth Team to advise, refine, and supercharge your dApp. Strategize how to target retail mass-market leveraging the power of TON and Telegram. Come for the insights, leave more bullish than you can imagine!🔥📈\n☕ Coffee, Codes, and Cravings\nFuel your hustle with specialty brews, daily lunch breaks, and curated snacks served all day. This is your space to recharge, brainstorm, and connect with fellow builders. 🍕☕💬\nHere the ticker is TON, but the code is EVM.\n🛠️ Workshop Hour: Build & Level Up\n​Dive into daily 1-hour workshops led by experts who’ve been in the trenches. Explore more in depth the TAC tech stack with our CTO and tech team, get a view on the roadmap. ​Ensure your project is primed for success! 🚀📊\n💡 From Idea to Launch: TAC x Builders\nInspired by the community, we’re here to foster collaboration and action. Through guided discussions on tech innovation and GTM strategies, we’ll help you:\nConnect the dots\nRaise funds\nGet your project live\nSuccess takes teamwork, and we’re all about making it happen together. 🔗💪\n🗣️ Business Meetings & Networking\nStop in to take your business meetings outside of the crowded main venue, meet other builders, connect with the TAC team, grab exclusive swags, or just hang for the vibe. We’re excited to:\nLearn about your project\nHelp you take it to the next level\nSuccess takes collaboration, and we want to help you succeed, starting with providing a space like TAC Hacker House to send your idea to Valhalla. 🌟🚀\nAbout TAC\nTAC is a novel TON-Adapter enabling Ethereum developers to launch hybrid dApps to access Telegram’s 950M+ userbase.\nWebsite | X | Discord | Telegram | LinkedIn\nJoin us at TAC Hacker House—the ultimate builder hub during ETHDenver. At TAC, GM means Go Mainstream!! 🙌💥\nJoin the official Telegram Chat to speak to the team!\nhttps://t.me/+17EvDyITWAk5OWI1\nhttps://tac.build/\nhttps://x.com/TacBuild\nhttps://discord.gg/tacbuild\nhttps://t.me/TACbuild\nhttps://www.linkedin.com/company/tacbuild\nhttps://t.me/+17EvDyITWAk5OWI1"
+    }
+  },
+  {
+    "id": "pos-160zmvh",
+    "conference": "Bitcoin Vegas",
+    "themeKey": "crypto",
+    "label": "on_theme",
+    "source": "sheet_own_tab",
+    "event": {
+      "name": "DNE Initiative Creator NFT Launch Party",
+      "hosts": [
+        "Crypto Fam Radio",
+        "Así Nací"
+      ],
+      "organizer": "Crypto Fam Radio",
+      "venue": "3633 Rawhide Ct Las Vegas, NV 89120, USA",
+      "dateISO": "2026-05-05",
+      "startTime": "9:00p",
+      "cost": "Free",
+      "platform": "luma",
+      "descriptionText": "Join us in Las Vegas for the Digital Nomad Experience Initiative Access Pass Launch Party of The Teardrop Effect, the crypto survivor TV Show, brought to you by Crypto Fam Radio and Fortunite DAO. \nIt’s a chance to celebrate the start of something exciting while meeting the creators and participants behind the show in a fun, high-energy setting.\nExpect a content creators paradise- constant livestream, podcast lounge, tie dye shirt station, tattoo station, open bar, great food from various food trucks, and plenty to enjoy throughout the night! \nWith a swimming pool, billiards, games, and more, it’s set up for a lively evening of music, collaboration, conversation, and celebration. \nWhether you’re coming to connect, unwind, or just have a great time, this party is the place to be and will run every night starting April 29th through May 2nd!  \nRSVP to get your free ticket. You'll need to show your Luma ticket QR code to get access to the event. \nEntry will be first-come-first-serve."
+    }
+  },
+  {
+    "id": "pos-178v1ll",
+    "conference": "Consensus Miami",
+    "themeKey": "crypto",
+    "label": "on_theme",
+    "source": "sheet_own_tab",
+    "event": {
+      "name": "Async House @ETHDenver 2025",
+      "hosts": [
+        "Async House"
+      ],
+      "organizer": "Async House",
+      "venue": null,
+      "dateISO": "2026-02-24",
+      "startTime": "All Day",
+      "cost": "Free",
+      "platform": "luma",
+      "descriptionText": ""
+    }
+  },
+  {
+    "id": "pos-17tjt5s",
+    "conference": "Consensus Miami",
+    "themeKey": "crypto",
+    "label": "on_theme",
+    "source": "sheet_own_tab",
+    "event": {
+      "name": "ETHDenver Main Conference",
+      "hosts": [
+        "ETHDenver"
+      ],
+      "organizer": "ETHDenver",
+      "venue": "National Western Stock Show, 4655 Humboldt Street",
+      "dateISO": "2026-02-27",
+      "startTime": "All Day",
+      "cost": "Free",
+      "platform": "generic",
+      "descriptionText": ""
+    }
+  },
+  {
+    "id": "pos-17ufs21",
+    "conference": "Consensus Miami",
+    "themeKey": "crypto",
+    "label": "on_theme",
+    "source": "sheet_own_tab",
+    "event": {
+      "name": "Carrot Castle ⚔️ Knight Nibbles-a-Lot",
+      "hosts": [
+        "Incented, Nearchos, RnDAO and Chones"
+      ],
+      "organizer": "Incented, Nearchos, RnDAO and Chones",
+      "venue": null,
+      "dateISO": "2026-02-24",
+      "startTime": "All Day",
+      "cost": "Free - 150 USDC",
+      "platform": "generic",
+      "descriptionText": ""
+    }
+  },
+  {
+    "id": "pos-180bi8n",
+    "conference": "Consensus Miami",
+    "themeKey": "crypto",
+    "label": "on_theme",
+    "source": "sheet_own_tab",
+    "event": {
+      "name": "WEB3 Treasure Hunt | $10.000 $USDC",
+      "hosts": [
+        "D-Drops World",
+        "Starknet Foundation"
+      ],
+      "organizer": "D-Drops World",
+      "venue": null,
+      "dateISO": "2026-02-27",
+      "startTime": "All Day",
+      "cost": "Free",
+      "platform": "luma",
+      "descriptionText": "🏔️ Denver Treasure Hunt! 🏔️\nDiscover Denver by Completing IRL Quests and Unlocking Hidden Treasures!\nGet ready to go on a Treasure Hunt and explore the ‘Mile High City’. Complete IRL quests and Quizzes and explore the city's iconic landmarks, cultural gems, and hidden surprises – all while unlocking treasures with prizes up to $2500!\nExplore, Enjoy, and Earn in the Mile High City!\n1. Explore Denver  & ETH Denver🏔️\n2. Complete IRL Quests & Quizzes ✔\n3. Earn keys 🗝️\n4. Open Treasures 🏆\n5. Get Rewards 💰\nPrizepool of over $10.000 $USDC!!🏆 \n🥇1x 1000 $USDC\n🥈2x 500 $USDC\n🥉15x 100 $USDC\n💰650x 10 $USDC\nand more...\n2 keys to unlock:\nUrban Explorer Key 🗝️\n- 🌆 Record a Skyline Shot From Any Street Corner\n- 🇺🇸 Spot a Colorado Flag\n- ☕ Find and Film a Local Coffee Shop\n- ❤️ Write down something kind and leave it somewhere in Denver - PHIL\n- And more…\nETH Denver Key 🗝️ \n- 🎪 Visit the Starknet booth & write down what you would build on the booth wall!\n- ✊ Play rock-paper-scissors with someone at the event\n- 🎥 Starknet Quiz!\n- And more…\nLimited Rewards Available!\nRewards in the treasure hunt are won by a FCFS basis. So make sure to sign up for the event and don't miss out on any important info!\nPartners & Sponsors\nLooking to join the only event that is 24/7 and hosted throughout Denver? Giveaway prizes or add your own custom IRL quests! DM us on Telegram @shairamiri.\n​About D-Drops\nD-Drops is a location-based Web3 treasure-hunting game , backed by the Dutch government, where players explore cities, complete IRL quests, and find rewards that can include cryptocurrency, coupons, and more!\nLearn More:\n🌐 Website\n💬 Telegram\nAbout Co-host Starknet\nStarknet is a Layer 2 scaling solution for Ethereum that enhances user experience through its user-friendly design and low transaction fees. By leveraging STARK technology, it offers efficient and cost-effective transactions, making it accessible to users familiar with traditional web applications.\nhttps://www.starknet.io/\nAbout Partner Phil\nPhil Token ($PHIL) is a memecoin launched from an OG developer’s ETH Genesis Wallet. With a mission to unite the top 50 memecoins, Phil is set to become a beacon of integrity and collaboration in the crypto space.\nhttps://www.philtoken.com\nhttps://ddrops.world/\nhttps://t.me/ddropsportal\nhttps://www.starknet.io/\nhttps://www.philtoken.com"
+    }
+  }
+]

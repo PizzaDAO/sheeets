@@ -1,0 +1,110 @@
+[
+  {
+    "themeKey": "crypto",
+    "name": "Sunrise Vinyasa Flow — All Levels Welcome",
+    "organizer": "Flow Yoga Collective",
+    "venue": "Lincoln Park",
+    "descriptionText": "Join us for a free sunrise vinyasa class in the park. Bring your own mat. All levels welcome, no experience necessary. Coffee and tea after class.",
+    "platform": "meetup",
+    "cost": "Free"
+  },
+  {
+    "themeKey": "crypto",
+    "name": "Tuesday Night Run Club — 5K Social Run",
+    "organizer": "City Run Crew",
+    "venue": "Riverfront Trail",
+    "descriptionText": "Easy-paced 5K social run followed by drinks at the trailhead bar. New runners always welcome, no watch required.",
+    "platform": "meetup",
+    "cost": "Free"
+  },
+  {
+    "themeKey": "crypto",
+    "name": "Gallery Opening: New Works on Paper",
+    "organizer": "Riverside Gallery",
+    "venue": "Riverside Gallery",
+    "descriptionText": "Opening reception for our new exhibition of works on paper by local artists. Wine and light bites provided.",
+    "platform": "eventbrite",
+    "cost": "Free"
+  },
+  {
+    "themeKey": "crypto",
+    "name": "Downtown Food Truck Friday",
+    "organizer": "Downtown Business Association",
+    "venue": "Main Street Plaza",
+    "descriptionText": "Weekly food truck gathering in the plaza with live acoustic music. Family friendly, free admission.",
+    "platform": "generic",
+    "cost": "Free"
+  },
+  {
+    "themeKey": "crypto",
+    "name": "Intro to Pottery Wheel Workshop",
+    "organizer": "Clay Studio Co-op",
+    "venue": "Clay Studio Co-op",
+    "descriptionText": "Hands-on beginner pottery wheel workshop. All materials included, no experience necessary. Limited to 10 seats.",
+    "platform": "eventbrite",
+    "cost": "$45"
+  },
+  {
+    "themeKey": "crypto",
+    "name": "Open Mic Comedy Night",
+    "organizer": "Laugh Lounge",
+    "venue": "Laugh Lounge",
+    "descriptionText": "Weekly open mic comedy night. Sign up at the door, 5 minute sets. Two drink minimum.",
+    "platform": "generic",
+    "cost": "$10"
+  },
+  {
+    "themeKey": "crypto",
+    "name": "Neighborhood Book Club: Fiction Pick of the Month",
+    "organizer": "Elm Street Library",
+    "venue": "Elm Street Library",
+    "descriptionText": "Monthly book club discussion. This month's pick is a contemporary fiction novel. New members welcome.",
+    "platform": "meetup",
+    "cost": "Free"
+  },
+  {
+    "themeKey": "crypto",
+    "name": "Rooftop Salsa Social",
+    "organizer": "Latin Dance Co",
+    "venue": "Rooftop Lounge",
+    "descriptionText": "Weekly salsa social with a short beginner lesson followed by open dancing. No partner necessary.",
+    "platform": "posh",
+    "cost": "$15"
+  },
+  {
+    "themeKey": "crypto",
+    "name": "Farmers Market Volunteer Morning",
+    "organizer": "Community Garden Alliance",
+    "venue": "Central Farmers Market",
+    "descriptionText": "Volunteer shift helping set up and run the weekly farmers market. Coffee provided for volunteers.",
+    "platform": "generic",
+    "cost": "Free"
+  },
+  {
+    "themeKey": "crypto",
+    "name": "Startup Founders Happy Hour (Local Chapter)",
+    "organizer": "City Founders Network",
+    "venue": "The Tap Room",
+    "descriptionText": "Monthly happy hour for local startup founders across all industries — not conference-affiliated, just our regular neighborhood meetup.",
+    "platform": "meetup",
+    "cost": "Free"
+  },
+  {
+    "themeKey": "crypto",
+    "name": "Board Game Night",
+    "organizer": "Tabletop Social Club",
+    "venue": "The Game Room",
+    "descriptionText": "Weekly board game night, bring a game or play one of ours. Snacks and drinks available for purchase.",
+    "platform": "meetup",
+    "cost": "Free"
+  },
+  {
+    "themeKey": "crypto",
+    "name": "Photography Walk: Golden Hour Downtown",
+    "organizer": "Shutter Collective",
+    "venue": "Downtown Plaza",
+    "descriptionText": "Casual photo walk around downtown during golden hour. Bring any camera, phones welcome. Beginners encouraged.",
+    "platform": "meetup",
+    "cost": "Free"
+  }
+]
