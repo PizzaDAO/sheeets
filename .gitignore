@@ -43,6 +43,12 @@ notes/
 # one-off scripts
 scripts/migrate-itinerary-ids.ts
 
+# event-ingestion eval harness: regenerate locally (scripts/ingest-eval.ts
+# build-fixture), never commit — only the small committed sample
+# (ingest-eval-sample.json) and the hard-negative seed are tracked.
+scripts/fixtures/ingest-eval.json
+scripts/fixtures/.ingest-eval-luma-cache.json
+
 # generated reports
 ga4-dashboard.html
 

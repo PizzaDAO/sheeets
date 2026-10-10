@@ -56,8 +56,18 @@ export function normalizeEventLink(link: string | null | undefined): string | nu
   const host = u.hostname.toLowerCase().replace(/^www\./, '');
   if (!host) return null;
   if (LUMA_HOSTS.has(host) || LUMA_HOSTS.has(`www.${host}`)) {
-    const slug = u.pathname.split('/').filter(Boolean)[0];
-    return slug ? `luma:${slug.toLowerCase()}` : null;
+    const parts = u.pathname.split('/').filter(Boolean);
+    const slug = parts[0];
+    if (!slug) return null;
+    // `/event/evt-…` is Luma's canonical event-detail URL (used by iCal
+    // LOCATION fields and some share links); the first path segment is
+    // always the literal "event", so every such link used to collapse to
+    // the single key `luma:event` (#177). Key on the stable event api id
+    // instead, which is unique per event.
+    if (slug.toLowerCase() === 'event' && parts[1]) {
+      return `luma:${parts[1].toLowerCase()}`;
+    }
+    return `luma:${slug.toLowerCase()}`;
   }
   let path = u.pathname.replace(/\/+$/, '');
   try {

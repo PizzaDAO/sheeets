@@ -13,6 +13,22 @@ describe('normalizeEventLink', () => {
     expect(normalizeEventLink('https://lu.ma/')).toBeNull();
   });
 
+  it('keys /event/evt-… links on the event api id, not the literal "event" segment (#177)', () => {
+    expect(normalizeEventLink('https://luma.com/event/evt-abc123')).toBe('luma:evt-abc123');
+    expect(normalizeEventLink('https://lu.ma/event/evt-xyz789')).toBe('luma:evt-xyz789');
+    expect(normalizeEventLink('https://www.luma.com/event/evt-XYZ789/')).toBe('luma:evt-xyz789');
+    expect(normalizeEventLink('https://luma.com/event/evt-abc?utm_source=x#top')).toBe('luma:evt-abc');
+    // Two different events must not collapse to the same key any more.
+    expect(normalizeEventLink('https://luma.com/event/evt-abc123')).not.toBe(
+      normalizeEventLink('https://luma.com/event/evt-def456')
+    );
+  });
+
+  it('falls back to luma:event only when /event/ has no id segment', () => {
+    expect(normalizeEventLink('https://luma.com/event')).toBe('luma:event');
+    expect(normalizeEventLink('https://luma.com/event/')).toBe('luma:event');
+  });
+
   it('lowercases host + path and drops www, query, hash and trailing slash', () => {
     expect(normalizeEventLink('https://WWW.Eventbrite.com/e/My-Event-123/?aff=x#a')).toBe('eventbrite.com/e/my-event-123');
     expect(normalizeEventLink('http://example.com')).toBe('example.com');
