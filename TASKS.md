@@ -7,7 +7,7 @@ Imported from the project Google Sheet on 2026-10-04; this file is now the sourc
 
 | ID | Task | Stage | Priority | Due | Lead | Tags | Plan | PR | Notes |
 |----|------|-------|----------|-----|------|------|------|----|-------|
-| sausage-24472 | Batch RSVP / Auto Sign-up for Luma Events | doing | P1 |  |  | Doing |  |  |  |
+| sausage-24472 | Batch RSVP / Auto Sign-up for Luma Events | todo | P1 |  |  | Shelved | plans/sausage-24472-batch-rsvp-v2.md |  | Shelved 2026-10-10: automation only possible via host Luma API keys; see plan |
 | deep-dish-69056 | Performance: React.memo boundaries + query batching for EventApp | doing | P1 |  |  | Doing |  |  |  |
 | pineapple-22344 | Itinerary page overhaul: fix drag, use EventCard, pass conference, rebrand | doing | P1 |  |  | Doing |  |  |  |
 | capers-31744 | Fix date header flash when scrolling to top in list view | doing | P1 |  |  | Doing |  |  |  |
